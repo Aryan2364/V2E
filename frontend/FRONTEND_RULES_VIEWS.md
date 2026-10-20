@@ -1,8 +1,8 @@
-# Design and Build Rules: Charts, data entry grid, report tables and board view
+# Design and Build Rules: Charts, data entry grid, report tables, board view and org chart
 
 Part of the rules in FRONTEND_RULES.md (see its section 0.3). That file's rules apply here too, and section numbers match across all the files.
 
-Read this file before building or changing a chart (section 21), a data entry grid (section 31), a report table (section 34) or a board view (section 35).
+Read this file before building or changing a chart (section 21), a data entry grid (section 31), a report table (section 34), a board view (section 35) or an org chart (section 42).
 
 ## 21. Chart colours
 
@@ -282,3 +282,102 @@ The page scroll above the column scroll is the one allowed exception to section 
 - Not a workflow editor. Columns are never added, renamed, reordered or deleted from the board; they are master data and are maintained where master data is maintained (section 15.2).
 - Not a bulk selection surface. Tick boxes and the action bar (section 22) belong to list view.
 - Not a second place to edit a record. The card opens the record.
+
+## 42. Org chart
+
+An org chart shows records that form a hierarchy: each record sits under at most one other record of the same list. People by who they report to, departments under departments, regions above territories. It is the fourth view of a list page, beside list, card and board.
+
+Worked example: people, by reporting line. Each card is a person; the line above a card goes to the person they report to.
+
+### 42.1 It is a view of a list page, not a page type
+
+- Section 11.1's zones are unchanged. The chart sits in zone 3, like the board (section 35.1).
+- The view switcher gains a chart side, with the network icon, where section 42.2 allows.
+- Search and filters apply to the chart (section 42.8). Sort is not offered in chart view: the hierarchy is the order, and records under the same parent follow the list's default sort (section 27.2).
+- The user's choice of view is remembered (section 11.6). Switching view changes appearance only, never content.
+- The pagination bar (zone 4) stays and reports the record count. It does not page the chart.
+
+### 42.2 When the chart button appears
+
+- Only on a list whose records carry one parent field pointing at a record of the same list: "Reports to", "Parent department". The server refuses a change that would make a loop (for people, the backend kit's ACCESS_RIGHTS.md section 4.3).
+- On any other list the chart button is hidden, not disabled (section 35.2).
+- The chart is offered in the desktop layout at 768px and above, like the board (useBoardAvailable). On phone it becomes one level at a time (section 42.9).
+
+### 42.3 One parent each
+
+1. Every record has exactly one parent, or none at the top: a person reports to one person, a department sits under one department. The chart is therefore a tree, and every line in it is solid.
+2. There is no second or dotted-line parent ("also reports to"). This was decided for every product built from this kit. A product that needs one asks first: it changes the layout of section 42.6, the counts, the phone screen of section 42.9 and the backend kit's reporting chain, not one screen.
+3. "8 reports" on a card means eight records directly under it.
+4. Access follows the same chain. The Team scope (the backend kit's ACCESS_RIGHTS.md section 4.3) covers the records under someone, the same records the chart draws under them.
+5. The parent is one field on the record's form, a searchable select: "Reports to", "Parent department". It never offers the record itself or anything under it, and the server checks the same and refuses a loop.
+
+### 42.4 The card
+
+- A record card (section 36.10): no band. Fixed width (--spacing-org-card) and fixed height (--spacing-org-card-height). Every card in a chart is the same size.
+- At most: an avatar, for records that are people; the name in body strong, one line, truncated (section 8); and one supporting line (a person's role, a department's head) in label style, text-secondary, one line, truncated.
+- One badge beside the name, only for a status that changes how the card is read: Inactive, in the neutral colour (section 2.4). Nothing else: the rest is on the record.
+- The whole card opens the record (section 11.6). The name is a real link, so open in a new tab works.
+- A three-dot menu appears where the list has row actions (section 11.1.2), on every card alike.
+- Lines between cards are 1px in text-muted, which measures over 3 to 1 on surface. border is too faint to follow across a screen.
+
+### 42.5 Opening and closing branches
+
+1. The chart opens showing the top record, or the top records, and the records directly under them. Every other branch starts closed.
+2. A card with records under it has a toggle below it, on the line to its children: a small secondary button with the true count and the product's noun, "8 reports" or "3 sub-departments", and chevron-down when closed, chevron-up when open.
+3. Opening or closing a branch redraws the chart in one step, with no animation (section 5.6), and the card whose toggle was pressed stays exactly where it was on screen. The chart moves around it, never the other way.
+4. What is open, the zoom and the scroll position are kept for the visit, per list, so coming back from a record finds the chart as it was (section 27.3).
+5. A branch that fails to load closes again, with an error toast naming whose records could not be loaded (section 7.1). Its toggle can be pressed again.
+
+### 42.6 Volume and shape
+
+1. The chart loads the top two levels first, and a branch's records when it is opened. The whole hierarchy is never sent at once (section 1 rule 7).
+2. A branch shows at most 25 records under its card, then "Show 12 more", which loads the next 25. The toggle's count is always the true total.
+3. Records with nothing under them are stacked in one column under their parent, so a manager with 20 direct reports takes the width of one card, not twenty. Records that have records under them sit side by side to the right of that column.
+4. The layout is always worked out from the hierarchy. Cards are never placed by hand, no position is stored, and there is no "Auto-arrange": nothing is ever out of order to begin with.
+
+### 42.7 Scroll, zoom and moving around
+
+1. The chart area has a fixed height, calculated from the window (section 11.1 zone 3), and is the only thing that scrolls. It scrolls both ways: a chart is wider than any screen, and every card is essential (section 10 rule 2).
+2. Dragging on the empty background moves the chart, with the grab cursor. The wheel scrolls, Shift and the wheel scrolls sideways, and Ctrl and the wheel zooms around the pointer.
+3. The zoom controls are a joined group floating in the bottom right corner of the chart area, on surface at --shadow-menu: Zoom out, the level ("100%"), Zoom in, and Fit to screen, which fits what is open into the area. The levels are 50%, 75%, 100% and 125%, never lower: below 50% names cannot be read, and a chart that would need it is narrowed by closing branches or searching.
+4. The chart opens at 100%, scrolled so the top record is centred at the top of the area. It is never shrunk to show everything at once.
+
+### 42.8 Search and filters
+
+1. Search (section 27.1) and filters (section 27.3) show the records that match and every record above them up to the top, so each match is seen in its place. Branches open as needed to show every match. While a search or filter is applied the toggles are not shown and "Show more" is not offered: the server sends every match.
+2. A record shown only because a match sits under it takes the quiet form: surface-sunken fill, its name in text-secondary. A match takes the normal form. A match found through a field other than the name shows where, in place of its supporting line: "Email · rakesh@halcyon.in", with the matched text in body strong (section 27.1).
+3. The toolbar count reads "12 results", counting matches only.
+4. Clearing search and filters returns the chart to what was open before.
+
+### 42.9 On phone
+
+The chart becomes one level at a time. A drawn chart needs room a phone does not have, and one level, read as a list, answers the question a phone user is asking: who is under this person.
+
+1. The screen shows one record at the top and, below it, the records directly under it as phone list rows (section 41.5). It starts at the top record, or with the top records as the list when there are several.
+2. The top block shows the record's avatar, name and supporting line. Tapping it opens the record.
+3. Tapping a row steps down to that record. The app bar's title is that record's name, and the back arrow goes up one level (section 41.4 rule 7). Each step is one history entry, so Android back goes up as well. A step to a record not yet loaded asks the server for it and its chain of parents; the browser never works out the hierarchy beyond what it has been sent.
+4. A row shows the name, the supporting line as its fact, and "8 reports" as its meta where it has any. The count line counts the rows in the product's word for the records: "3 people".
+5. The search covers the whole hierarchy. A result steps to that record, and shows its parent as its meta: "Reports to Rahul Mehta".
+6. 25 rows at a time, up to 200 (section 41.5 rules 14 and 15).
+7. A record with nothing under it shows one line under its block: "No one reports to Meera Iyer", in the product's words.
+
+### 42.10 Keyboard
+
+1. The chart is one Tab stop. Arrow keys move between cards: Up to the parent, Down to the first record under it (opening its branch if closed), Left and Right to the previous and next record under the same parent. Home goes to the top record.
+2. Enter opens the record. Space opens or closes the branch. Tab from a card reaches its own controls in order (its three-dot menu, then its branch's "Show more"), then leaves the chart.
+3. + and - zoom in and out while focus is in the chart.
+4. The chart scrolls to keep the focused card in view.
+5. Screen readers hear the chart as a tree: each card's name, supporting line, level, its place among its siblings ("3 of 8") and whether its branch is open.
+
+### 42.11 Loading, empty and failed
+
+- While the chart loads, a skeleton in its shape: one card with three under it (section 14).
+- Section 13's three states, in place of the chart: "nothing yet" when the list has no records, "nothing found" when search or filters matched none, "failed" with Retry.
+- Every request has a deadline (section 14 rule 4).
+
+### 42.12 What the chart is not
+
+- Not a drawing tool. Section 42.6 rule 4.
+- Not a second place to edit a record. The card opens the record. The one change made from the chart is "Move to" in a card's menu, where the product offers it: a dialog holding only the "Reports to" field, saved at once with an Undo toast (section 38.1). The record and everything under it move together.
+- Not for a record with two parents (section 42.3 rule 2).
+- No image export. It would need a package (section 1 rule 10); a product that needs one asks first.

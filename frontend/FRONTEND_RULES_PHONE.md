@@ -30,6 +30,7 @@ Everything in sections 1 to 40 applies on phones unless this section says otherw
 | Board (section 35) | A list of one status at a time, moved with "Move to" (section 41.5) |
 | Report table (section 34) | Row names and one measure at a time (section 41.10) |
 | Detail page tabs (section 11.2 zone 4) | One row per related list, each opening that list (section 41.6) |
+| Org chart (section 42) | One level at a time: a record, and the rows directly under it (section 42.9) |
 
 Stays on the computer: Gantt charts and other timelines, the data entry grid (section 31), bulk selection except approve and reject (sections 22, 41.6), the access screens (section 40), organisation settings (section 11.5), and any report built for analysis (section 41.10 rule 4).
 
@@ -179,7 +180,7 @@ Replaces section 11.2 on phone.
 2. At the top of the content: the record's full name in card heading style, wrapping rather than truncating, then the status badges, then the meta line, then the **key facts**: up to four fields each record type names as its most important (for an invoice: client, amount, due date, owner), in a grid two wide, label above value. The rest of the record follows.
 3. One column: the main content first, then what the summary sidebar holds on desktop.
 4. Label-value pairs stack, label above value, as in a form.
-5. Related records (section 11.2 zone 4) are one row each, "Invoices · 4" with a chevron, opening that list filtered to this record. Activity and comments show on the record itself, newest first, 10 at a time with "Show more", up to 100. Past that, one line says older activity is on the computer. The record holds no message box: "Add comment" at the top of the comments opens a comments screen, with the message box fixed at the bottom above the keyboard and the action bar hidden. The message box grows with its text up to 5 lines, then scrolls inside itself (section 41.7 rule 11). Back returns to the record.
+5. Related records (section 11.2 zone 4) are one row each, "Invoices · 4" with a chevron, opening that list filtered to this record. Activity and comments show on the record itself, newest first, 10 at a time with "Show more", up to 100. Past that, one line says older activity is on the computer. The record holds no message box: "Add comment" at the top of the comments opens a comments screen. Its comments are a thread (comment-thread.tsx): oldest first, newest at the bottom just above the message box, opening on the latest, with "Show earlier" at the top adding 10 at a time up to 100 (past that, one line says older comments are on the computer). The message box is fixed at the bottom above the keyboard and the action bar is hidden. The message box grows with its text up to 5 lines, then scrolls inside itself (section 41.7 rule 11). Back returns to the record.
 6. Text wraps (section 8). Nothing on a record page truncates; the record is where the full text lives.
 
 **The action bar**
@@ -316,7 +317,7 @@ Replaces section 11.3 rules 5, 7 and 8, and section 17, on phone.
 **Icons**
 
 8. 22px in the app bar and tab bar. Elsewhere, section 23.
-9. An icon-only button on phone uses only these icons, whose meaning needs no tooltip: back (chevron-left), close (x), more (ellipsis), add (plus), search (search), and show and hide (eye, eye-off) inside a password field. One drawn mark joins them: the dot on a notification row that marks it read or unread (section 41.12 rule 6). It is not a Lucide icon: a filled dot in primary while the row is unread, a hollow dot with a border outline once it is read. Its screen-reader label states the action: "Mark as read" or "Mark as unread". Everything else carries a visible text label. Each still has a screen-reader label.
+9. An icon-only button on phone uses only these icons, whose meaning needs no tooltip: back (chevron-left), close (x), more (ellipsis), add (plus), search (search), send (send-horizontal) inside the comment box, and show and hide (eye, eye-off) inside a password field. One drawn mark joins them: the dot on a notification row that marks it read or unread (section 41.12 rule 6). It is not a Lucide icon: a filled dot in primary while the row is unread, a hollow dot with a border outline once it is read. Its screen-reader label states the action: "Mark as read" or "Mark as unread". Everything else carries a visible text label. Each still has a screen-reader label.
 
 **Dates and times**
 

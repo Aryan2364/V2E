@@ -35,7 +35,7 @@ Two things start fresh rather than being edited:
 
 ### 0.2 Where this file lives
 
-This file is FRONTEND_RULES.md. It sits in the product's frontend folder, beside the Next.js app. Two files in the same folder make sure the frontend agent loads it automatically. Commit both, and keep them in place.
+This file is FRONTEND_RULES.md. It sits in the product's frontend folder, beside the Next.js app, together with the four other rules files of section 0.3. Copy all five; a product missing one has rules that point at nothing. Two files in the same folder make sure the frontend agent loads the rules automatically. Commit both, and keep them in place.
 
 1. **AGENTS.md:** next dev writes its own block into this file and re-creates it if it is missing. Leave that block untouched and add this pointer below it. next dev manages only its own block, so the pointer stays.
 
@@ -46,6 +46,10 @@ This file is FRONTEND_RULES.md. It sits in the product's frontend folder, beside
 
    Read `FRONTEND_RULES.md` in this folder before writing any code. It is
    the design and build specification for this product's frontend.
+   Before building or changing any screen or component, also read
+   `FRONTEND_RULES_COMPONENTS.md`: the kit's components, which every
+   screen is built from. Section 0.3 of FRONTEND_RULES.md says when to
+   read the other rules files.
    ```
 
 2. **CLAUDE.md:** two lines, so both files load automatically:
@@ -55,16 +59,17 @@ This file is FRONTEND_RULES.md. It sits in the product's frontend folder, beside
    @FRONTEND_RULES.md
    ```
 
-   Only FRONTEND_RULES.md is loaded this way. The three other rules files (section 0.3) are never added to CLAUDE.md with @; the agent reads each one when the work needs it, which keeps every session's load under Claude Code's limit.
+   Only FRONTEND_RULES.md is loaded this way. The four other rules files (section 0.3) are never added to CLAUDE.md with @; the agent reads each one when the work needs it, which keeps every session's load under Claude Code's limit.
 
 ### 0.3 Where the rules live
 
-The rules are split across four files so this one stays small enough to load in every session. Section numbers are the same in every file, so "section 41.5" means section 41.5 wherever it lives.
+The rules are split across five files so this one stays small enough to load in every session. Section numbers are the same in every file, so "section 41.5" means section 41.5 wherever it lives.
 
 | File | Sections | Read it |
 |---|---|---|
-| FRONTEND_RULES.md (this file) | 0 to 20 except 11.7, 22 to 30, 33, 36 to 39 | Always, completely, before writing any code |
-| FRONTEND_RULES_VIEWS.md | 21 Chart colours, 31 Data entry grid, 34 Report tables, 35 Board view | Before working on one of those views |
+| FRONTEND_RULES.md (this file) | 0 to 20 except 11.7, 22 to 30, 33, 36 to 39; and the index of section 4.1 | Always, completely, before writing any code |
+| FRONTEND_RULES_COMPONENTS.md | 4.1 Component inventory, in full | Before building or changing any screen, and before choosing, changing or adding a component |
+| FRONTEND_RULES_VIEWS.md | 21 Chart colours, 31 Data entry grid, 34 Report tables, 35 Board view, 42 Org chart | Before working on one of those views |
 | FRONTEND_RULES_ACCESS.md | 11.7 Sign-in page, 32 Password fields, 40 Access screens | Every product, when building its sign-in page or a password field; and before working on people, roles or access screens |
 | FRONTEND_RULES_PHONE.md | 41 Phone | Before working on anything that shows on a phone. On phone screens it wins where it differs |
 
@@ -76,8 +81,8 @@ The rules are split across four files so this one stays small enough to load in 
 These are absolute. Breaking any of them is a bug, not a style choice.
 
 1. Never write a hex colour code, an rgb() value or a named colour anywhere except globals.css. Everywhere else, use theme tokens only. The one exception is the phone install settings and the theme-color tag, which cannot read a token (section 41.12 rule 9).
-2. Never use inline styles for colour, spacing or typography. There are two exceptions: CSS variables the layout code sets on the html element at runtime from what the phone reports, such as the keyboard's height (section 41.13); and the install icons drawn with Next's ImageResponse (lib/install-icon.tsx), which cannot read classes or tokens.
-3. Never create a new component file if an existing component in components/ui can do the job.
+2. Never use inline styles for colour, spacing or typography. There are three exceptions: CSS variables the layout code sets on the html element at runtime from what the phone reports, such as the keyboard's height (section 41.13); the install icons drawn with Next's ImageResponse (lib/install-icon.tsx), which cannot read classes or tokens; and the positions org-chart.tsx works out for its cards and lines (section 42.6), which come from the hierarchy and the chart's tokens, not from any value written in a screen.
+3. Never create a new component file if an existing component in components/ui can do the job. Section 4.1 and FRONTEND_RULES_COMPONENTS.md list them all; read both first.
 4. Never build the same thing twice. If an element appears on more than one screen, it exists once in code and is imported.
 5. Never rely on browser or operating system defaults for hover, focus, tooltips, scrollbars, dialogs or autofill. Every one of these is styled. The exceptions are the browser's own warning when a tab with unsaved changes is closed (section 11.3 rule 10) and, on phone, the phone's own date and time pickers, share sheet, install and permission prompts, and file viewer (section 41). No website can style these, and people already know them. Chrome paints an autofilled field its own pale blue and ignores background-color; override it in globals.css with box-shadow, using tokens only.
 6. Never let text overflow its container.
@@ -86,7 +91,7 @@ These are absolute. Breaking any of them is a bug, not a style choice.
 9. Never use a spacing value outside the spacing scale in section 5.
 10. Never install a new package without asking first. Never loosen, change or upgrade a pinned version (section 4.3).
 11. Never place a back arrow button on a desktop or tablet page. Use breadcrumbs. The phone layout is the exception (section 41.4).
-12. Never use placeholder text as a substitute for a field label.
+12. Never use placeholder text as a substitute for a field label. A label may be screen-reader only where what surrounds the field names it: the top bar's search and the comment box. It stays real and linked to the field.
 
 ## 2. Colour
 
@@ -118,7 +123,7 @@ Rules:
 - A dark brand hovers lighter and presses darker. A light brand hovers darker and presses darker still. V2E's #1E40AF is a dark brand: it hovers lighter (#1D4ED8) and presses darker (#1E3A8A).
 - primary-foreground must measure at least 4.5 to 1 against primary, for any brand. White on #1E40AF measures about 8.7 to 1.
 - primary-text must measure at least 4.5 to 1 against surface. V2E's primary-text equals primary (#1E40AF), at about 8.7 to 1 on white.
-- primary-ring must measure at least 3 to 1 against surface, so keyboard focus stays visible.
+- primary-ring must measure at least 3 to 1 against surface, so keyboard focus stays visible. The current value measures about 5.9 to 1.
 - The eight are explicit values, not calculated from primary, because a formula cannot know which way a brand should hover. They are always edited together.
 
 **Brand swap test.** Change --primary to an obviously wrong colour, load /kitchen-sink, and check every element's background, text, border and outline. The test passes when only the hand-set values of the brand block still hold the old colour: primary-hover, primary-pressed, primary-ring, primary-subtle, primary-border, primary-text, the three scrollbar colours (section 10.1), --on-brand-accent (section 11.7) and the install colours in lib/install-settings.ts (section 0.1 item 1). Anything else holding it is a component bypassing the tokens. The step-by-step procedure is check 9 of plan-template.md.
@@ -194,107 +199,92 @@ Rules:
 
 ### 4.1 Component inventory
 
-Read this table before adding any file to components/ui. Names here do not always match those in other libraries, and searching for the wrong name leads to a duplicate.
+**The full inventory is in FRONTEND_RULES_COMPONENTS.md. Read it before building or changing any screen, and before choosing, changing or adding a component.** The index below names everything the kit has, so nothing is built twice (section 1 rules 3 and 4). The full file says how each one behaves, on phone too, and which parent it needs. Names here do not always match those in other libraries, and searching for the wrong name leads to a duplicate.
 
 - **Banner is this kit's Alert.** There is no alert.tsx and there must never be one. It is named after section 7.1, where banner, toast, inline error and dialog are chosen by rule.
 - **SearchableSelect** is the answer for any list of 7 options or more (section 16.3), and **MultiSelect** for choosing several values from a list. Do not build another.
 
-| File | What it is |
+**components/ui**
+
+| File | For |
 |---|---|
-| alert-dialog.tsx | Confirmation for an irreversible action (section 15). Danger by default. Escape and the backdrop do nothing. Capped at 80vh; the consequences scroll so Cancel is always reachable. Its header is deliberately not a section 36 band (section 36.6). On phone it stays a centred dialog, the screen width less 32px and the side safe areas, its two buttons sharing the width (section 41.8 rule 11); Android back presses its Cancel. |
-| approval-select.tsx | useApprovalSelection: approving several at once on phone (section 41.6 rules 14 to 19): the Select button, the select-mode app bar and action bar, one history entry so Android back leaves select mode, 50 at most, one Undo toast, skipped rows marked (skippedBadge, clearSkipped). RejectReasonSheet is the one reject-reason sheet, for a list and a single record. A refusal the server explains (RefusedError) shows its own reason. |
-| avatar.tsx | Person or record image with an initials fallback, plus grouped and badged forms. |
-| badge.tsx | Status as a badge, never as coloured text (sections 2.4, 11.1). Carries an icon as well as a colour. Also exports Count, the one count style of section 6.8 for buttons, tabs and menu items: a primary pill, 99+ over 99. |
-| banner.tsx | A condition that persists until resolved (sections 7.1, 7.5). This is Alert. layout="line" is the one-line banner on a page, with BannerClose and useBannerDismissal where it may be closed; the default stacked layout is for a banner inside a form or dialog. On phone a line banner wraps to two lines, then truncates; its action is a standing text link on its own line below; its close sits top right (section 41.8 rule 15). useBannerDismissal keeps a closed banner in a cookie the server reads, so the first paint is right: a closed banner is never drawn and an open one is there from the start. |
-| bar-chart.tsx | CategoryBarChart: horizontal grouped bars over Recharts (section 21). Six series maximum, zero baseline, direct labels. The caller cannot choose a colour. |
-| board.tsx | Board view (section 35). One column per status value, with no maximum; 25 cards per column, then Load more. The column header shows the true total. Cards move through onMove, reached by the three-dot menu, by dragging, or by keyboard (section 35.6). Also exports useBoardAvailable, the single implementation of the board's availability rule, which asks useLayout() (sections 35.3, 41.2). |
-| breadcrumb.tsx | Position within the software's structure. Replaces back buttons on desktop and tablet. Hidden on phone, where the app bar's back arrow and title replace it (section 41.4 rule 8). |
-| button.tsx | The four levels of section 6 at the three fixed heights, plus the in-field variant (section 6.3.1) and the on-brand variant (section 6.3.2). Its forwardRef is required; do not remove it (section 4.2). The on-brand variant at a text size draws a 1px on-brand-muted border, so a text button on the band (Select, section 41.6 rule 14) has a visible border (6.1 rule 5). loading is the one loading state of section 14 rule 2: disabled, aria-busy and "Saving" (loadingLabel for other words), at an unchanged width. |
-| calendar.tsx | Month grid behind DatePicker. Week starts Monday. Day cells are grid cells, not buttons (section 6.1 rule 5). |
-| card.tsx | Two variants (section 36.10). panel, the default, holds a section of a screen and has a brand band header. record is a record itself (card view, board card) and has no band. The description sits below the title row and clamps to two lines. Cards rest at --shadow-card. CardLink, in a record card's title, makes the whole card open the record (section 11.6) and lifts it to --shadow-menu on hover. |
-| checkbox.tsx | Tick box at the 4px radius. First column of any multi-select list (section 22). indeterminate draws the partly ticked state, a minus on the ticked fill, for a tick that stands for a group (section 40.3). |
-| choice-row.tsx | ChoiceRow: a tick box, radio or switch with its label. On phone a row at least 48px tall where a tap anywhere changes it (section 41.7 rule 10); on desktop the control and label as elsewhere in the kit. |
-| command.tsx | Keyboard-driven palette over a filterable list, usually inside a dialog. On phone: no box, the list uncapped, 48px rows, the search box never focused by itself and asking for the search keyboard, no pointer highlight; the chosen row is announced. |
-| comment-box.tsx | CommentBox: the message box of a comments screen (section 41.6 rule 5). On phone it is fixed above the keyboard and takes part in the bottom-bar contract, grows to 5 lines then scrolls inside itself (section 41.7 rule 11), and Enter makes a new line while the send button sends (section 41.7 rule 6); on desktop a plain row where Enter sends (section 39.2). Sending uses the button loading state; a failed send keeps the text and shows an error toast. |
-| connection-banner.tsx | ConnectionBanner (also OfflineBanner, OfflineScreen, useOnline), mounted by the shell on phone: the offline banner (no close; it outranks every other banner while it shows) and the new-version banner, which waits while a form has unsaved changes (section 41.14 rules 6 and 11). |
-| date-picker.tsx | DD Mon YYYY field, typeable as well as pickable (sections 18, 20.1). On phone the field opens the phone's own picker through NativePickerField (exported here), shown as DD Mon YYYY, with no typed entry (section 41.9 rule 10). |
-| dialog.tsx | The three widths of section 24. Header and footer fixed, body scrolls; the component builds the scrolling body itself. The header is a section 36 band. On phone the size decides (section 41.8 rule 10): sm becomes a bottom sheet; md and lg a full-screen layer with the app bar, a back arrow and the footer as the action bar. A DialogClose in that footer is left out: Cancel is the back arrow (section 41.7 rule 3). The root is sheet.tsx's. |
-| draft-banner.tsx | DraftBanner (section 41.7 rules 13 and 14): "You have an unsaved draft from 3:45 PM." with Use draft and Discard, or the line saying a draft was not used because the record changed. Built from banner.tsx; reads lib/drafts.ts. |
-| dropdown-menu.tsx | Menu of actions, including the three-dot menu. Not for choosing a value. DropdownMenuLabel must sit inside a DropdownMenuGroup, and DropdownMenuRadioItem inside a DropdownMenuRadioGroup. Without the parent it throws and the page goes blank. On phone an action sheet titled by its trigger, with 48px rows; sub-menus, and a whole menu opened inside a sheet, open as steps; a radio pick closes it. |
-| empty-state.tsx | The three empty states of section 13 and the error pages of section 11.8, as a closed set of variants: nothing-yet, nothing-found, failed, not-found, no-access, nothing-waiting (My work or an approval list with nothing waiting, section 41.15 rule 9: the one variant with no action), and desktop-only for a computer-only screen opened on a phone (section 41.11: Share link, or Copy link, and Go to home; takes homeHref). The page forms take dashboardHref, and on phone homeHref, which reads "Go to home" (section 11.8 rule 6); failed takes the reference code. The heading is a real heading element; headingLevel sets its level. |
-| header-band.tsx | The single implementation of the section 36 band. HeaderBand draws it at the level useBandLevel reads; BandScope, round each banded container, raises the level, so a nested header drops to the accent form. No call site passes a prop to HeaderBand. BandScope takes active (default true); only the phone shell passes it, so its scope is in the tree in both layouts and switching layout remounts nothing (section 41.2 rule 3). |
-| keyboard-shortcuts.tsx | The section 39.5 shortcuts, mounted once around the application: Ctrl+K opens search (command.tsx), / moves to the list search (listSearchProps), Ctrl+S saves the current form, Ctrl+Z presses a showing Undo, ? opens the Keyboard shortcuts dialog. Also the Enter helpers of section 39.2: enterSends, ctrlEnterSaves, searchBoxKeys. On phone the Enter helpers follow section 41.7 rule 6: in a comment box Enter makes a new line and the send button sends. On phone Ctrl+K opens the search page (phoneSearchHref, section 41.4 rule 5). |
-| inline-choice.tsx | The inline text control of section 6.7: the chosen value inside a sentence ("Show 25 records per page"), in primary-text, underlined, with a 12px chevron. It opens the select.tsx list, so it follows section 16 and its 6-option limit. Also the scope beside a tick in the permission grid (section 40.4). On phone it opens select.tsx's sheet, titled by its label. |
-| inline-field-error.tsx | Message below a field that is wrong (section 7.1). Never a toast. |
-| input-group.tsx | Input with an addon inside its border (section 6.5). The group owns the border, radius and height; the inner control takes h-full, not h-control. |
-| input.tsx | Single-line field, 36px tall, capped at 480px (sections 6.2, 17). Hover moves the border only; no hover or pressed fill (section 6.4). |
-| label.tsx | Field label, 13px text-secondary, above its field, with the required asterisk. |
-| multi-select.tsx | Choosing several values from one list (section 16.3): the searchable-select trigger and menu, except that choosing a row ticks it and leaves the menu open. locked keeps an option as it is, disabled with its reason through permission-tooltip.tsx (section 26). On phone a full-height bottom sheet with the search fixed at the top and never focused by itself, or a step inside a sheet; a locked row shows its reason in the row on a tap. |
-| notification-permission-sheet.tsx | NotificationPermissionSheet: the short sheet saying why, before the phone asks for notification permission (section 41.12 rule 4); PhoneNotificationsSetting for personal settings, including how to allow notifications after a refusal. |
-| otp-field.tsx | OtpField: the OTP field of section 11.7 rule 2. One real input, numbers only, autocomplete one-time-code, drawn as one box per digit, never one input per box, so the phone's offer of the OTP from the SMS, pasting and screen readers all work. The box the next digit goes into shows the focus ring; onComplete runs once the last digit is in. length is the product's digit count, 6 by default, set once on the sign-in page (otpLength). |
-| pagination.tsx | Zone 4 of a list page (section 11.1.1). Compact count on the left, plain controls on the right. PaginationLink renders an a when given an href, otherwise a button. |
-| permission-tooltip.tsx | Makes a disabled control's reason reachable by hover, keyboard focus and tap (sections 19, 26). A tooltip on the disabled control itself never opens. allowed is true, false or undefined, and is required; undefined means not known yet and shows no reason (section 26.1). On phone it opens on a tap and closes on the next tap anywhere (section 41.8 rule 17). |
-| password-input.tsx | The only password field (section 32), with its required show and hide toggle. |
-| phone-list.tsx | PhoneList, PhoneListRow and PhoneAddButton (section 41.5): search, count line, filter and sort sheets, chips, status chips for a board list, the three-line row with where a search matched, 25 at a time up to 200, pull to refresh, the place kept, select mode for approvals. The screen owns search, filters, sort and loading (lib/list-address.ts keeps them in the address). Renders nothing on desktop. |
-| popover.tsx | Floating container for the filter panel and the calendar. PopoverHeader, where used, is a section 36 band. PopoverFooter is its button row with the line above it. On phone the popover is a bottom sheet (its header the band, PopoverFooter the sheet footer), or a step inside a sheet. |
-| radio-group.tsx | Exclusive choice. Round, so it is never confused with a tick box. |
-| record-summary.tsx | The top of a phone record (section 41.6): RecordSummary (name, badges, meta, up to four key facts, KeyFacts), RelatedRows and RelatedRow (a related list, one row each), ActivityList (10 at a time up to 100, Add comment). Render nothing on desktop. |
-| repeating-rows.tsx | RepeatingRows: repeating rows in any form (section 41.7 rule 16), controlled through value, onChange and renderRow. On phone a list of summarising rows with the total below, each opening its own full-screen layer to edit (Save in its action bar, Remove in its three-dot menu); on desktop the fields inline with a quiet remove button. Removing is undone from a toast (section 38.1); readOnly drops add and remove. |
-| searchable-select.tsx | Picker for 7 options or more (section 16.3). Search box fixed above a scrolling list. On phone a full-height bottom sheet with the search fixed at the top and never focused by itself, or a step inside a sheet (useSearchPicker, shared with multi-select). |
-| section-tabs.tsx | Section 33 tabs: sibling views of one section, active view in the URL, four maximum. Needs a Suspense boundary above it. On phone: directly under the app bar and pinned there, edge to edge, the tabs sharing the width, labels on one line (section 41.4 rule 21); a page passes them through PageHeader's tabs. |
-| select.tsx | Dropdown for choosing a value, for 6 options or fewer (section 16.3). On phone the list is a bottom sheet titled by the field's label, or a step inside a sheet, with 48px rows and the chosen one ticked; section 16.3's limit stays. Its phone row parts are for the kit's own pickers and menus, not for screens. |
-| separator.tsx | 1px divider in border-light. |
-| sheet.tsx | Panel sliding in from an edge; the sidebar's overlay form below 1024px (section 9 rule 7). The header is a section 36 band. On phone, side="bottom" is the bottom sheet of section 41.8: drag handle with the top corners rounded only; swipe down from the handle or header to close, ignored within 24px of a side edge; up to 90% of the visible height, sitting on the keyboard; takes focus itself; one history entry per sheet and per step, so Android back closes it; every close goes through onOpenChange. SheetBody is the scrolling body; fullHeight is section 41.8 rule 8; presentation="screen" with screenTitle is the full-screen layer, whose SheetFooter is the action bar (data-fixed-bottom); useSheetStep() opens a choice as a step with a back arrow (rule 9). SHARE_THE_WIDTH and textOf are shared with the other overlays. |
-| skeleton.tsx | Grey placeholder in the shape of the arriving content (section 14). Never a spinner. |
-| sonner.tsx | Toasts (section 25). Bottom right, 360px; errors never auto-dismiss. toast.undo is the section 38.1 Undo toast: 10 seconds, one Undo, a confirmation once undone, and Ctrl+Z presses it while it shows. On phone: bottom centre, the screen width less 16px and the side safe areas each side (the 600px column held sideways), above the bottom bar and the keyboard, one at a time, except that an error, and an Undo toast during its 10 seconds, is not replaced by a confirmation (two at most; section 41.8 rule 13), dismissed by a sideways swipe. |
-| state-matrix-check.tsx | Development only. Names any forced state in the kitchen sink's state matrix that looks identical to resting (section 6.4). Silence is the pass. |
-| switch.tsx | Immediate on or off. If the change needs a Save, use a tick box on a form. |
-| table.tsx | List tables (sections 10, 11.1, 22). The sticky column header is a section 36 band. containerClassName sets the scrolling height. Column widths come from the col-* tokens (section 17.1); TableHead clips its label. TableRowHeader is the section 34.3 row spine; its frozen option adds sticky-left and the 1px border. TableFooter has a sticky option for the section 34.1 total row, which stays neutral. Row hover and the selected tint apply to body rows only. TableRowLink is the record's name in a list row (section 11.1.2): a row holding one opens that record when clicked anywhere; report tables and grids have none and stay plain. |
-| tabs.tsx | Tabs with the 2px active accent. One appearance only. |
-| text-link.tsx | The text link of section 6.6: standing, inline or on-brand. A link to another website opens in a new tab with the external-link icon; with no href it renders plain text. A record's name in a table row is TableRowLink, not this. |
-| textarea.tsx | Free-form text. The one field allowed to run full width. On phone it grows as the person types and never scrolls inside itself (section 41.7 rule 11), except the comments screen's message box (comment-box.tsx, section 41.6 rule 5). |
-| time-picker.tsx | 12-hour hour and minute controls in 15-minute steps (section 20.2). Built here, not installed. On phone the phone's own picker, shown as h:mm A, any minute (TimeValue.minute is 0 to 59; desktop still steps by 15). |
-| unsaved-changes.tsx | useUnsavedChanges: the section 11.3 rule 10 warning when leaving a changed form by a link, or closing its dialog or sheet (guard). mode is edit (the default) or create, for that rule's two wordings. isChanged compares values against the saved ones. onLeave runs when Leave is chosen (a draft is deleted, section 41.7 rule 15); an element with data-leaves-page (the phone back arrow) is caught like a link, and on phone Leave waits for the warning to close so it moves exactly one screen. useAnyUnsavedChanges tells the new-version banner a form is changed; leavingLink is the one link test. |
-| tooltip.tsx | 400ms hover label (section 19). Never clickable, never the only source of a fact. Never opens on phone; disabledReason, used only by permission-tooltip.tsx, is the one exception (section 41.8 rules 16 to 18). |
-| truncate.tsx | The truncate and clamp behaviours of section 8, with a tooltip only when the text is actually cut. On phone no tooltip opens: the screen one tap away shows the full text (section 41.8 rule 18). phoneLines={2} clamps to two lines (row names, banner sentences); SHOW_MORE_LINK is the one "Show more" style. |
-| view-switcher.tsx | The list page view switcher (sections 11.1 zone 2, 11.6, 35.1 to 35.3): list, card, and board where the record type has one, as a joined group. useListView remembers the choice per list and shows the list whenever a remembered board cannot be shown. |
+| alert-dialog.tsx | Confirming an irreversible action (section 15) |
+| approval-select.tsx | Approving or rejecting several at once on phone; RejectReasonSheet |
+| avatar.tsx | Person or record image with initials fallback |
+| badge.tsx | Status as a badge (section 2.4); Count, the one count pill (section 6.8) |
+| banner.tsx | Alert: a condition that persists (section 7.5) |
+| bar-chart.tsx | Horizontal grouped bar chart (section 21) |
+| board.tsx | Board view (section 35); useBoardAvailable |
+| breadcrumb.tsx | Position in the structure; never rendered by a page itself (PageHeader does) |
+| button.tsx | Every button: four levels, three heights, in-field and on-brand variants, loading |
+| calendar.tsx | Month grid behind DatePicker |
+| card.tsx | panel (banded) and record cards (section 36.10); CardLink |
+| checkbox.tsx | Tick box, with indeterminate |
+| choice-row.tsx | Tick box, radio or switch with its label |
+| command.tsx | Ctrl+K palette over a filterable list |
+| comment-box.tsx | The message box of a comments screen |
+| comment-thread.tsx | The comments of a record as a thread above the box (section 41.6 rule 5) |
+| connection-banner.tsx | Phone offline and new-version banners |
+| date-picker.tsx | Date field, typed or picked (section 20.1) |
+| dialog.tsx | Dialogs at the three widths of section 24 |
+| draft-banner.tsx | Phone unsaved-draft banner |
+| dropdown-menu.tsx | Menu of actions, including the three-dot menu |
+| empty-state.tsx | Empty states (section 13) and error pages (section 11.8) |
+| header-band.tsx | The section 36 band; BandScope |
+| inline-choice.tsx | A chosen value inside a sentence (section 6.7) |
+| inline-field-error.tsx | Message below a wrong field |
+| input-group.tsx | Input with an addon inside its border (section 6.5) |
+| input.tsx | Single-line field |
+| keyboard-shortcuts.tsx | The section 39.5 shortcuts and the Enter helpers of section 39.2 |
+| label.tsx | Field label with the required asterisk |
+| multi-select.tsx | Choosing several values from one list |
+| notification-permission-sheet.tsx | Asking for phone notification permission |
+| org-chart.tsx | The org chart view (section 42); OrgChartPlace and useOrgChartPlace for phone |
+| otp-field.tsx | OTP entry (section 11.7) |
+| pagination.tsx | Zone 4 of a list page (section 11.1.1) |
+| password-input.tsx | The only password field (section 32) |
+| permission-tooltip.tsx | The reason a control is disabled (section 26) |
+| phone-list.tsx | The phone list (section 41.5) |
+| popover.tsx | Filter panel, calendar and other floating containers |
+| radio-group.tsx | Exclusive choice |
+| record-summary.tsx | The top of a phone record (section 41.6) |
+| repeating-rows.tsx | Repeating rows in a form |
+| searchable-select.tsx | Choosing one of 7 options or more |
+| section-tabs.tsx | Section 33 tabs, in the URL |
+| select.tsx | Choosing one of 6 options or fewer |
+| separator.tsx | 1px divider |
+| sheet.tsx | Edge panel, phone bottom sheet and full-screen layer |
+| skeleton.tsx | Loading placeholder (section 14) |
+| slider.tsx | One value chosen by dragging |
+| sonner.tsx | Toasts (section 25) and the Undo toast (section 38.1) |
+| state-matrix-check.tsx | Development only: the kitchen sink's state check (section 6.4) |
+| switch.tsx | Immediate on or off |
+| table.tsx | List tables (sections 10, 11.1, 22); TableRowLink, TableRowHeader |
+| tabs.tsx | Tabs |
+| text-link.tsx | Text links (section 6.6) |
+| textarea.tsx | Free-form text |
+| time-picker.tsx | Time field (section 20.2) |
+| tooltip.tsx | Hover label (section 19) |
+| truncate.tsx | Truncate and clamp (section 8) |
+| unsaved-changes.tsx | The leave-without-saving warning (section 11.3 rule 10) |
+| view-switcher.tsx | List, card, board and chart switcher; useListView |
 
-Anything added to components/ui is added to this table, and rendered on /kitchen-sink, in the same commit (section 6.4).
+**Pending, specified but not built:** permission-grid.tsx, unit-picker.tsx and action-bar.tsx. A file named action-bar.tsx already exists in components/ui; read it before building anything for the phone's action bar. Ask before building any of them.
 
-### 4.1.1 v2e additions
+**Outside components/ui.** Each is described in full in FRONTEND_RULES_COMPONENTS.md.
 
-Capabilities this product added to a kit component, under section 4 rule 4 (a variant on the existing file, never a second component). Kept here so the next product built from this kit can see what moved from "v2e adapter" to "kit feature" and decide whether to carry it forward.
+- **components/shell:** app-shell, sidebar, top-bar, content-area, progress-bar, notification-panel; for phone, app-bar, tab-bar, more-screen, phone-nav, phone-only and install-sheet. page-header.tsx's PageHeader is the one way a page gives its title, parent, actions and breadcrumb trail.
+- **components/templates:** sign-in-page, error-page, my-work-page, notifications-page, search-page, personal-settings, computer-only-page. The list, detail, form, dashboard and settings templates are not built; ask before building anything that stands in for them.
+- **lib:** format.ts (section 18), permissions.ts and permissions.server.ts (section 26), layout.ts (useLayout, section 41.2), validation.ts (email and mobile checks), back.ts, drafts.ts, field-keyboard.ts, list-address.ts, keyboard.ts, recent-records.ts, utils.ts.
 
-| File | Capability added | Why |
-|---|---|---|
-| calendar.tsx | `markedDates` (ISO yyyy-MM-dd strings or a Set) and `markedHint`: flags a day with a small dot and, when `markedHint` is given, a tooltip on it. | v2e's task deadline calendar flags a selected assignee's leave days. Implemented as a `DayButton` variant (`data-marked`), not a new component. |
-| date-picker.tsx | `min`/`max` (Date): bounds the pickable range, passed through to `calendar.tsx`'s `disabled` matcher. `markedDates`/`markedHint`: passed straight through to `calendar.tsx`. | Needed by `components/ui/DatePicker.tsx`'s adapter (the product's ISO-string date field, ~28 call sites) to keep its existing `min`/`max`/`markedDates`/`markedHint` props working unchanged. |
-| select.tsx | `SelectItem`'s `variant?: "default" \| "danger"`: red text and a red highlight fill for a row that performs a destructive or closing action rather than choosing an ordinary value. | Needed by `components/ui/StyledSelect.tsx`'s adapter (~42 call sites) to keep its `variant: 'danger'` option (e.g. "Mark whole task incomplete" at the bottom of a status select) working unchanged. |
-| command.tsx | `CommandItem`'s `variant?: "default" \| "danger"`, same meaning as `select.tsx`'s. | The same StyledSelect danger option, routed through `searchable-select.tsx` when a list has 7 or more options. |
-| searchable-select.tsx | `options` now also accepts an array of `{ value, label, color?, divider?, variant?: "danger", action? }` entries, in place of the plain value-to-label map: a colour dot before the label, a divider above a row, the danger variant above, and a non-selectable "action" row that fires `onValueChange` without ever being shown as the selected value. | Needed by `components/ui/StyledSelect.tsx`'s adapter so a long `StyledSelectOption` list (colour-coded statuses, an "Incomplete" action row) keeps the same look and contract once it crosses section 16.3's 7-option line into `searchable-select.tsx`. |
-| multi-select.tsx | `options` now also accepts `Record<value, { label, hint?, color?, colorClassName? }>` alongside the plain `Record<value, label>` map: a secondary hint line under the label, and an optional colour dot (inline `color` or a `colorClassName` such as a tag-palette class) before it. | Needed to migrate `components/ui/MultiSelect.tsx`'s simpler call sites (goal/project pickers showing an owner-and-due-date hint, or a status-colour dot) directly onto `multi-select.tsx`. Call sites that also need `renderChip`/`onCreate`/`maxSelected` stay on the v2e original for now — see `components/ui/ADAPTERS.md`. |
+Rules:
 
-| dialog.tsx, popover.tsx | The panel clips its content to its 12px radius (`overflow-hidden`) and drops its 1px border-light border when it holds a header band (`has-[[data-slot=dialog-header\|popover-header]]:border-0`). | Kit defect seen by the owner (20 Oct 2026): the band's square corners ran past the rounded panel and the light border drew a pale frame around the blue header. To offer back to the kit. card.tsx already clips and keeps its border on purpose (a page-level card needs its edge). |
-
-`components/ui/DatePicker.tsx`, `DateRangePicker.tsx` and `TimeField.tsx` are this product's own adapters over `date-picker.tsx`/`calendar.tsx`/`time-picker.tsx` (ISO-string and `"HH:MM"` value contracts instead of `Date`/`TimeValue`); see `components/ui/ADAPTERS.md` for what each keeps and what it deliberately drops (`compact`, `hideClear`, `bare`, the old analog-clock dialog).
-
-**On phone.** Each shared component switches to its phone form itself, through useLayout() (section 41.3 rule 4); its caller never chooses. Built: select, searchable-select, multi-select, inline-choice, dropdown-menu and popover become bottom sheets, or steps inside one (section 41.8); dialog becomes a bottom sheet when small and a full-screen layer when medium or large (rule 10); alert-dialog stays centred; date-picker and time-picker open the phone's own picker (section 41.9 rule 10); tooltip shows only disabled reasons (rules 16 to 18); sonner follows rules 12 to 14. Truncate clamps to two lines in phone rows. Phone-only parts (phone-list, action-bar, record-summary, approval-select and the like) are different: the screen chooses them, with useLayout(), as its phone arrangement (section 41.3 rule 2).
+1. Anything added to components/ui is added in the same commit to three places: its full row in FRONTEND_RULES_COMPONENTS.md, its line in the index above, and /kitchen-sink (section 6.4). The same applies to a pending entry and to anything added to components/shell, components/templates or lib.
+2. On phone, each shared component switches to its phone form itself, through useLayout() (section 41.3 rule 4); its caller never chooses. Phone-only parts, such as phone-list, record-summary, approval-select and the org chart's OrgChartPlace, are chosen by the screen (section 41.3 rule 2).
 
 **lib/utils.ts** is part of the same contract. Its cn() function is extended with this project's type-scale token names. Without the extension, tailwind-merge treats a class such as text-label as a colour and silently drops the font size. Anything added to the type scale in globals.css is added to the extension in lib/utils.ts in the same commit.
 
 A type-scale token never shares a name with a colour token. Both surface through the same text-* utility and nothing later can tell them apart. This is why the card heading token is --text-card-heading and not --text-card, which would collide with --color-card.
-
-**Pending: specified in this file, not yet built**
-
-When a rule is agreed before its component exists, add its row here the same day. Keep this heading.
-
-| File | What it will be |
-|---|---|
-| permission-grid.tsx | The role editor's grid for one module (section 40.3): sections down, actions across, a tick and a scope in each cell, partly ticked module and row ticks, the "Also includes" line for Picks (section 40.5), and a read-only form. |
-| action-bar.tsx | The phone's bar fixed at the bottom of a record or form (sections 41.6, 41.7): at most two buttons sharing the width, padded by the bottom safe area, sitting above the keyboard while it is open. It shares SheetFooter's action-bar form (section 41.6 rule 7) and carries data-fixed-bottom="action-bar". |
-| unit-picker.tsx | The selected-units tick list on a person's access page (section 40.7): every unit, grouped where the product groups them, with partly ticked group ticks, the "8 of 48" counts, and search above 50 units. Not SearchableSelect or MultiSelect: those keep their options in a menu, and this shows every unit at once, with group ticks. |
-
-**Not yet in this kit, and not component work:** sending phone notifications from the backend (section 41.12 rule 2: needs a server library, agreed first); five of the seven components/templates page shapes: list, detail, form, dashboard and settings. Ask before building anything that stands in for them. Built, outside components/ui, each with a demonstration route under /demo: components/shell, the shell of section 12 (app-shell, sidebar, top-bar, content-area, progress-bar, notification-panel) and the phone shell of section 41.4 (app-bar: PhoneAppBar, the fallback AppBar, BackButton, AppBarProvider, useAppBarState, useAppBarOverride; page-header: PageHeader, the one way a page gives its title, parent and actions; a page with a breadcrumb gives PageHeader its trail, from which the desktop breadcrumb and the phone back arrow's parent both come, and never renders Breadcrumb itself; tab-bar; more-screen; phone-nav: phoneDestinations), with lib/back.ts (useBack, section 41.4 rule 7) and the demo routes /demo/shell/my-work and /demo/shell/more, and components/templates/sign-in-page.tsx (section 11.7) and error-page.tsx (section 11.8). Built, outside components/ui, shown in the "Phone foundation" section of /kitchen-sink: lib/layout.ts with useLayout() and LayoutProvider, lib/layout.server.ts with the server's first guess, and lib/layout-shared.ts with the names both read (section 41.2); lib/keyboard.ts, the one keyboard hook (section 41.13 rule 6). Built for phone screens: lib/drafts.ts (useDraft, clearDrafts: section 41.7 rules 12 to 15), lib/field-keyboard.ts (fieldKeyboard, usePhoneEnter: section 41.7 rules 5 and 6) and lib/list-address.ts (useListAddress: a list's search, filters and sort in the address), with the demo screens /demo/shell/customers (list, record, add, edit, comments) and /demo/shell/orders (approvals, order record). Built in components/templates for phone screens: my-work-page (section 41.15), notifications-page (41.12 rules 1 and 6), search-page (41.4 rule 5; lib/recent-records.ts keeps the last 10 records opened), personal-settings (41.18: PersonalSettings, NotificationChoices), computer-only-page (41.11: ComputerOnly, ComputerOnlyPage), and sign-in-page's methods prop (email, otp or both: 11.7, 41.17). components/shell/phone-only.tsx (PhoneOnly) and lib/layout.server.ts's redirectOnDesktop send a phone-only address to its desktop page (41.2 rule 5); lib/validation.ts holds the one email and mobile checks; lib/format.ts the section 18 formats, its time zone, month names and currency symbol set once. lib/permissions.ts, lib/permissions.server.ts and the generated lib/permission-keys.ts are section 26.3 to 26.6 (a product's backend writes the keys with npm run access:keys; the kit's come from _kit-only/permission-keys); the sidebar, tab bar and More are filtered by permission; demo route /demo/shell/permissions. Demo routes: /demo/shell/my-work, notifications, search, me/** and settings (computer-only on phone), and /demo/sign-in-otp. The installable app (sections 41.12, 41.14), phone only, its head tags sent only when the server guesses phone: app/install-manifest (the manifest) and app/install-icon (the icons, drawn from the product's mark) with the install colours in lib/install-settings.ts, edited with the brand block; lib/install.ts and components/shell/install-sheet.tsx (More's Install app row); public/sw.js, lib/service-worker.ts and app/offline (the hand-written service worker and the offline screen); lib/push.ts and public/sw-push.js (the phone's side of notifications).
 
 ### 4.2 Which React actually runs
 
@@ -344,7 +334,7 @@ There is no space-5, space-7 or space-9. If 16 feels too small and 24 too big, t
 - 8px: buttons, inputs, badges, small controls.
 - 12px: cards, dialogs, panels.
 - 4px (--radius-tick): tick boxes only. A 16px square at 8px radius looks like a radio button. Used nowhere else.
-- Fully rounded (half the height): count pills (section 6.8), scrollbar thumbs (section 10.1), the bottom sheet's drag handle (section 41.8 rule 3) the phone list's round add button (section 41.5 rule 7) and the notification unread dot (section 41.12 rule 6). Nothing else.
+- Fully rounded (half the height): count pills (section 6.8), scrollbar thumbs (section 10.1), the bottom sheet's drag handle (section 41.8 rule 3) the phone list's round add button (section 41.5 rule 7) and the notification unread dot (section 41.12 rule 6), and the slider's track and thumb (slider.tsx). Nothing else.
 - No other radius values.
 - Borders are 1px, with three exceptions, all 2px in primary: the active tab accent (section 33.3), the rule above a report total row (section 34.1), and the bottom rule of an inner header band's accent form (section 36.4). No other border is thicker than 1px.
 
@@ -429,6 +419,7 @@ Motion shows where something came from and where it went. It is quick, quiet and
 
 - Tab switches, sorting, filtering and pagination. When the new content is ready, it replaces the old in one step.
 - Numbers. A figure appears at its final value.
+- Opening or closing a branch of the org chart. The chart redraws in one step, and the card pressed stays where it was on screen (section 42.5 rule 3).
 - The phone list's add button. It appears and disappears at once, with the keyboard and select mode (section 41.5 rule 7).
 - The table above is the complete list of motion in this system. A button that is saving shows no moving indicator: its words, "Saving", say so (section 14 rule 2).
 
@@ -493,7 +484,7 @@ An icon-only button (in a toolbar, page header, card or table row) is quiet: no 
 
 Rules:
 
-- The one exception is the single main action in a toolbar, which may be a filled primary icon button. A delete icon button is quiet like the rest; the danger colour belongs to its confirmation dialog (section 15).
+- The one exception is the single main action in a toolbar, which may be a filled primary icon button. The comment box's send button is the same case inside a field: the one main action of that box, a filled primary icon button at the in-field size (section 6.2), at the bottom right inside the box's border (section 6.5), with the tooltip "Send comment". A delete icon button is quiet like the rest; the danger colour belongs to its confirmation dialog (section 15).
 - Every icon-only button carries a hidden text label for screen readers and shows a tooltip on hover.
 - Exception: the close button (x) in a dialog corner needs no tooltip. Its meaning is clear from its shape, and Escape and the backdrop do the same thing. It keeps its hidden text label.
 
@@ -714,7 +705,7 @@ Rules:
 ## 10. Scrolling
 
 1. Vertical scroll is the default and always allowed.
-2. Horizontal scroll is a last resort. First drop low-priority columns at narrower widths. Only a genuinely wide table, such as a ledger with more than eight columns at desktop width, may scroll sideways, and then its first column is frozen. The data entry grid (section 31.4), the board (section 35.8) and the permission grid (section 40.3) are the other three exceptions, because every one of their columns is essential. A screen where a column can be dropped must drop it instead.
+2. Horizontal scroll is a last resort. First drop low-priority columns at narrower widths. Only a genuinely wide table, such as a ledger with more than eight columns at desktop width, may scroll sideways, and then its first column is frozen. The data entry grid (section 31.4), the board (section 35.8), the permission grid (section 40.3) and the org chart (section 42.7) are the other four exceptions, because every one of their columns, or cards, is essential. A screen where a column can be dropped must drop it instead.
 3. Never nest a scrollable area inside another on the same axis (section 1 rule 8).
 4. Every table declares which columns are essential, which are secondary (hidden below 1024px) and which are tertiary (hidden below 768px), and declares their widths (section 17.1). These are one decision: a column with no declared width takes space from whatever columns remain.
 
@@ -723,6 +714,7 @@ Rules:
 - List page: the data area owns the scroll. The page itself does not scroll.
 - Detail page: the page owns the scroll. Individual cards do not.
 - A card scrolls internally only when it is a fixed-height live feed, such as an activity list or chat thread.
+- What fills the page decides who scrolls, not the template's name. A list or table inside any frame (a settings section, a tab) follows the list page: the frame keeps the window's height and only the data area scrolls (section 11.1). Where it cannot, such as below 1024px with the menu stacked on top, the whole frame scrolls and is the only scroller (section 1 rule 8).
 
 ### 10.1 Scrollbar styling
 
@@ -771,7 +763,7 @@ Four fixed zones, always in this order. Only zone 3 scrolls. Optional zones 1a a
    - It is never a hint, a tip or a promotion. Those are not conditions.
 
    Zones 1a and 1b are the only things allowed between the header and the toolbar.
-2. **Toolbar.** Search on the left, at a fixed 280px width (--spacing-search). Filter and sort as secondary buttons beside it. View switcher (list and card, plus board where section 35.2 allows) on the far right as a joined group, with the active side tinted primary-subtle. Does not scroll.
+2. **Toolbar.** Search on the left, at a fixed 280px width (--spacing-search). Filter and sort as secondary buttons beside it. View switcher (list and card, plus board where section 35.2 allows and chart where section 42.2 allows) on the far right as a joined group, with the active side tinted primary-subtle. Does not scroll.
 3. **Data area.** The only scrolling zone. Fixed height, calculated from the window height. Column headers stay visible while rows scroll. Holds the list, the card grid (section 11.6) or the board (section 35): three arrangements of the same records under the same filters.
 4. **Pagination.** Record count on the left, page controls on the right. Does not scroll.
 
@@ -852,6 +844,7 @@ Rules:
 - Each card has its own Save button. Never one Save button for the whole page.
 - Each card's Save is a primary button. This is the one exception to section 6.1 rule 1: each card works as its own screen, and a secondary Save reads as optional. Do not restyle these to secondary.
 - Destructive settings, such as deleting an account, sit in a separate card at the bottom with a danger-coloured border.
+- A section holding a list or table follows the list page's scroll ownership (section 10); a section of form cards only keeps page scroll.
 
 ### 11.6 Card view
 
@@ -1062,6 +1055,7 @@ Rules:
 - "2 hours ago" style is allowed in activity feeds and notifications only. Everywhere else uses the full date.
 - All numbers, amounts and dates are right-aligned in tables.
 - Date fields accept typed entry as well as the calendar picker.
+- A comment thread's day dividers read "Today", "Yesterday", then the full date (formatDay in lib/format.ts). Nowhere else.
 
 ### 18.1 Short amounts on dashboards
 
@@ -1166,6 +1160,9 @@ Selection persists across filter and search changes. It is a running set the use
 | Added, in a before and after (section 40.10) | plus | Removed, in a before and after | minus |
 | Back, phone only (section 41.4) | chevron-left | Opens another screen, on a row (phone rows, section 41.6 rule 5; More) | chevron-right |
 | Share (the computer-only page's Share link, section 41.11) | share | Install the app (section 41.12) | smartphone |
+| Send a comment or message (comment-box.tsx) | send-horizontal | Chart view (section 42) | network |
+| Zoom in (section 42.7) | zoom-in | Zoom out | zoom-out |
+| Fit to screen (section 42.7) | scan | Open or close a branch (section 42.5) | chevron-down, chevron-up |
 
 Extend this table rather than inventing icons per screen. eye and eye-off are the only pair for show and hide, wherever something is revealed or concealed.
 
@@ -1662,6 +1659,7 @@ Three layers let people fix their own mistakes while keeping every record trustw
 
 - Every change to a record is recorded: who made it, when, which field, the value before and the value after. This includes creating the record, status changes, undos and reopening.
 - The history appears on the record's Activity tab (section 11.2 zone 4), newest first.
+- Comments are a thread, not history: oldest first with the comment box under it, opening on the latest (comment-thread.tsx, section 41.6 rule 5). The same part draws them on a computer and on a phone.
 - Nobody can edit or delete the history, including administrators.
 - History follows the record's permissions. A field a user cannot see is not shown in its history either.
 - Text that other people may already have read (comments, remarks, notes, messages) shows "Edited" in meta style beside its time once it has been changed. Anyone who can see the text can open its earlier versions from that label.
@@ -1681,7 +1679,7 @@ Every product is fully usable from the keyboard. On phone, Enter follows section
 
 - Tab moves to the next control and Shift+Tab to the previous one, in reading order: left to right, top to bottom. Tab order always follows the order on screen.
 - The first Tab on any page reaches a "Skip to content" link, visible only while it has focus. It jumps past the sidebar and top bar to the page's content.
-- Arrow keys move inside a group: menus, select lists, tabs, radio groups, the calendar, the notification panel (section 7.4) and the board (section 35.6.1).
+- Arrow keys move inside a group: menus, select lists, tabs, radio groups, the calendar, the notification panel (section 7.4), the board (section 35.6.1) and the org chart (section 42.10).
 - Keyboard focus is always visible (section 6.4).
 
 ### 39.2 Enter, Space and Escape
@@ -1734,4 +1732,8 @@ In FRONTEND_RULES_ACCESS.md. Read that file before working on this.
 ## 41. Phone
 
 In FRONTEND_RULES_PHONE.md. Read that file before working on this.
+
+## 42. Org chart
+
+In FRONTEND_RULES_VIEWS.md. Read that file before working on this.
 
