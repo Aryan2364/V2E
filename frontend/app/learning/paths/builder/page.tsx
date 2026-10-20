@@ -302,7 +302,7 @@ export default function CourseBuilderPage() {
           actions={
             <Button onClick={handleFinish} disabled={!canPublish} loading={publishing}>
               <CheckCircle size={15} />
-              {isPublished ? 'Save & close' : 'Publish & assign'}
+              {isPublished ? 'Save and close' : 'Publish and assign'}
             </Button>
           }
         />

@@ -56,14 +56,19 @@ import { AssigneeVisibilityTab } from '@/components/tasks/AssigneeVisibilityTab'
 import ImportChecklistsModal from '@/components/tasks/ImportChecklistsModal'
 import TagsTab from '@/components/tasks/masters/TagsTab'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
-function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+function FormField({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {
+  // A trailing "*" or "(optional)" in the label text is folded into the kit's required star (kit 11.3 rule 3).
+  const isRequired = required ?? /\s\*$/.test(label)
+  const text = label.replace(/\s*\*$/, '').replace(/\s*\(optional\)$/i, '').replace(/,\s*optional\)$/i, ')')
   return (
     <div>
-      <Label className="mb-2">{label}</Label>
+      <Label className="mb-2" required={isRequired}>{text}</Label>
       {children}
+      <InlineFieldError>{error}</InlineFieldError>
     </div>
   )
 }
@@ -178,6 +183,8 @@ function ConfigTab({ orgId }: { orgId: string }) {
 }
 
 function CategoriesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name or label field after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TaskCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -194,7 +201,7 @@ function CategoriesTab({ orgId }: { orgId: string }) {
   useEffect(() => { loadData() }, [loadData])
 
   async function handleCreate() {
-    if (!form.name.trim()) return
+    if (!form.name.trim()) { setFieldError('Enter a name.'); return }
     setSubmitting(true)
     try {
       const item = await tasksApi.createCategory(orgId, { name: form.name.trim(), description: form.description.trim() || undefined, color: form.color, is_active: true })
@@ -205,7 +212,7 @@ function CategoriesTab({ orgId }: { orgId: string }) {
   }
 
   async function handleEdit(id: string) {
-    if (!editForm.name.trim()) return
+    if (!editForm.name.trim()) { setFieldError('Enter a name.'); return }
     setSubmitting(true)
     try {
       const updated = await tasksApi.updateCategory(orgId, id, { name: editForm.name.trim(), description: editForm.description.trim() || undefined, color: editForm.color })
@@ -242,7 +249,7 @@ function CategoriesTab({ orgId }: { orgId: string }) {
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Name"><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Category name" className={inputCls} /></FormField>
+            <FormField label="Name" required error={!form.name.trim() ? fieldError : undefined}><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Category name" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
                 <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
@@ -250,10 +257,10 @@ function CategoriesTab({ orgId }: { orgId: string }) {
               </div>
             </FormField>
           </div>
-          <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
-          <div className="flex gap-2">
-            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+          <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls} /></FormField>
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
           </div>
         </div>
       )}
@@ -262,7 +269,7 @@ function CategoriesTab({ orgId }: { orgId: string }) {
         {items.map((item) => editingId === item.id ? (
           <div key={item.id} className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Name"><input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className={inputCls} /></FormField>
+              <FormField label="Name" required error={!editForm.name.trim() ? fieldError : undefined}><input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className={inputCls} /></FormField>
               <FormField label="Color">
                 <div className="flex gap-2 items-center">
                   <input type="color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
@@ -271,9 +278,9 @@ function CategoriesTab({ orgId }: { orgId: string }) {
               </FormField>
             </div>
             <FormField label="Description"><input type="text" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className={inputCls} /></FormField>
-            <div className="flex gap-2">
-              <Button onClick={() => handleEdit(item.id)} loading={submitting} loadingLabel="Saving">Save</Button>
+            <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={() => setEditingId(null)}>Cancel</Button>
+              <Button onClick={() => handleEdit(item.id)} loading={submitting} loadingLabel="Saving">Save</Button>
             </div>
           </div>
         ) : (
@@ -296,6 +303,8 @@ function CategoriesTab({ orgId }: { orgId: string }) {
 }
 
 function PrioritiesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name or label field after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TaskPriority[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -325,7 +334,7 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
   }, [orgId])
 
   async function handleCreate() {
-    if (!form.label.trim()) return
+    if (!form.label.trim()) { setFieldError('Enter a label.'); return }
     setSubmitting(true)
     try {
       // New priorities go to the bottom of the list; rank is derived from position, never typed.
@@ -380,7 +389,7 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. High" className={inputCls} /></FormField>
+            <FormField label="Label" required error={!form.label.trim() ? fieldError : undefined}><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. High" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
                 <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
@@ -389,9 +398,9 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
             </FormField>
           </div>
           <p className="text-meta text-text-muted">Added to the bottom of the list. Drag it into position afterwards — the rank number updates automatically.</p>
-          <div className="flex gap-2">
-            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
           </div>
         </div>
       )}
@@ -433,6 +442,8 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
 // is a section you can add to and reorder.
 
 function StatusesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name or label field after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TaskStatus[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -457,7 +468,7 @@ function StatusesTab({ orgId }: { orgId: string }) {
   }
 
   async function handleAdd() {
-    if (!addForm.label.trim()) return
+    if (!addForm.label.trim()) { setFieldError('Enter a label.'); return }
     setSubmitting(true); setError(null)
     try {
       const maxOrder = items.reduce((m, s) => Math.max(m, s.order_index), 0)
@@ -468,7 +479,7 @@ function StatusesTab({ orgId }: { orgId: string }) {
   }
 
   async function handleSaveEdit(id: string) {
-    if (!editForm.label.trim()) return
+    if (!editForm.label.trim()) { setFieldError('Enter a label.'); return }
     setSubmitting(true); setError(null)
     try {
       const updated = await tasksApi.updateStatus(orgId, id, { label: editForm.label.trim(), color: editForm.color })
@@ -518,12 +529,12 @@ function StatusesTab({ orgId }: { orgId: string }) {
     return (
       <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <FormField label="Label"><input type="text" autoFocus value={editForm.label} onChange={(e) => setEditForm({ ...editForm, label: e.target.value })} className={inputCls} /></FormField>
+          <FormField label="Label" required error={!editForm.label.trim() ? fieldError : undefined}><input type="text" autoFocus value={editForm.label} onChange={(e) => setEditForm({ ...editForm, label: e.target.value })} className={inputCls} /></FormField>
           <FormField label="Color"><ColorPicker value={editForm.color} onChange={(c) => setEditForm({ ...editForm, color: c })} /></FormField>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => handleSaveEdit(id)} loading={submitting} loadingLabel="Saving"><Save size={14} /> Save</Button>
+        <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setEditingId(null)}>Cancel</Button>
+          <Button onClick={() => handleSaveEdit(id)} loading={submitting} loadingLabel="Saving"><Save size={14} /> Save</Button>
         </div>
       </div>
     )
@@ -604,6 +615,9 @@ function StatusesTab({ orgId }: { orgId: string }) {
 }
 
 function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name field and the empty items list after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
+  const [itemsError, setItemsError] = useState('')
   const [items, setItems] = useState<ChecklistTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
@@ -736,9 +750,12 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
   async function handleSubmit() {
     const name = templateName.trim()
     const cleanItems = templateItems.filter((t) => t.trim())
-    if (!name && cleanItems.length === 0) { setError('Add a template name and at least one item.'); return }
-    if (!name) { setError('Template name is required.'); return }
-    if (cleanItems.length === 0) { setError('Add at least one checklist item.'); return }
+    if (!name || cleanItems.length === 0) {
+      setFieldError(name ? '' : 'Enter a name for the template.')
+      setItemsError(cleanItems.length === 0 ? 'Add at least one checklist item.' : '')
+      return
+    }
+    setFieldError(''); setItemsError('')
 
     // Validate access rules when restricted: each grant must name a target.
     // exclude_user rows (removed-people exceptions) ride along but aren't grants.
@@ -819,10 +836,10 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         <div className="space-y-6">
           {/* Name + items */}
           <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
-            <FormField label="Template name"><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
+            <FormField label="Template name" required error={!templateName.trim() ? fieldError : undefined}><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
 
             <div>
-              <Label className="mb-2">Items</Label>
+              <Label className="mb-2" required>Items</Label>
               <p className="text-meta text-text-muted mb-2">Press Enter to add the next item. Ctrl+Z undoes a removal.</p>
               {templateItems.map((item, idx) => (
                 <div key={idx} className="relative mb-2 max-w-xl">
@@ -831,6 +848,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
                 </div>
               ))}
               <Button variant="ghost" size="sm" className="mt-1" onClick={() => { pushHistory(); setTemplateItems((prev) => [...prev, '']) }}><Plus size={13} /> Add item</Button>
+              <InlineFieldError>{templateItems.some((t) => t.trim()) ? undefined : itemsError}</InlineFieldError>
             </div>
           </div>
 
@@ -1014,6 +1032,8 @@ function TktConfigTab({ orgId }: { orgId: string }) {
 }
 
 function TktTypesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name or label field after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TicketType[]>([])
   const [groups, setGroups] = useState<TicketResolverGroup[]>([])
   const [loading, setLoading] = useState(true)
@@ -1035,7 +1055,7 @@ function TktTypesTab({ orgId }: { orgId: string }) {
   useEffect(() => { load() }, [load])
 
   async function handleCreate() {
-    if (!form.name.trim()) return
+    if (!form.name.trim()) { setFieldError('Enter a name.'); return }
     setSubmitting(true)
     try {
       const item = await ticketsApi.createType(orgId, { name: form.name.trim(), icon: form.icon, color: form.color, default_sla_days: form.default_sla_days, default_response_sla_hours: form.default_response_sla_hours ? parseInt(form.default_response_sla_hours) : null, resolver_group_id: form.resolver_group_id || null, description: form.description.trim() || undefined, is_active: true })
@@ -1044,7 +1064,7 @@ function TktTypesTab({ orgId }: { orgId: string }) {
   }
 
   async function handleEdit(id: string) {
-    if (!editForm.name.trim()) return
+    if (!editForm.name.trim()) { setFieldError('Enter a name.'); return }
     setSubmitting(true)
     try {
       const updated = await ticketsApi.updateType(orgId, id, { name: editForm.name.trim(), icon: editForm.icon, color: editForm.color, default_sla_days: editForm.default_sla_days, default_response_sla_hours: editForm.default_response_sla_hours ? parseInt(editForm.default_response_sla_hours) : null, resolver_group_id: editForm.resolver_group_id || null, description: editForm.description.trim() || undefined })
@@ -1064,7 +1084,7 @@ function TktTypesTab({ orgId }: { orgId: string }) {
     return (
       <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <FormField label="Name"><input type="text" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="e.g. Issue" className={inputCls} /></FormField>
+          <FormField label="Name" required error={!f.name.trim() ? fieldError : undefined}><input type="text" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="e.g. Issue" className={inputCls} /></FormField>
           <FormField label="Icon (emoji)"><input type="text" value={f.icon} onChange={(e) => setF({ ...f, icon: e.target.value })} className={inputCls} /></FormField>
           <FormField label="Color">
             <div className="flex gap-2 items-center">
@@ -1086,10 +1106,10 @@ function TktTypesTab({ orgId }: { orgId: string }) {
             />
           </FormField>
         </div>
-        <FormField label="Description (optional)"><input type="text" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
-        <div className="flex gap-2">
-          <Button onClick={onSave} loading={submitting} loadingLabel="Saving">{label}</Button>
+        <FormField label="Description (optional)"><input type="text" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className={inputCls} /></FormField>
+        <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+          <Button onClick={onSave} loading={submitting} loadingLabel="Saving">{label}</Button>
         </div>
       </div>
     )
@@ -1138,6 +1158,8 @@ function TktTypesTab({ orgId }: { orgId: string }) {
 }
 
 function TktCategoriesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name or label field after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TicketCategory[]>([])
   const [types, setTypes] = useState<TicketType[]>([])
   const [groups, setGroups] = useState<TicketResolverGroup[]>([])
@@ -1156,7 +1178,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
   }, [orgId])
 
   async function handleCreate() {
-    if (!form.name.trim()) return
+    if (!form.name.trim()) { setFieldError('Enter a name.'); return }
     setSubmitting(true)
     try {
       const item = await ticketsApi.createCategory(orgId, {
@@ -1199,7 +1221,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Name"><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Network" className={inputCls} /></FormField>
+            <FormField label="Name" required error={!form.name.trim() ? fieldError : undefined}><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Network" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
                 <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
@@ -1232,9 +1254,9 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
             </FormField>
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls} /></FormField>
-          <div className="flex gap-2">
-            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
           </div>
         </div>
       )}
@@ -1258,6 +1280,8 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
 }
 
 function TktPrioritiesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name or label field after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TicketPriority[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -1270,7 +1294,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
   }, [orgId])
 
   async function handleCreate() {
-    if (!form.label.trim()) return
+    if (!form.label.trim()) { setFieldError('Enter a label.'); return }
     setSubmitting(true)
     try {
       const item = await ticketsApi.createPriority(orgId, { label: form.label.trim(), color: form.color, sla_days: form.sla_days ? parseInt(form.sla_days) : undefined, order_index: form.order_index, is_active: true })
@@ -1305,7 +1329,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Critical" className={inputCls} /></FormField>
+            <FormField label="Label" required error={!form.label.trim() ? fieldError : undefined}><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Critical" className={inputCls} /></FormField>
             <FormField label="SLA days (optional)"><input type="number" min={1} value={form.sla_days} onChange={(e) => setForm({ ...form, sla_days: e.target.value })} placeholder="Override SLA" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
@@ -1315,9 +1339,9 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
             </FormField>
             <FormField label="Order"><input type="number" value={form.order_index} onChange={(e) => setForm({ ...form, order_index: parseInt(e.target.value) || 0 })} className={inputCls} /></FormField>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
           </div>
         </div>
       )}
@@ -1339,6 +1363,8 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
 }
 
 function TktStatusesTab({ orgId }: { orgId: string }) {
+  // Shown under the empty name or label field after a failed save (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TicketStatus[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -1351,7 +1377,7 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
   }, [orgId])
 
   async function handleCreate() {
-    if (!form.label.trim()) return
+    if (!form.label.trim()) { setFieldError('Enter a label.'); return }
     setSubmitting(true)
     try {
       const item = await ticketsApi.createStatus(orgId, { label: form.label.trim(), type: form.type, color: form.color, order_index: form.order_index, is_default: form.is_default, is_active: true })
@@ -1373,7 +1399,7 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Pending Review" className={inputCls} /></FormField>
+            <FormField label="Label" required error={!form.label.trim() ? fieldError : undefined}><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Pending Review" className={inputCls} /></FormField>
             <FormField label="Type">
               <StyledSelect
                 value={form.type}
@@ -1393,9 +1419,9 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
             <input type="checkbox" checked={form.is_default} onChange={(e) => setForm({ ...form, is_default: e.target.checked })} className="accent-primary w-4 h-4" />
             <span className="text-body text-text-primary">Set as default status</span>
           </label>
-          <div className="flex gap-2">
-            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
           </div>
         </div>
       )}
@@ -1422,6 +1448,7 @@ const ASSIGNMENT_STRATEGIES: { value: TicketAssignmentStrategy; label: string; d
 ]
 
 function TktResolverGroupsTab({ orgId }: { orgId: string }) {
+  const [fieldError, setFieldError] = useState('')
   const [items, setItems] = useState<TicketResolverGroup[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [employees, setEmployees] = useState<EmployeeProfile[]>([])
@@ -1472,7 +1499,8 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
   }
 
   async function handleSubmit() {
-    if (!form.name.trim()) { setError('Group name is required.'); return }
+    if (!form.name.trim()) { setFieldError('Enter a name for the group.'); return }
+    setFieldError('')
     setSubmitting(true); setError(null)
     const dto = {
       name: form.name.trim(),
@@ -1520,7 +1548,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 
         <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Group name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. IT Support" className={inputCls} /></FormField>
+            <FormField label="Group name" required error={!form.name.trim() ? fieldError : undefined}><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. IT Support" className={inputCls} /></FormField>
             <FormField label="Department (optional)">
               <DepartmentSelect
                 value={form.department_id}
@@ -1636,6 +1664,8 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 }
 
 function TktTemplatesTab({ orgId }: { orgId: string }) {
+  const [fieldError, setFieldError] = useState('')
+  const [titleTemplateError, setTitleTemplateError] = useState('')
   const [items, setItems] = useState<TicketTemplate[]>([])
   const [types, setTypes] = useState<TicketType[]>([])
   const [categories, setCategories] = useState<TicketCategory[]>([])
@@ -1702,8 +1732,12 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
   function closeForm() { setFormOpen(false); setEditingId(null); resetForm() }
 
   async function handleSubmit() {
-    if (!form.name.trim()) { setError('Template name is required.'); return }
-    if (!form.title_template.trim()) { setError('A title template is required.'); return }
+    if (!form.name.trim() || !form.title_template.trim()) {
+      setFieldError(form.name.trim() ? '' : 'Enter a name for the template.')
+      setTitleTemplateError(form.title_template.trim() ? '' : 'Enter the title that new tickets start with.')
+      return
+    }
+    setFieldError(''); setTitleTemplateError('')
 
     let rulesPayload: { kind: 'department' | 'role' | 'user' | 'exclude_user' | 'exclude_role'; department_id?: string; include_sub_departments?: boolean; role_id?: string; user_id?: string }[] = []
     if (accessMode === 'restricted') {
@@ -1793,7 +1827,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
 
         <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <FormField label="Template name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. VPN Access Request" className={inputCls} /></FormField>
+            <FormField label="Template name" required error={!form.name.trim() ? fieldError : undefined}><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. VPN Access Request" className={inputCls} /></FormField>
             <FormField label="Type">
               <div className="flex gap-2">
                 {(['simple', 'full'] as TicketTemplateType[]).map((t) => (
@@ -1869,7 +1903,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             </div>
           </div>
 
-          <FormField label="Title template *"><input type="text" value={form.title_template} onChange={(e) => { setForm({ ...form, title_template: e.target.value }); if (error) setError(null) }} placeholder="Pre-filled ticket title" className={inputCls} /></FormField>
+          <FormField label="Title template" required error={!form.title_template.trim() ? titleTemplateError : undefined}><input type="text" value={form.title_template} onChange={(e) => { setForm({ ...form, title_template: e.target.value }); if (error) setError(null) }} placeholder="For example, Laptop request" className={inputCls} /></FormField>
           <FormField label="Description template (optional)">
             <textarea value={form.description_template} onChange={(e) => setForm({ ...form, description_template: e.target.value })} rows={2} placeholder="Pre-filled description..." className={`${inputCls} resize-none`} />
           </FormField>
