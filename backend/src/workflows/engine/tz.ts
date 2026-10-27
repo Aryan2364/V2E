@@ -140,7 +140,13 @@ export function formatLocalDate(d: LocalDate): string {
   return `${d.year}-${String(d.month).padStart(2, '0')}-${String(d.day).padStart(2, '0')}`
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+/** "2026-10-25 00:00" for `instant` as seen in `tz` (CSV export — Excel reads it as a date). */
+export function formatLocalDateTime(instant: Date, tz: string): string {
+  const p = zonedParts(instant, tz)
+  return `${formatLocalDate(p)} ${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`
+}
+
+const MONTHS =['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /** "08 Oct 2026" for `instant` as seen in `tz` (instance names). */
 export function formatHumanDate(instant: Date, tz: string): string {

@@ -544,7 +544,7 @@ export class TaskImportService {
     // can't litter the org with junk ones.
     const tagIds: string[] = [];
     const tagNames: string[] = [];
-    const tagRaws = this.splitList(row.tags);
+    const tagRaws = this.splitTags(row.tags);
     if (tagRaws.length) {
       for (const raw of tagRaws) {
         const t = ctx.tagByKey.get(tagNameKey(raw));
@@ -804,6 +804,18 @@ export class TaskImportService {
   private isNo(raw?: string): boolean {
     const v = (raw ?? '').trim().toLowerCase();
     return v === 'no' || v === 'n' || v === 'false' || v === '0';
+  }
+
+  /**
+   * Split a Tags cell into trimmed, non-empty names. Comma is the standard delimiter
+   * (and what the CSV export writes); `|` and newline still work for older files.
+   * Safe because a tag name can never contain `,` or `|` (TAG_NAME_FORBIDDEN).
+   */
+  private splitTags(raw?: string): string[] {
+    return (raw ?? '')
+      .split(/[,|\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
 
   /** Split a pipe/newline-separated cell into trimmed, non-empty tokens. */

@@ -146,7 +146,7 @@ const COLUMN_RULE: Record<Column, string> = {
   description: '≤2000 chars (Error)',
   priority: 'Pick from list (Error if unknown)',
   category: 'Pick from list (Error if unknown)',
-  tags: 'Pipe-separated; must match an existing tag',
+  tags: 'Comma-separated; each must match an existing tag',
   deadline_date: 'Required · today or later · YYYY-MM-DD (Error) · holiday/leave flagged (Warning)',
   deadline_time: 'HH:mm · defaults 23:59',
   assignee_1: 'Required · pick from list (Error)',
@@ -439,7 +439,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       // Two example rows using real option values where available.
       const p0 = options.priorities[0]?.label ?? ''
       const c0 = options.categories[0]?.name ?? ''
-      const tg0 = importTags.slice(0, 2).map((t) => t.name).join(' | ')
+      const tg0 = importTags.slice(0, 2).map((t) => t.name).join(', ')
       const a0 = options.assignees[0]?.value ?? 'Jane Doe · Sales'
       const a1 = options.assignees[1]?.value ?? ''
       const tpl0 = options.checklist_templates[0]?.name ?? ''
@@ -887,8 +887,8 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                     deadline_date, assignee_1. <strong>Priority</strong>, <strong>category</strong>, <strong>assignees</strong>,{' '}
                     <strong>CC</strong>, <strong>escalation</strong>, <strong>goal</strong> and <strong>checklist template</strong>{' '}
                     are <strong>dropdowns</strong>. The assignee / CC / escalation dropdowns only list people you’re allowed to
-                    assign to. Checklist items, <strong>tags</strong> and attachment filenames are pipe-separated (<code>a | b | c</code>);
-                    each tag must match one on the template’s Tags sheet. The
+                    assign to. Checklist items and attachment filenames are pipe-separated (<code>a | b | c</code>);
+                    <strong> tags</strong> are comma-separated (<code>a, b, c</code>) and each must match one on the template’s Tags sheet. The
                     template’s <strong>second row spells out each column’s rule</strong> — it’s ignored on upload, so you can leave or delete it.
                   </p>
                   {optionsError ? (

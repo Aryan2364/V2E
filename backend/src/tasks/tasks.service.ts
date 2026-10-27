@@ -29,6 +29,7 @@ import { AccessVisibilityService } from '../access-rights/access-visibility.serv
 import { Principal } from '../access-rights/permissions.service';
 import { instanceIdForRow, isRunParticipant } from '../workflows/run-access';
 import { taskWorkflowInfo } from '../workflows/task-workflow-info';
+import { formatLocalDateTime, safeTimeZone } from '../workflows/engine/tz';
 import { WorkflowDiscussionService } from '../workflows/workflow-discussion.service';
 import { ChecklistAccessService } from '../task-masters/checklist-access.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -2025,24 +2026,28 @@ export class TasksService {
     const where = { ...this.buildTaskWhere(orgId, scopeWhere, filters, 'created_at'), ...this.bucketWhere(bucket, now) };
     const tasks = await this.prisma.task.findMany({ where, include: TASK_INCLUDE, orderBy: this.taskOrderBy('created_desc'), take: 5000 });
     const enriched = await this.enrichTaskList(tasks, undefined, principal);
+    const org = await this.prisma.organization.findUnique({ where: { id: orgId }, select: { timezone: true } });
+    const tz = safeTimeZone(org?.timezone);
 
-    const headers = ['Title', 'Status', 'Priority', 'Category', 'Tags', 'Type', 'Assigned By', 'Assignees', 'Deadline', 'Created'];
+    const headers = ['Title', 'Description', 'Status', 'Priority', 'Category', 'Tags', 'Type', 'Assigned By', 'Assignees', 'Deadline', 'Created'];
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const lines = [headers.join(',')];
     for (const t of enriched as any[]) {
       lines.push([
         t.title,
+        t.description ?? '',
         t.status?.label ?? '',
         t.priority?.label ?? '',
         t.category?.name ?? '',
-        // " | " — the same delimiter the import reads back (TASK_TAGS_PLAN.md §10.2).
-        (t.tags ?? []).map((tag: { name: string }) => tag.name).join(' | '),
+        // ", " — the same delimiter the import reads back (names can't contain a comma).
+        (t.tags ?? []).map((tag: { name: string }) => tag.name).join(', '),
         t.type,
         // A workflow-created task isn't personally handed out by the step's assigner.
         t.workflow ? `Workflow: ${t.workflow.label}` : t.created_by?.name ?? '',
         (t.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user?.name).filter(Boolean).join('; '),
-        t.deadline ? new Date(t.deadline).toISOString() : '',
-        new Date(t.created_at).toISOString(),
+        // Org-local wall clock, not UTC — "2026-10-25 00:00" reads as the date the user saw.
+        t.deadline ? formatLocalDateTime(new Date(t.deadline), tz) : '',
+        formatLocalDateTime(new Date(t.created_at), tz),
       ].map(esc).join(','));
     }
     return { csv: lines.join('\n'), count: enriched.length };

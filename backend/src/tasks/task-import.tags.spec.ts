@@ -96,6 +96,12 @@ describe('TaskImportService — tags column', () => {
     expect(res.rows[0].resolved.tag_ids).toEqual(['tag-audit', 'tag-q4']);
   });
 
+  it('resolves comma-separated tags — the standard delimiter, also what the CSV export writes', async () => {
+    const res = await service.validateImport(ORG, 'u-1', [row('Audit, q4 ,AUDIT')]);
+    expect(res.rows[0].status).toBe('ready');
+    expect(res.rows[0].resolved.tag_ids).toEqual(['tag-audit', 'tag-q4']);
+  });
+
   it('an unknown tag is a row error naming it — and import never creates tags', async () => {
     const res = await service.validateImport(ORG, 'u-1', [row('Audit | Nope | Also nope')]);
     expect(res.rows[0].status).toBe('error');

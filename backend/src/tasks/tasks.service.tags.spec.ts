@@ -37,6 +37,7 @@ function makePrisma() {
           .length,
       ),
     },
+    organization: { findUnique: jest.fn(async () => ({ timezone: 'Asia/Kolkata' })) },
     taskTagLink: {
       createMany: jest.fn(async ({ data }: any) => ({ count: data.length })),
       deleteMany: jest.fn(async () => ({ count: 1 })),
@@ -320,7 +321,7 @@ describe('TasksService tags — read shape', () => {
     });
   });
 
-  it('CSV export has a Tags column joined with " | "', async () => {
+  it('CSV export has a Tags column joined with ", "', async () => {
     const prisma = makePrisma();
     prisma.task.findMany.mockResolvedValue([loadedTask({ created_at: new Date('2026-10-01T00:00:00Z') })]);
     const { service } = makeService(prisma, {
@@ -334,7 +335,42 @@ describe('TasksService tags — read shape', () => {
     const [header, line] = csv.split('\n');
     expect(header.split(',')).toContain('Tags');
     const col = header.split(',').indexOf('Tags');
-    expect(line.split('","')[col].replace(/"/g, '')).toBe('Audit | Legacy');
+    expect(line.split('","')[col].replace(/"/g, '')).toBe('Audit, Legacy');
+  });
+
+  it('CSV export has a Description column, quoted so commas and quotes survive', async () => {
+    const prisma = makePrisma();
+    prisma.task.findMany.mockResolvedValue([
+      loadedTask({ created_at: new Date('2026-10-01T00:00:00Z'), description: 'File the "refund", then email CA' }),
+    ]);
+    const { service } = makeService(prisma, {
+      scope: {
+        registerWiredList: jest.fn(),
+        resolveListScope: jest.fn(async () => ({ effective: 'org', max: 'org' })),
+        whereForScope: jest.fn(async () => ({})),
+      },
+    });
+    const { csv } = await service.exportCsv(ORG, me, {});
+    const [header, line] = csv.split('\n');
+    expect(header.split(',')[1]).toBe('Description');
+    expect(line.split('","')[1]).toBe('File the ""refund"", then email CA');
+  });
+
+  it('CSV export writes Created in the org timezone, not UTC', async () => {
+    const prisma = makePrisma();
+    // 18:30Z on the 24th is midnight on the 25th in IST.
+    prisma.task.findMany.mockResolvedValue([loadedTask({ created_at: new Date('2026-10-24T18:30:00.178Z') })]);
+    const { service } = makeService(prisma, {
+      scope: {
+        registerWiredList: jest.fn(),
+        resolveListScope: jest.fn(async () => ({ effective: 'org', max: 'org' })),
+        whereForScope: jest.fn(async () => ({})),
+      },
+    });
+    const { csv } = await service.exportCsv(ORG, me, {});
+    const [header, line] = csv.split('\n');
+    const col = header.split(',').indexOf('Created');
+    expect(line.split('","')[col].replace(/"/g, '')).toBe('2026-10-25 00:00');
   });
 });
 
