@@ -48,6 +48,17 @@ export function taskEditHref(taskId: string): string {
   return `${taskHref(taskId)}/edit`
 }
 
+/** Tasks I am CC'd on - the same address desktop uses. */
+export const CC_TASKS_HREF = '/dashboard/tasks/cc'
+
+/**
+ * Edit a recurring template (phone only). Desktop edits in a dialog, so on
+ * desktop this address forwards to the template's instances.
+ */
+export function recurringEditHref(templateId: string): string {
+  return `${recurringInstancesHref(templateId)}/edit`
+}
+
 /** The phone screens slice 1/5 know how to draw. */
 export type PhoneScreenKey =
   | 'my-work'
@@ -59,6 +70,8 @@ export type PhoneScreenKey =
   | 'task-record'
   | 'give-task'
   | 'task-edit'
+  | 'cc-tasks'
+  | 'recurring-edit'
   | 'meeting-record'
   | 'meeting-create'
   | 'recurring-templates'
@@ -127,6 +140,7 @@ const EXACT: Record<string, PhoneRoute> = {
     parent: MEETINGS_HREF,
     entitlement: 'governance.meetings',
   },
+  [CC_TASKS_HREF]: { key: 'cc-tasks', title: "CC'd to me", parent: MORE_HREF, entitlement: 'tasks' },
   '/dashboard/notifications': { key: 'notifications', title: 'Notifications' },
   [MORE_HREF]: { key: 'more', title: 'More' },
   [NOTIFICATION_CHOICES_HREF]: {
@@ -160,6 +174,16 @@ export function phoneRouteFor(rawPathname: string): PhoneRoute | null {
   const taskEdit = /^\/dashboard\/tasks\/([^/]+)\/edit$/.exec(pathname)
   if (taskEdit && !TASK_SECTIONS.has(taskEdit[1])) {
     return { key: 'task-edit', title: 'Edit task', parent: taskHref(taskEdit[1]), entitlement: 'tasks' }
+  }
+
+  const recurringEdit = /^\/dashboard\/tasks\/recurring\/([^/]+)\/edit$/.exec(pathname)
+  if (recurringEdit) {
+    return {
+      key: 'recurring-edit',
+      title: 'Edit recurring task',
+      parent: recurringInstancesHref(recurringEdit[1]),
+      entitlement: 'tasks',
+    }
   }
 
   const recurringInstance = /^\/dashboard\/tasks\/recurring\/([^/]+)$/.exec(pathname)

@@ -4,17 +4,17 @@ import { fmtDateTime, fmtDue } from '@/lib/phone-format'
 import React from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
-import { Ellipsis, History, Info, Paperclip, Pencil, RotateCcw, Trash2, X, XCircle } from 'lucide-react'
+import { CheckCircle2, Ellipsis, History, Info, ListChecks, Paperclip, Pencil, RotateCcw, ShieldCheck, Trash2, Users, X, XCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import { getNow } from '@/lib/clock'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
-import type { Task, TaskComment, TaskChecklistItem, TaskMasterConfig } from '@/lib/types/tasks'
+import type { Task, TaskComment, TaskMasterConfig } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import { PHONE_HOME, taskEditHref, type PhoneRoute } from '@/lib/phone-routes'
 import { shrinkImageForUpload } from '@/lib/image-resize'
-import { canQuickComplete, unfinishedChecklistItems } from '@/lib/tasks/finish-rules'
+import { canQuickComplete } from '@/lib/tasks/finish-rules'
 import { useTaskBadge } from '@/lib/task-badge'
 import { COMPLETED_UNDO_MESSAGE, completeForMe, isUndoWindowOpen, reopenAfterWindow, undoCompleteForMe } from '@/lib/tasks/complete-for-me'
 import { apiErrorMessage } from '@/lib/tasks/api-error'
@@ -34,6 +34,9 @@ import { FinishTaskSheet } from '../FinishTaskSheet'
 import { TaskFilesSection } from '../TaskFilesSection'
 import { TaskCcSection } from '../TaskCcSection'
 import { TaskReasonSheet } from '../TaskReasonSheet'
+import { TaskChecklistSection } from '../TaskChecklistSection'
+import { TaskPartsSection } from '../TaskPartsSection'
+import { CompletionModeSheet, StatusSheet } from '../TaskStatusSheets'
 import { ActivitySheet } from '../ActivitySheet'
 import { useUndoToast } from '../UndoToast'
 
@@ -49,7 +52,8 @@ import { useUndoToast } from '../UndoToast'
  *   - CC people (add / remove) and the task's tags (read-only) sit under the
  *     facts. Reopen after the undo window is creator/admin only, with a reason.
  *   - Title, status badge(s), the 4 key facts, description, checklist
- *     (tickable through the SAME endpoints the Finish sheet uses), "Files &
+ *     (full parity with the computer's checklist card: TaskChecklistSection),
+ *     "Files &
  *     proof" as one row with a count opening a full-screen files/proof
  *     overlay, comments newest-first 10 at a time with "Show more".
  *   - The primary action (Complete task / Reopen) is a full-width button under
@@ -62,9 +66,13 @@ import { useUndoToast } from '../UndoToast'
  *     "Show earlier" 10 at a time) with the kit comment box pinned at the
  *     bottom: grows to 5 lines, Enter = newline, send inside the box. Photos
  *     and files attach with the paperclip through the SAME comment-attachment
- *     endpoint, images shrunk to 1600px (lib/image-resize.ts). @mentions are
- *     DEFERRED - CreateCommentDto/addComment take no mention list, and faking
- *     one client-side would silently fail to notify anyone.
+ *     endpoint, images shrunk to 1600px (lib/image-resize.ts). A comment's own
+ *     file can be marked as proof, as on the computer. There are no @mentions
+ *     in TASK comments on the computer either (only workflow discussions have
+ *     them; addComment takes no mention list), so none are faked here.
+ *   - The ... menu also carries the owner and status controls of the computer's
+ *     task page: Complete for everyone, Mark whole task incomplete, Change
+ *     status and Completion mode, each behind that page's own gate.
  */
 
 const COMMENTS_PAGE = 10
@@ -84,10 +92,9 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
 
   const [task, setTask] = React.useState<Task | null>(null)
   const [error, setError] = React.useState(false)
-  const [checking, setChecking] = React.useState<Set<string>>(new Set())
   const [sheetOpen, setSheetOpen] = React.useState(false)
   // One panel open at a time: the ... menu and the sheets it leads to.
-  const [panel, setPanel] = React.useState<null | 'menu' | 'details' | 'activity' | 'cant' | 'delete' | 'reopen'>(null)
+  const [panel, setPanel] = React.useState<null | 'menu' | 'details' | 'activity' | 'cant' | 'delete' | 'reopen' | 'status' | 'mode' | 'completeAll' | 'wholeIncomplete'>(null)
   const [config, setConfig] = React.useState<TaskMasterConfig | null | undefined>(undefined)
   const [, setWindowTick] = React.useState(0)
   const [offerPush, setOfferPush] = React.useState(false)
@@ -101,6 +108,11 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   // 'done' while the optimistic complete animation/collapse is running, so
   // the row-style strike-through can play before the task state updates.
   const [completing, setCompleting] = React.useState(false)
+  const [commentToDelete, setCommentToDelete] = React.useState<TaskComment | null>(null)
+  const [deletingComment, setDeletingComment] = React.useState(false)
+  const [markingProofId, setMarkingProofId] = React.useState<string | null>(null)
+  // Bumped after a comment file is marked as proof, so the Files & proof section re-lists.
+  const [proofToken, setProofToken] = React.useState(0)
 
   const load = React.useCallback(() => {
     if (!orgId || !taskId) return
@@ -190,6 +202,11 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const isFutureTask = new Date(task.created_at) > getNow()
   const isCc = (task.assignees ?? []).some((a) => a.user_id === userId && a.is_cc)
   const canManageCc = (isCreator || isAdminUser || isAssignee || isCc) && !isFutureTask && !sharedDone
+  // Desktop page.tsx canEdit (~825): creator or admin, not a simulated-future task. isAssignee there (~831)
+  // also excludes a future task; canMoveSharedStatus (~849) = (assignee or canEdit) and not future.
+  const canOwn = (isCreator || isAdminUser) && !isFutureTask
+  const iAmAssignee = isAssignee && !isFutureTask
+  const canMoveShared = (iAmAssignee || canOwn) && !isCc
   const canDelete: boolean | undefined = user?.is_admin
     ? true
     : config === undefined
@@ -214,6 +231,21 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       : null
   const partReopen = allMust && !!myAssignment?.is_completed
   const tags = task.tags ?? []
+  const pendingNames = assignees.filter((a) => !a.is_completed).map((a) => a.user?.name ?? a.user_name ?? 'Someone')
+  const pendingText = `${pendingNames.slice(0, 3).join(', ')}${pendingNames.length > 3 ? ` +${pendingNames.length - 3} more` : ''}`
+  // Owner override (~906): complete the whole all_must task for everyone, and (~1503/1517) close it incomplete.
+  const canCompleteForAll = allMust && canOwn && !sharedDone && !isCc
+  const canWholeIncomplete = allMust && canOwn && !sharedDone && !isCc
+  // Status (~1480 my track, ~1581 shared): open task only; my track only while my part is open.
+  const statusMine = allMust && iAmAssignee && !myAssignment?.is_completed && !myAssignment?.cannot_complete
+  const canChangeStatus = !sharedDone && !isCc && (allMust ? statusMine : canMoveShared)
+  // Shared mode: any participant (or the owner) can close the task Incomplete from the status control (~1589).
+  const canSharedIncomplete = !allMust && !sharedDone && canMoveShared
+  // Completion mode (~2148): owner, and only when it matters (2+ assignees).
+  const canChangeMode = canOwn && assignees.length > 1
+  // Mark a comment's file as proof (~1263): proof asked for, I am a working assignee, task open.
+  const canSubmitProof = !!task.proof_required && iAmAssignee && !sharedDone
+  const proofExts = task.proof_allowed_extensions ?? []
 
   // Oldest first; "Show earlier" adds 10 older ones at the top.
   const orderedComments = (comments ?? []).slice().sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
@@ -235,7 +267,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   }
 
   /** Switches to another panel once the current sheet has finished closing (each sheet owns a history entry). */
-  function goPanel(next: 'details' | 'activity' | 'cant' | 'delete' | 'reopen') {
+  function goPanel(next: 'details' | 'activity' | 'cant' | 'delete' | 'reopen' | 'status' | 'mode' | 'completeAll' | 'wholeIncomplete') {
     setPanel(null)
     window.setTimeout(() => setPanel(next), 250)
   }
@@ -317,30 +349,54 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     if (shouldOfferPushNow(userId)) setOfferPush(true)
   }
 
-  async function toggleChecklistItem(item: TaskChecklistItem) {
-    if (checking.has(item.id) || !task) return
-    setChecking((s) => new Set(s).add(item.id))
+  /** Owner override: close the whole all_must task as Complete for everyone (desktop handleCompleteWholeTask ~508). */
+  async function completeForEveryone() {
+    if (!task) return
     try {
-      const unfinishedBefore = unfinishedChecklistItems(task).some((i) => i.id === item.id)
-      const updated = unfinishedBefore
-        ? await tasksApi.checkChecklistItem(orgId, task.id, item.id)
-        : await tasksApi.uncheckChecklistItem(orgId, task.id, item.id)
-      setTask(updated)
-    } catch {
-      addToast('Could not update the checklist. Try again.', 'error')
-    } finally {
-      setChecking((s) => {
-        const next = new Set(s)
-        next.delete(item.id)
-        return next
-      })
+      setTask(await tasksApi.completeTask(orgId, task.id, true))
+      load()
+      void refreshBadge()
+    } catch (e) {
+      addToast(apiErrorMessage(e, 'Could not complete the task. Try again.'), 'error')
     }
   }
 
-  // Only the people doing the task tick its checklist (tasks.service.ts). Anyone
-  // else sees it read-only, with who ticks it and how far it has got - never
-  // circles that look tappable and silently do nothing.
-  const checklistReadOnlyNote = !isAssignee ? checklistNote(task) : null
+  /** Deletes my own comment (desktop TaskCommentDelete ~252); its files go with it, so a proof file may have gone too. */
+  async function deleteComment() {
+    if (!task || !commentToDelete) return
+    setDeletingComment(true)
+    try {
+      await tasksApi.deleteComment(orgId, task.id, commentToDelete.id)
+      const id = commentToDelete.id
+      setComments((prev) => (prev ?? []).filter((x) => x.id !== id))
+      setCommentToDelete(null)
+      if (task.proof_required) {
+        load()
+        setProofToken((n) => n + 1)
+      }
+    } catch (e) {
+      addToast(apiErrorMessage(e, 'Could not delete the comment. Try again.'), 'error')
+    } finally {
+      setDeletingComment(false)
+    }
+  }
+
+  /** Promote a file I shared in a comment to my proof of completion (desktop handleMarkCommentAsProof ~696). */
+  async function markCommentFileAsProof(attachmentId: string) {
+    if (!task || markingProofId) return
+    setMarkingProofId(attachmentId)
+    try {
+      await tasksApi.markCommentAttachmentAsProof(orgId, task.id, attachmentId)
+      load()
+      const fresh = await tasksApi.getComments(orgId, task.id).catch(() => null)
+      if (fresh) setComments(fresh)
+      setProofToken((n) => n + 1)
+    } catch (e) {
+      addToast(apiErrorMessage(e, 'Could not use that file as proof. Try again.'), 'error')
+    } finally {
+      setMarkingProofId(null)
+    }
+  }
 
   return (
     <PhoneScreen
@@ -405,46 +461,11 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           </div>
         ) : null}
 
-        {(task.checklist ?? []).length > 0 ? (
-          <section className="flex flex-col gap-[8px]">
-            <h2 className="text-label font-medium text-text-secondary">Checklist</h2>
-            {checklistReadOnlyNote ? <p className="text-label text-text-secondary">{checklistReadOnlyNote}</p> : null}
-            <ul className={ROW_BLOCK}>
-              {(task.checklist ?? []).map((item) => {
-                const done =
-                  task.completion_mode === 'all_must_complete' ? item.my_state === 'done' || item.my_state === 'skipped' : !!item.is_completed
-                return (
-                  <li key={item.id}>
-                    <ChecklistItemShell
-                      readOnly={!isAssignee}
-                      busy={checking.has(item.id)}
-                      onToggle={() => void toggleChecklistItem(item)}
-                    >
-                      <span
-                        aria-hidden
-                        className={cx(
-                          'flex size-[22px] shrink-0 items-center justify-center rounded-full border-2',
-                          done ? 'border-primary bg-primary' : 'border-border-strong bg-transparent',
-                        )}
-                      >
-                        {done ? (
-                          <svg viewBox="0 0 16 16" className="size-[12px] text-primary-foreground" fill="none">
-                            <path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        ) : null}
-                      </span>
-                      <span className={cx('min-w-0 flex-1 truncate text-body text-text-primary', done && 'text-text-muted line-through')}>
-                        {item.title}
-                      </span>
-                    </ChecklistItemShell>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        ) : null}
+        <TaskPartsSection orgId={orgId} task={task} canEdit={canOwn} onTaskUpdate={updateTask} />
 
-        <TaskFilesSection orgId={orgId} task={task} onTaskUpdate={updateTask} />
+        <TaskChecklistSection orgId={orgId} task={task} userId={userId} canEdit={canOwn} onTaskUpdate={updateTask} />
+
+        <TaskFilesSection key={proofToken} orgId={orgId} task={task} onTaskUpdate={updateTask} />
 
         <section className="flex flex-col gap-[8px]">
           <h2 className="text-label font-medium text-text-secondary">
@@ -469,20 +490,53 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
               who: c.user_name ?? 'Someone',
               when: c.created_at,
               text: c.body,
+              // Desktop (~1267): only the author's own comment carries Delete.
+              trailing:
+                c.user_id === userId ? (
+                  <button
+                    type="button"
+                    aria-label="Delete comment"
+                    onClick={() => setCommentToDelete(c)}
+                    className="inline-flex size-[44px] items-center justify-center rounded-full text-text-muted active:bg-surface-control"
+                  >
+                    <Trash2 aria-hidden className="size-[16px]" />
+                  </button>
+                ) : undefined,
               attachments:
                 (c.attachments ?? []).length > 0 ? (
-                  <div className="flex flex-wrap gap-[8px]">
-                    {(c.attachments ?? []).map((a) => (
-                      <button
-                        key={a.id}
-                        type="button"
-                        onClick={() => tasksApi.downloadAttachment(orgId, task.id, a.id)}
-                        className="inline-flex min-h-[44px] items-center gap-[4px] rounded-[6px] border border-border-light px-[8px] py-[4px] text-label text-text-secondary"
-                      >
-                        <Paperclip aria-hidden className="size-[12px]" />
-                        <span className="max-w-[160px] truncate">{a.file_name}</span>
-                      </button>
-                    ))}
+                  <div className="flex flex-col items-start gap-[8px]">
+                    <div className="flex flex-wrap gap-[8px]">
+                      {(c.attachments ?? []).map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => tasksApi.downloadAttachment(orgId, task.id, a.id)}
+                          className="inline-flex min-h-[44px] items-center gap-[4px] rounded-[6px] border border-border-light px-[8px] py-[4px] text-label text-text-secondary"
+                        >
+                          <Paperclip aria-hidden className="size-[12px]" />
+                          <span className="max-w-[160px] truncate">{a.file_name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {/* Desktop TaskCommentAttachments (~207): only my own file, not already proof, allowed type. */}
+                    {canSubmitProof
+                      ? (c.attachments ?? []).map((a) => {
+                          const mine = (a.uploaded_by_user_id ?? c.user_id) === userId
+                          const extOk = proofExts.length === 0 || proofExts.includes((a.file_name.split('.').pop() ?? '').toLowerCase())
+                          if (!mine || a.is_proof || !extOk) return null
+                          return (
+                            <PhoneButton key={`mp-${a.id}`} variant="secondary" loading={markingProofId === a.id} onClick={() => void markCommentFileAsProof(a.id)}>
+                              <ShieldCheck aria-hidden />
+                              <span className="max-w-[220px] truncate">Use “{a.file_name}” as proof</span>
+                            </PhoneButton>
+                          )
+                        })
+                      : null}
+                    {canSubmitProof && (c.attachments ?? []).some((a) => a.is_proof) ? (
+                      <p className="inline-flex items-center gap-[4px] text-meta text-success">
+                        <ShieldCheck aria-hidden className="size-[12px]" /> Marked as proof
+                      </p>
+                    ) : null}
                   </div>
                 ) : undefined,
             }))}
@@ -548,9 +602,15 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
             reason="Only people allowed to edit this task can change it"
             onClick={() => router.push(taskEditHref(task.id))}
           />
-          {canCantComplete ? (
-            <MenuItem icon={<XCircle aria-hidden />} label="Can't complete" onClick={() => goPanel('cant')} />
+          {canChangeStatus ? <MenuItem icon={<ListChecks aria-hidden />} label={statusMine ? 'Change my status' : 'Change status'} onClick={() => goPanel('status')} /> : null}
+          {canChangeMode ? <MenuItem icon={<Users aria-hidden />} label="Completion mode" onClick={() => goPanel('mode')} /> : null}
+          {canCompleteForAll ? (
+            <MenuItem icon={<CheckCircle2 aria-hidden />} label="Complete for everyone" onClick={() => (pendingNames.length > 0 ? goPanel('completeAll') : void completeForEveryone())} />
           ) : null}
+          {canCantComplete || canSharedIncomplete ? (
+            <MenuItem icon={<XCircle aria-hidden />} label={isAssignee ? "Can't complete" : 'Mark incomplete'} onClick={() => goPanel('cant')} />
+          ) : null}
+          {canWholeIncomplete ? <MenuItem icon={<XCircle aria-hidden />} label="Mark whole task incomplete" danger onClick={() => goPanel('wholeIncomplete')} /> : null}
           <MenuItem icon={<History aria-hidden />} label="Activity" onClick={() => goPanel('activity')} />
           <MenuItem icon={<Info aria-hidden />} label="Details" onClick={() => goPanel('details')} />
           <MenuItem
@@ -595,16 +655,16 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         onOpenChange={(o) => !o && setPanel(null)}
         title="Can't complete"
         intro={
-          allMust
+          allMust && isAssignee
             ? 'This closes only your part as not done. The person who gave the task is told why.'
             : 'This closes the whole task as incomplete. The person who gave the task is told why.'
         }
         placeholder="For example, I am waiting on a supplier"
-        confirmLabel={allMust ? 'Flag my part' : 'Mark incomplete'}
+        confirmLabel={allMust && isAssignee ? 'Flag my part' : 'Mark incomplete'}
         busyLabel="Saving…"
         onConfirm={async (reason) => {
           // Desktop: all_must_complete flags my part (flagCannotComplete); otherwise any assignee closes the task incomplete.
-          const updated = allMust
+          const updated = allMust && isAssignee
             ? await tasksApi.flagCannotComplete(orgId, task.id, reason)
             : await tasksApi.markIncomplete(orgId, task.id, reason)
           setTask(updated)
@@ -612,6 +672,80 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           void refreshBadge()
         }}
       />
+
+      <TaskReasonSheet
+        open={panel === 'wholeIncomplete'}
+        onOpenChange={(o) => !o && setPanel(null)}
+        title="Mark whole task incomplete"
+        intro={
+          pendingNames.length > 0
+            ? `Heads up: ${pendingText} ${pendingNames.length === 1 ? "hasn't" : "haven't"} finished. As the task owner, this closes it as not done for everyone. A reason is required.`
+            : 'The task will be closed as not done. A reason is required.'
+        }
+        placeholder="For example, the client cancelled"
+        confirmLabel="Confirm incomplete"
+        busyLabel="Saving…"
+        destructive
+        onConfirm={async (reason) => {
+          setTask(await tasksApi.markIncomplete(orgId, task.id, reason))
+          load()
+          void refreshBadge()
+        }}
+      />
+
+      <PhoneSheet
+        open={panel === 'completeAll'}
+        onOpenChange={(o) => !o && setPanel(null)}
+        title="Complete the whole task?"
+        footer={
+          <PhoneButton
+            variant="primary"
+            fullWidth
+            onClick={() => {
+              setPanel(null)
+              void completeForEveryone()
+            }}
+          >
+            Complete for everyone
+          </PhoneButton>
+        }
+      >
+        <p className="text-body text-text-secondary">
+          Heads up: {pendingText} {pendingNames.length === 1 ? "hasn't" : "haven't"} completed their part. As the task owner, completing now closes it for
+          everyone.
+        </p>
+      </PhoneSheet>
+
+      <PhoneSheet
+        open={!!commentToDelete}
+        onOpenChange={(o) => !o && !deletingComment && setCommentToDelete(null)}
+        title="Delete this comment?"
+        footer={
+          <PhoneButton
+            variant="primary"
+            fullWidth
+            loading={deletingComment}
+            className="border-danger bg-danger active:border-danger active:bg-danger"
+            onClick={() => void deleteComment()}
+          >
+            Delete
+          </PhoneButton>
+        }
+      >
+        <p className="text-body text-text-secondary">This can’t be undone. The comment will be removed for everyone.</p>
+      </PhoneSheet>
+
+      <StatusSheet
+        open={panel === 'status'}
+        onOpenChange={(o) => !o && setPanel(null)}
+        orgId={orgId}
+        task={task}
+        mine={statusMine}
+        currentStatusId={statusMine ? myAssignment?.status_id : task.status_id}
+        onTaskUpdate={updateTask}
+      />
+
+      <CompletionModeSheet open={panel === 'mode'} onOpenChange={(o) => !o && setPanel(null)} orgId={orgId} task={task} onTaskUpdate={updateTask} />
 
       <TaskReasonSheet
         open={panel === 'delete'}
@@ -675,36 +809,6 @@ function MenuItem({
       </PermissionTooltip>
     </li>
   )
-}
-
-/** A checklist row: a button for whoever may tick it, a plain row for everyone else. */
-function ChecklistItemShell({
-  readOnly,
-  busy,
-  onToggle,
-  children,
-}: {
-  readOnly: boolean
-  busy: boolean
-  onToggle: () => void
-  children: React.ReactNode
-}) {
-  const className = 'flex min-h-[48px] w-full items-center gap-[12px] px-[16px] py-[10px] text-left'
-  if (readOnly) return <div className={className}>{children}</div>
-  return (
-    <button type="button" onClick={onToggle} disabled={busy} className={cx(className, 'active:bg-surface-control disabled:opacity-100')}>
-      {children}
-    </button>
-  )
-}
-
-function checklistNote(task: Task): string {
-  const items = task.checklist ?? []
-  const done = items.filter((i) => i.is_completed).length
-  const workers = (task.assignees ?? []).filter((a) => !a.is_cc)
-  const who = workers.length === 1 ? workers[0].user?.name ?? workers[0].user_name ?? 'The assignee' : 'The assignees'
-  const progress = task.completion_mode === 'all_must_complete' && workers.length > 1 ? '' : ` · ${done} of ${items.length} done`
-  return `${who} ticks these off as they work${progress}`
 }
 
 function Detail({ label, value }: { label: string; value: string }) {

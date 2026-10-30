@@ -2,9 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { BellRing, ChevronRight, LogOut } from 'lucide-react'
+import { BellRing, ChevronRight, Eye, LogOut } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { NOTIFICATION_CHOICES_HREF, type PhoneRoute } from '@/lib/phone-routes'
+import { CC_TASKS_HREF, NOTIFICATION_CHOICES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 import PhoneScreen from '../PhoneScreen'
 import { InstallButton } from '../InstallSheet'
 import { PhoneButton, ROW, ROW_BLOCK, cx } from '../primitives'
@@ -28,6 +28,8 @@ import { PhoneButton, ROW, ROW_BLOCK, cx } from '../primitives'
  */
 
 const ROWS: { group: string; label: string; href: string; icon: React.ReactNode }[] = [
+  // Desktop's nav shows no count on this entry, so neither does the phone.
+  { group: 'Tasks', label: "CC'd to me", href: CC_TASKS_HREF, icon: <Eye aria-hidden /> },
   {
     group: 'Settings',
     label: 'Notification choices',

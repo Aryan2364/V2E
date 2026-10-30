@@ -12,12 +12,14 @@ import PhoneTabBar from './PhoneTabBar'
 import PhoneScreen from './PhoneScreen'
 import NotificationsScreen from './screens/NotificationsScreen'
 import MoreScreen from './screens/MoreScreen'
+import CcTasksScreen from './screens/CcTasksScreen'
 import NotificationChoicesScreen from './screens/NotificationChoicesScreen'
 import MyWorkScreen from './screens/MyWorkScreen'
 import TaskDetailScreen from './screens/TaskDetailScreen'
 import GiveTaskScreen from './screens/GiveTaskScreen'
 import EditTaskScreen from './screens/EditTaskScreen'
 import GivenScreen from './screens/GivenScreen'
+import RecurringEditScreen from './screens/RecurringEditScreen'
 import RecurringTemplatesScreen from './screens/RecurringTemplatesScreen'
 import RecurringInstancesScreen from './screens/RecurringInstancesScreen'
 import MeetingsScreen from './screens/MeetingsScreen'
@@ -93,6 +95,8 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
       return <GivenScreen route={route} />
     case 'recurring-templates':
       return <RecurringTemplatesScreen route={route} />
+    case 'recurring-edit':
+      return <RecurringEditScreen route={route} />
     case 'recurring-instances':
       return <RecurringInstancesScreen route={route} />
     case 'meetings':
@@ -101,6 +105,8 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
       return <TaskDetailScreen route={route} />
     case 'task-edit':
       return <EditTaskScreen route={route} />
+    case 'cc-tasks':
+      return <CcTasksScreen route={route} />
     case 'give-task':
       return <GiveTaskScreen route={route} />
     case 'meeting-record':

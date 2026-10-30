@@ -13,7 +13,7 @@ import { shrinkImageForUpload } from '@/lib/image-resize'
 import type { TaskPriority } from '@/lib/types/tasks'
 import { PHONE_HOME, RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
-import { makeReminderRow, buildReminderSpecs } from '@/components/tasks/RemindersField'
+import { makeReminderRow, buildReminderSpecs, validateRemindersAgainstDeadline, type ReminderRow } from '@/components/tasks/RemindersField'
 import { buildChecklistItems } from '@/components/tasks/ChecklistBuilderField'
 import { buildRecurringPayload, scheduleEntryError } from '@/lib/tasks/recurring-payload'
 import type { RecurringScheduleType } from '@/lib/types/tasks'
@@ -63,8 +63,10 @@ import {
  *     for the schedule fields (components/phone/RepeatFields.tsx) and Save
  *     creates a recurring TEMPLATE with the desktop's own payload builder
  *     (lib/tasks/recurring-payload.ts). Everything the phone form does not
- *     show takes the desktop's default (no escalation, no goal, one reminder
- *     from the org's default days before).
+ *     show takes the desktop's default (no escalation, no goal).
+ *   - Reminders: one from the org's default days before, as the desktop seeds
+ *     it, behind the Reminders row; a one-off sends them against its due date
+ *     (none without one), a repeating task sends them relative.
  *     Then the recurring list opens.
  *   - After saving: back to the previous list with a toast. The task only
  *     shows on My work if the current user is actually one of its
@@ -94,7 +96,9 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const [titleTouched, setTitleTouched] = React.useState(false)
   const formRef = React.useRef<HTMLFormElement>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
-  const [reminderDays, setReminderDays] = React.useState(1)
+  // One reminder from the org's default days before, as the computer seeds it; the person may change or remove it.
+  const [reminders, setReminders] = React.useState<ReminderRow[]>(() => [makeReminderRow({ offsetDays: 1 })])
+  const remindersTouched = React.useRef(false)
   const [files, setFiles] = React.useState<StagedFile[]>([])
   const [fileErrors, setFileErrors] = React.useState<string[]>([])
   const [holidayMessage, setHolidayMessage] = React.useState<string | null>(null)
@@ -112,7 +116,12 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
     if (!orgId) return
     tasksApi.getPriorities(orgId).then(setPriorities).catch(() => {})
     // The desktop seeds one reminder from this default on a new task.
-    tasksApi.getConfig(orgId).then((cfg) => setReminderDays(cfg?.default_reminder_days_before ?? 1)).catch(() => {})
+    tasksApi
+      .getConfig(orgId)
+      .then((cfg) => {
+        if (!remindersTouched.current) setReminders([makeReminderRow({ offsetDays: cfg?.default_reminder_days_before ?? 1 })])
+      })
+      .catch(() => {})
   }, [orgId])
 
   const showTitleErrors = titleTouched || attempted
@@ -178,6 +187,17 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
       focusFirstInvalid(formRef.current)
       return
     }
+    const reminderError = schedule
+      ? reminders.some((r) => r.kind === 'absolute' && !r.date)
+        ? 'Pick a date for each "on a date" reminder.'
+        : null
+      : draft.deadline
+        ? validateRemindersAgainstDeadline(reminders, deadlineToIso(draft.deadline) ?? null, draft.deadline.slice(0, 10))
+        : null
+    if (reminderError) {
+      addToast(reminderError, 'error')
+      return
+    }
     setSaving(true)
     try {
       if (schedule) {
@@ -198,7 +218,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
               ...draft.cc.map((a) => ({ ...a, is_cc: true })),
             ],
             checklistItems: buildChecklistItems(cleanChecklist(draft.checklist)),
-            reminders: buildReminderSpecs([makeReminderRow({ offsetDays: reminderDays })], false),
+            reminders: buildReminderSpecs(reminders, false),
           }),
         )
         recurring.current = true
@@ -216,6 +236,8 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         priority_id: draft.priorityId || undefined,
         ...(draft.tags.length > 0 ? { tag_ids: draft.tags.map((t) => t.id) } : {}),
         deadline: deadlineToIso(draft.deadline),
+        // Relative reminders are fixed against the due date; with no due date there is nothing to remind about.
+        ...(draft.deadline ? { reminders: buildReminderSpecs(reminders, true, draft.deadline.slice(0, 10)) } : {}),
         holiday_override: holidayOverride,
         completion_mode: draft.completionMode,
         proof_required: draft.proofRequired,
@@ -275,6 +297,14 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           descriptionError={descriptionError}
           assigneesError={noAssigneeError}
           autoFocusTitle
+          reminders={{
+            rows: reminders,
+            mode: schedule ? 'recurring' : 'one_time',
+            onChange: (rows) => {
+              remindersTouched.current = true
+              setReminders(rows)
+            },
+          }}
           onTitleBlur={() => setTitleTouched(true)}
           /* When: Repeat first, then either the one-off Due date or the schedule
               fields in its place - one decision, in one place. */

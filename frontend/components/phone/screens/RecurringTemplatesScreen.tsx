@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ChevronRight, Repeat } from 'lucide-react'
+import { MoreHorizontal, Repeat } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
 import type { RecurringTemplate } from '@/lib/types/tasks'
@@ -10,13 +10,17 @@ import Link from 'next/link'
 import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneLinkButton, ROW, cx } from '../primitives'
+import { RecurringActionsSheet } from '../RecurringActionsSheet'
 import { GIVEN_HREF, recurringInstancesHref, type PhoneRoute } from '@/lib/phone-routes'
 
 /*
  * Recurring templates - plan-phone-2026-10-14.md §5.6 (slice 5). Each row:
  * title, schedule in plain words, assignee(s). Tapping a row opens its
- * instances. Pausing/resuming and editing a schedule stay computer-only
- * (not in this slice's scope) — a template row is read-only on the phone.
+ * instances. The "..." button on a row opens the same actions desktop has
+ * (RecurringActionsSheet): edit, pause / resume, run today, stop or delete,
+ * each gated on that template's own can_edit / can_manage flags. An action the
+ * person may not use is shown disabled with who may use it. Pause / resume / stop update the row in
+ * place; "delete everything" drops it.
  */
 
 function assigneeLine(t: RecurringTemplate): string {
@@ -32,6 +36,9 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
   const [templates, setTemplates] = React.useState<RecurringTemplate[] | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [failed, setFailed] = React.useState(false)
+
+  const [actionsFor, setActionsFor] = React.useState<string | null>(null)
+  const actionTemplate = templates?.find((t) => t.id === actionsFor) ?? null
 
   const reload = React.useCallback(() => {
     if (!orgId) return
@@ -74,8 +81,8 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
       ) : (
         <ul className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
           {templates.map((t) => (
-            <li key={t.id}>
-              <Link href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] items-start py-[12px]')}>
+            <li key={t.id} className="flex items-stretch">
+              <Link href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] min-w-0 flex-1 items-start py-[12px]')}>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-body font-medium text-text-primary">
                     {t.title}
@@ -84,12 +91,33 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
                   <span className="block truncate text-label text-text-secondary">{templateScheduleSummary(t.schedule_entries)}</span>
                   <span className="block truncate text-meta text-text-secondary">{assigneeLine(t)}</span>
                 </span>
-                <ChevronRight aria-hidden className="mt-[4px] size-[18px] shrink-0 text-text-secondary" />
               </Link>
+              <button
+                type="button"
+                aria-label={`Actions for ${t.title}`}
+                onClick={() => setActionsFor(t.id)}
+                className="flex w-[48px] shrink-0 items-center justify-center text-text-secondary outline-hidden active:bg-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring"
+              >
+                <MoreHorizontal aria-hidden className="size-[22px]" />
+              </button>
             </li>
           ))}
         </ul>
       )}
+      {actionTemplate ? (
+        <RecurringActionsSheet
+          orgId={orgId}
+          template={actionTemplate}
+          open
+          onOpenChange={(o) => {
+            if (!o) setActionsFor(null)
+          }}
+          onChanged={(patch) =>
+            setTemplates((cur) => (cur ? cur.map((x) => (x.id === actionTemplate.id ? { ...x, ...patch } : x)) : cur))
+          }
+          onRemoved={() => setTemplates((cur) => (cur ? cur.filter((x) => x.id !== actionTemplate.id) : cur))}
+        />
+      ) : null}
     </PhoneScreen>
   )
 }

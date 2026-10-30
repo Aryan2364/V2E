@@ -2,8 +2,17 @@
 
 import React from 'react'
 import { Check, Plus, X } from 'lucide-react'
-import { tasksApi } from '@/lib/api/tasks'
+import { isTagConflictError, tagErrorMessage, tasksApi } from '@/lib/api/tasks'
+import { holidaysApi } from '@/lib/api/holidays'
+import { leaveApi } from '@/lib/api/leave'
 import { useAuth } from '@/lib/auth/context'
+import { usePermissions } from '@/lib/auth/use-permissions'
+import { todayIso, leaveHorizon } from '@/lib/leave-availability'
+import { formatDate } from '@/lib/format'
+import type { HolidayCheckResult } from '@/lib/types/holidays'
+import type { LeaveAvailability } from '@/lib/types/leave'
+import LeaveWarningBadge from '@/components/leave/LeaveWarningBadge'
+import { makeReminderRow, reminderIsPast, reminderLabel, type ReminderRow } from '@/components/tasks/RemindersField'
 import { useTaskTags } from '@/lib/tasks/useTaskTags'
 import { tagDotClass } from '@/lib/tasks/tagColors'
 import { MAX_TAGS_PER_TASK } from '@/lib/types/tasks'
@@ -35,8 +44,16 @@ import { PhoneDateField, PhoneTimeField } from './PhoneDateTimeField'
  *
  *   - Assignees and CC are two separate people fields. A person is one or the
  *     other: choosing them in one removes them from the other.
- *   - The less-used fields (CC, checklist, tags) sit behind "Add ..." rows,
- *     like "Add description", until they hold something.
+ *   - The less-used fields (CC, checklist, tags, reminders) sit behind "Add ..."
+ *     rows, like "Add description", until they hold something.
+ *   - Under the due date: the computer's holiday and leave notes (holidaysApi
+ *     .checkDate, leaveApi.availability). Notes only - they never block; the
+ *     "Keep this date anyway?" dialog below stays the way to go on.
+ *   - Reminders (only where the screen passes `reminders`): the computer's
+ *     reminder rows, edited in a sheet. Edit task passes none, as the
+ *     computer's edit dialog has none.
+ *   - A new tag can be made from the tag sheet by someone the computer's tag
+ *     picker would let create one.
  *   - Everything the form does not show takes the computer's defaults.
  */
 
@@ -124,6 +141,7 @@ export function TaskFormFields<V extends TaskFormValues>({
   beforeWhen,
   when,
   allowNoPriority = true,
+  reminders,
 }: {
   values: V
   setValues: React.Dispatch<React.SetStateAction<V>>
@@ -141,6 +159,8 @@ export function TaskFormFields<V extends TaskFormValues>({
   when?: React.ReactNode
   /** Edit cannot clear a priority the task already has, as on the computer. */
   allowNoPriority?: boolean
+  /** Give task (one-off and repeating) holds reminders; Edit task does not. */
+  reminders?: { rows: ReminderRow[]; onChange: (rows: ReminderRow[]) => void; mode: 'one_time' | 'recurring' }
 }) {
   const { user } = useAuth()
   const me = user ? { user_id: user.id, name: user.name } : undefined
@@ -265,21 +285,24 @@ export function TaskFormFields<V extends TaskFormValues>({
       {beforeWhen}
 
       {when ?? (
-        <div className="grid grid-cols-2 gap-[12px]">
-          <PhoneDateField
-            id={`${idPrefix}-due-date`}
-            label="Due date"
-            value={values.deadline.slice(0, 10)}
-            onChange={(v) => setValues((d) => ({ ...d, deadline: v ? `${v}${d.deadline.length >= 16 ? d.deadline.slice(10) : ''}` : '' }))}
-          />
-          <PhoneTimeField
-            id={`${idPrefix}-due-time`}
-            label="Due time"
-            value={values.deadline.slice(11, 16)}
-            onChange={(v) =>
-              setValues((d) => ({ ...d, deadline: d.deadline.length >= 10 ? `${d.deadline.slice(0, 10)}${v ? `T${v}` : ''}` : d.deadline }))
-            }
-          />
+        <div className="flex flex-col gap-[8px]">
+          <div className="grid grid-cols-2 gap-[12px]">
+            <PhoneDateField
+              id={`${idPrefix}-due-date`}
+              label="Due date"
+              value={values.deadline.slice(0, 10)}
+              onChange={(v) => setValues((d) => ({ ...d, deadline: v ? `${v}${d.deadline.length >= 16 ? d.deadline.slice(10) : ''}` : '' }))}
+            />
+            <PhoneTimeField
+              id={`${idPrefix}-due-time`}
+              label="Due time"
+              value={values.deadline.slice(11, 16)}
+              onChange={(v) =>
+                setValues((d) => ({ ...d, deadline: d.deadline.length >= 10 ? `${d.deadline.slice(0, 10)}${v ? `T${v}` : ''}` : d.deadline }))
+              }
+            />
+          </div>
+          <DueDateNotes orgId={orgId} date={values.deadline.slice(0, 10)} assigneeIds={values.assignees.map((a) => a.user_id)} />
         </div>
       )}
 
@@ -324,6 +347,15 @@ export function TaskFormFields<V extends TaskFormValues>({
       <ChecklistField orgId={orgId} groups={values.checklist} onChange={(checklist) => set({ checklist })} />
 
       <TagsField orgId={orgId} tags={values.tags} onChange={(tags) => set({ tags })} />
+
+      {reminders ? (
+        <RemindersSection
+          rows={reminders.rows}
+          onChange={reminders.onChange}
+          mode={reminders.mode}
+          deadlineDate={values.deadline.slice(0, 10)}
+        />
+      ) : null}
 
       <label className="flex min-h-[48px] items-start gap-[12px] py-[8px] text-body text-text-primary">
         <input
@@ -428,7 +460,7 @@ function TaskPeoplePicker({
 
 /* ---------------------------------- Tags ---------------------------------- */
 
-/* Tags come from the same list the computer's tag picker uses (useTaskTags). Creating a new tag stays on the computer. */
+/* Tags come from the same list the computer's tag picker uses (useTaskTags). A new tag can be created in the sheet by someone the computer's picker lets create one. */
 function TagsField({
   orgId,
   tags,
@@ -490,13 +522,45 @@ function TagsSheet({
   selected: TaskFormValues['tags']
   onDone: (tags: TaskFormValues['tags']) => void
 }) {
-  const { tags, loading, error, reload } = useTaskTags(open ? orgId : null, { includeInactive: true })
+  const { tags, loading, error, reload, createTag } = useTaskTags(open ? orgId : null, { includeInactive: true })
+  const perms = usePermissions()
+  // The computer's tag picker rule (TagPicker.tsx): creating is offered only to someone who may. Unknown yet = not offered.
+  const canCreate = !perms.loading && (perms.isAdmin || perms.can('tasks.tags.create', 'write') || perms.can('tasks.config.tags.manage', 'write'))
   const [draft, setDraft] = React.useState<TaskFormValues['tags']>(selected)
+  const [newName, setNewName] = React.useState('')
+  const [creating, setCreating] = React.useState(false)
+  const [createError, setCreateError] = React.useState<string | null>(null)
   React.useEffect(() => {
     // Each opening starts from what the form holds.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (open) setDraft(selected)
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDraft(selected)
+      setNewName('')
+      setCreateError(null)
+    }
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function onCreate() {
+    const name = newName.trim()
+    if (!name || creating) return
+    setCreating(true)
+    setCreateError(null)
+    try {
+      const tag = await createTag(name)
+      setNewName('')
+      setDraft((cur) =>
+        cur.some((x) => x.id === tag.id) || cur.length >= MAX_TAGS_PER_TASK
+          ? cur
+          : [...cur, { id: tag.id, name: tag.name, color: tag.color, is_active: tag.is_active }],
+      )
+    } catch (e) {
+      setCreateError(
+        isTagConflictError(e) ? 'A tag with that name already exists. Choose it from the list.' : tagErrorMessage(e, 'Could not create that tag. Try again.'),
+      )
+    } finally {
+      setCreating(false)
+    }
+  }
 
   // Active tags can be added; an inactive one stays only while it is already on the task.
   const options = [
@@ -543,11 +607,50 @@ function TagsSheet({
             Try again
           </PhoneButton>
         </div>
-      ) : options.length === 0 ? (
-        <p className="py-[16px] text-body text-text-secondary">Your organisation has no tags yet. They are created on the computer.</p>
       ) : (
         <>
-          {full ? <p className="px-[16px] pb-[8px] text-meta text-text-secondary">Up to {MAX_TAGS_PER_TASK} tags per task.</p> : null}
+          {canCreate ? (
+            <div className="flex flex-col gap-[6px] pb-[12px]">
+              <div className="flex items-center gap-[8px]">
+                <input
+                  type="text"
+                  aria-label="New tag name"
+                  value={newName}
+                  placeholder="New tag name"
+                  maxLength={50}
+                  disabled={full}
+                  onChange={(e) => {
+                    setNewName(e.target.value)
+                    setCreateError(null)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter' || e.nativeEvent.isComposing) return
+                    e.preventDefault()
+                    e.stopPropagation()
+                    void onCreate()
+                  }}
+                  enterKeyHint="done"
+                  autoComplete="off"
+                  aria-invalid={createError ? true : undefined}
+                  className={PHONE_INPUT}
+                />
+                <PhoneButton variant="secondary" loading={creating} disabled={full || newName.trim().length === 0} onClick={() => void onCreate()}>
+                  Create
+                </PhoneButton>
+              </div>
+              {createError ? (
+                <p role="alert" className="text-meta text-danger">
+                  {createError}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+          {options.length === 0 ? (
+            <p className="py-[16px] text-body text-text-secondary">
+              {canCreate ? 'Your organisation has no tags yet. Type a name above to create one.' : 'Your organisation has no tags yet.'}
+            </p>
+          ) : null}
+          {full ?<p className="px-[16px] pb-[8px] text-meta text-text-secondary">Up to {MAX_TAGS_PER_TASK} tags per task.</p> : null}
           <ul className="divide-y divide-border-light">
             {options.map((t) => {
               const on = draft.some((x) => x.id === t.id)
@@ -786,5 +889,245 @@ export function HolidayKeepDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  )
+}
+
+/* ------------------------- Holiday and leave notes ------------------------- */
+
+/*
+ * What the computer shows under the deadline (HolidayWarningBadge and
+ * LeaveWarningBadge), as notes. The holiday check runs 300ms after the date
+ * stops changing (CreateTaskModal); the leave check covers the chosen
+ * assignees. Neither stops a save.
+ */
+function DueDateNotes({ orgId, date, assigneeIds }: { orgId: string; date: string; assigneeIds: string[] }) {
+  // Each answer remembers what it was asked for, so a late answer for an older date is never shown.
+  const [holiday, setHoliday] = React.useState<{ date: string; result: HolidayCheckResult | null } | null>(null)
+  const [leave, setLeave] = React.useState<{ key: string; result: LeaveAvailability | null } | null>(null)
+  const idsKey = [...assigneeIds].sort().join(',')
+
+  React.useEffect(() => {
+    if (!date || !orgId) return
+    const t = window.setTimeout(() => {
+      holidaysApi
+        .checkDate(orgId, date)
+        .then((result) => setHoliday({ date, result }))
+        .catch(() => setHoliday({ date, result: null }))
+    }, 300)
+    return () => window.clearTimeout(t)
+  }, [orgId, date])
+
+  React.useEffect(() => {
+    if (!date || !orgId || !idsKey) return
+    let cancelled = false
+    leaveApi
+      .availability(orgId, idsKey.split(','), todayIso(), leaveHorizon())
+      .then((result) => !cancelled && setLeave({ key: idsKey, result }))
+      .catch(() => !cancelled && setLeave({ key: idsKey, result: null }))
+    return () => {
+      cancelled = true
+    }
+  }, [orgId, idsKey, !!date]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!date) return null
+  const check = holiday?.date === date ? holiday.result : null
+  const availability = leave?.key === idsKey ? leave.result : null
+  return (
+    <>
+      <HolidayNote check={check} />
+      <LeaveWarningBadge availability={availability} deadline={date} today={todayIso()} />
+    </>
+  )
+}
+
+function HolidayNote({ check }: { check: HolidayCheckResult | null }) {
+  if (!check || check.is_working_day) return null
+  const reason = check.reason ? `${check.reason} - ` : ''
+  let text: string
+  let tone: 'danger' | 'warning' = 'warning'
+  if (check.action === 'create_anyway') {
+    text = `${reason}This is a non-working day, but the task will still be created.`
+  } else if (check.action === 'skip_create') {
+    tone = 'danger'
+    text = `${reason}Your organisation normally blocks tasks on this date. Change the date, or keep it when you save.`
+  } else {
+    const where = check.action === 'move_to_next_working_day' ? 'moved forward' : 'moved back'
+    text = `${reason}Suggested: due date ${where}${check.adjusted_date ? ` to ${formatDate(new Date(check.adjusted_date))}` : ''}.`
+  }
+  return (
+    <p
+      className={cx(
+        'rounded-[8px] border px-[12px] py-[8px] text-meta',
+        tone === 'danger' ? 'border-danger-border bg-danger-bg text-danger' : 'border-warning-border bg-warning-bg text-warning',
+      )}
+    >
+      {text}
+    </p>
+  )
+}
+
+/* -------------------------------- Reminders -------------------------------- */
+
+/* The computer's reminder rows (components/tasks/RemindersField): days before the due date or a date, a time, and who else is told. */
+function RemindersSection({
+  rows,
+  onChange,
+  mode,
+  deadlineDate,
+}: {
+  rows: ReminderRow[]
+  onChange: (rows: ReminderRow[]) => void
+  mode: 'one_time' | 'recurring'
+  deadlineDate: string
+}) {
+  const [open, setOpen] = React.useState(false)
+  const needsDate = mode === 'one_time' && !deadlineDate
+  const update = (key: string, patch: Partial<ReminderRow>) => onChange(rows.map((r) => (r.key === key ? { ...r, ...patch } : r)))
+
+  return (
+    <>
+      {rows.length === 0 ? (
+        <button type="button" onClick={() => setOpen(true)} className={LINK_BUTTON}>
+          <Plus aria-hidden className="size-[16px]" />
+          Add reminder
+        </button>
+      ) : (
+        <PhoneField label="Reminders">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className={cx(ROW, 'mx-0 rounded-[8px] border border-border-strong bg-surface')}
+          >
+            <span className="min-w-0 flex-1 truncate text-left">
+              {reminderLabel(rows[0])}
+              {rows.length > 1 ? ` + ${rows.length - 1} more` : ''}
+            </span>
+          </button>
+        </PhoneField>
+      )}
+
+      <PhoneSheet
+        open={open}
+        onOpenChange={setOpen}
+        title="Reminders"
+        footer={
+          <PhoneButton variant="primary" fullWidth onClick={() => setOpen(false)}>
+            Done
+          </PhoneButton>
+        }
+      >
+        {needsDate ? (
+          <p className="py-[16px] text-body text-text-secondary">Choose a due date first, then set reminders.</p>
+        ) : (
+          <div className="flex flex-col gap-[16px] pb-[8px]">
+            {rows.length === 0 ? <p className="text-body text-text-secondary">No reminders. The assignee will not be nudged before the due date.</p> : null}
+            {rows.map((r) => {
+              let hint: string | null = null
+              if (r.kind === 'relative' && mode === 'one_time' && deadlineDate) {
+                const d = new Date(`${deadlineDate}T00:00`)
+                d.setDate(d.getDate() - r.offsetDays)
+                hint = formatDate(d)
+              }
+              const past = mode === 'one_time' && reminderIsPast(r, deadlineDate || undefined)
+              return (
+                <div key={r.key} className="flex flex-col gap-[12px] rounded-[8px] border border-border-light bg-surface-sunken p-[12px]">
+                  <div className="flex items-center gap-[8px]">
+                    <div className="grid flex-1 grid-cols-2 gap-[8px]">
+                      {([
+                        { k: 'relative' as const, label: 'Days before' },
+                        { k: 'absolute' as const, label: 'On a date' },
+                      ]).map(({ k, label }) => (
+                        <button
+                          key={k}
+                          type="button"
+                          aria-pressed={r.kind === k}
+                          onClick={() => update(r.key, { kind: k })}
+                          className={cx(
+                            'min-h-(--h-control) rounded-[8px] border text-body font-medium',
+                            r.kind === k ? 'border-primary bg-primary text-primary-foreground' : 'border-border-strong bg-surface text-text-primary active:bg-surface-control',
+                          )}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Remove reminder"
+                      onClick={() => onChange(rows.filter((x) => x.key !== r.key))}
+                      className="flex size-[44px] shrink-0 items-center justify-center text-text-secondary active:bg-surface-control"
+                    >
+                      <X aria-hidden className="size-[18px]" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-[12px]">
+                    {r.kind === 'relative' ? (
+                      <PhoneField label="Days before" htmlFor={`rem-${r.key}-days`}>
+                        <OffsetDaysInput id={`rem-${r.key}-days`} value={r.offsetDays} onChange={(n) => update(r.key, { offsetDays: n })} />
+                      </PhoneField>
+                    ) : (
+                      <PhoneDateField id={`rem-${r.key}-date`} label="Date" value={r.date} onChange={(v) => update(r.key, { date: v })} />
+                    )}
+                    <PhoneTimeField id={`rem-${r.key}-time`} label="Time" value={r.time} onChange={(v) => update(r.key, { time: v })} />
+                  </div>
+                  {hint ? <p className="-mt-[4px] text-meta text-primary-text">Reminds on {hint}</p> : null}
+
+                  <fieldset className="flex flex-col">
+                    <legend className="text-label font-medium text-text-secondary">Also tell</legend>
+                    <label className="flex min-h-[44px] items-center gap-[12px] text-body text-text-primary">
+                      <input type="checkbox" checked={r.toAssigner} onChange={(e) => update(r.key, { toAssigner: e.target.checked })} className="size-[20px] accent-primary" />
+                      The person who gave the task
+                    </label>
+                    <label className="flex min-h-[44px] items-center gap-[12px] text-body text-text-primary">
+                      <input type="checkbox" checked={r.toCc} onChange={(e) => update(r.key, { toCc: e.target.checked })} className="size-[20px] accent-primary" />
+                      People in CC
+                    </label>
+                    <span className="text-meta text-text-secondary">The assignee is always told.</span>
+                  </fieldset>
+
+                  {past ? (
+                    <p className="rounded-[8px] border border-warning-border bg-warning-bg px-[12px] py-[8px] text-meta text-warning">
+                      This reminder falls in the past, so it will not be sent. The task will still save.
+                    </p>
+                  ) : null}
+                </div>
+              )
+            })}
+            <PhoneButton variant="secondary" fullWidth onClick={() => onChange([...rows, makeReminderRow()])}>
+              Add reminder
+            </PhoneButton>
+          </div>
+        )}
+      </PhoneSheet>
+    </>
+  )
+}
+
+/* "Days before" that can be emptied while typing; the form only ever gets a whole number, and empty reads as 0 (the computer's rule). */
+function OffsetDaysInput({ id, value, onChange }: { id: string; value: number; onChange: (n: number) => void }) {
+  const [raw, setRaw] = React.useState(String(value))
+  React.useEffect(() => {
+    // Re-sync only when the outside value no longer matches what is typed.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (parseInt(raw || '0', 10) !== value) setRaw(String(value))
+  }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <input
+      id={id}
+      type="text"
+      inputMode="numeric"
+      value={raw}
+      onChange={(e) => {
+        const v = e.target.value.replace(/^0+(?=\d)/, '')
+        if (!/^\d*$/.test(v)) return
+        setRaw(v)
+        onChange(v === '' ? 0 : Math.max(0, parseInt(v, 10)))
+      }}
+      onBlur={() => {
+        if (raw === '') setRaw('0')
+      }}
+      className={PHONE_INPUT}
+    />
   )
 }

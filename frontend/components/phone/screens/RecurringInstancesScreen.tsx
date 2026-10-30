@@ -3,13 +3,16 @@
 import { fmtDate } from '@/lib/phone-format'
 import React from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { CalendarClock } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { CalendarClock, MoreHorizontal } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
-import type { Task } from '@/lib/types/tasks'
+import type { RecurringTemplate, Task } from '@/lib/types/tasks'
+import { templateScheduleSummary } from '@/lib/tasks/recurring-schedule'
 import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import PhoneScreen from '../PhoneScreen'
+import { PhoneButton } from '../primitives'
+import { RecurringActionsSheet } from '../RecurringActionsSheet'
 import { RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 
 /*
@@ -17,6 +20,11 @@ import { RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
  * phone task list, scoped to one recurring template, newest first. Tapping
  * an instance opens the exact same task detail screen the My work and
  * Given tabs use (TaskDetailScreen) — no separate "recurring task detail".
+ * A header above the list names the schedule and carries an Actions button
+ * (each action gated on the template's can_edit / can_manage)
+ * (RecurringActionsSheet: edit, pause / resume, run today, stop or delete),
+ * the same actions desktop offers on a template. Deleting everything returns
+ * to the templates list.
  */
 
 function statusBadge(task: Task): { label: string; bg: string; text: string } {
@@ -27,12 +35,26 @@ function statusBadge(task: Task): { label: string; bg: string; text: string } {
 export default function RecurringInstancesScreen({ route }: { route: PhoneRoute }) {
   const { user } = useAuth()
   const pathname = usePathname()
+  const router = useRouter()
   const orgId = user?.organizationId ?? ''
   const templateId = pathname.split('/').filter(Boolean).pop() ?? ''
 
   const [instances, setInstances] = React.useState<Task[] | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [failed, setFailed] = React.useState(false)
+
+  const [template, setTemplate] = React.useState<RecurringTemplate | null>(null)
+  const [actionsOpen, setActionsOpen] = React.useState(false)
+
+  // The template itself (for the header and its permission flags). A miss
+  // just hides the header; the instances list below does not depend on it.
+  React.useEffect(() => {
+    if (!orgId || !templateId) return
+    tasksApi
+      .getRecurringTemplates(orgId)
+      .then((list) => setTemplate(list.find((t) => t.id === templateId) ?? null))
+      .catch(() => setTemplate(null))
+  }, [orgId, templateId])
 
   const reload = React.useCallback(() => {
     if (!orgId || !templateId) return
@@ -51,6 +73,21 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? RECURRING_TEMPLATES_HREF}>
+      {template ? (
+        <div className="mb-[16px] flex items-center gap-[12px]">
+          <div className="min-w-0 flex-1">
+            <p className="wrap-break-word text-body font-medium text-text-primary">
+              {template.title}
+              {!template.is_active ? <span className="ml-[8px] text-meta font-normal text-text-secondary">Paused</span> : null}
+            </p>
+            <p className="wrap-break-word text-label text-text-secondary">{templateScheduleSummary(template.schedule_entries)}</p>
+          </div>
+          <PhoneButton onClick={() => setActionsOpen(true)} aria-label="Actions">
+            <MoreHorizontal aria-hidden />
+            Actions
+          </PhoneButton>
+        </div>
+      ) : null}
       {loading ? (
         <div className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -95,6 +132,16 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
           })}
         </ul>
       )}
+      {template && actionsOpen ? (
+        <RecurringActionsSheet
+          orgId={orgId}
+          template={template}
+          open
+          onOpenChange={setActionsOpen}
+          onChanged={(patch) => setTemplate((cur) => (cur ? { ...cur, ...patch } : cur))}
+          onRemoved={() => router.replace(RECURRING_TEMPLATES_HREF)}
+        />
+      ) : null}
     </PhoneScreen>
   )
 }
