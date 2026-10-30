@@ -75,6 +75,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       system_role_id: systemRoleId,
       isTestOrg,
       employee_profile_id: employeeProfileId,
+      // The device session this token belongs to (null for pre-sessions tokens).
+      sid: payload.sid ?? null,
     };
   }
 }

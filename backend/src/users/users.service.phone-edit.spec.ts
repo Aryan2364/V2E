@@ -16,6 +16,8 @@ function makeWorld(initial: any[]) {
   const find = (pred: (u: any) => boolean) => store.find(pred) ?? null;
 
   const prisma: any = {
+    // Logging in opens a per-device session (auth.service issueFullTokens).
+    userSession: { deleteMany: jest.fn(() => Promise.resolve({ count: 0 })), create: jest.fn(() => Promise.resolve({})) },
     user: {
       findUnique: jest.fn(({ where }: any) => {
         let u: any = null;

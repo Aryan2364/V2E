@@ -36,6 +36,7 @@ function makeService() {
         { organization_id: 'org-1', is_admin: true, joined_at: new Date(), organization: { id: 'org-1', name: 'Acme', slug: 'acme', logo_url: null } },
       ])),
     },
+    userSession: { deleteMany: jest.fn(() => Promise.resolve({ count: 0 })), create: jest.fn(() => Promise.resolve({})) },
     organization: { findUnique: jest.fn(() => Promise.resolve({ is_test: false })) },
     employeeProfile: { findFirst: jest.fn(() => Promise.resolve(null)) },
   };

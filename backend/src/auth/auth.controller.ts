@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Patch, Delete, Put, Query, Res } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Patch, Delete, Put, Query, Res, Headers } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -26,8 +26,8 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  register(@Body() dto: RegisterDto, @Headers('user-agent') ua?: string) {
+    return this.authService.register(dto, ua);
   }
 
   // ─── Self-service password reset (public, OTP by email) ───────────────────────
@@ -48,25 +48,33 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(@Body() dto: LoginDto, @Headers('user-agent') ua?: string) {
+    return this.authService.login(dto, ua);
   }
 
   @Post('admin-login')
-  adminLogin(@Body() dto: LoginDto) {
-    return this.authService.adminLogin(dto);
+  adminLogin(@Body() dto: LoginDto, @Headers('user-agent') ua?: string) {
+    return this.authService.adminLogin(dto, ua);
   }
 
   @Post('refresh')
-  refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refresh(dto.refresh_token);
+  refresh(@Body() dto: RefreshTokenDto, @Headers('user-agent') ua?: string) {
+    return this.authService.refresh(dto.refresh_token, ua);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('logout')
-  logout(@CurrentUser('id') userId: string) {
-    return this.authService.logout(userId);
+  logout(@CurrentUser('id') userId: string, @CurrentUser('sid') sid: string | null) {
+    return this.authService.logout(userId, sid);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Sign out of every device (all sessions)' })
+  @Post('logout-all')
+  logoutAll(@CurrentUser('id') userId: string) {
+    return this.authService.logoutAll(userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -80,15 +88,24 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change the current user\'s password (self-service, no OTP)' })
   @Patch('change-password')
-  changePassword(@CurrentUser('id') userId: string, @Body() dto: ChangePasswordDto) {
-    return this.authService.changePassword(userId, dto.password);
+  changePassword(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('sid') sid: string | null,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(userId, dto.password, sid);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('switch-org')
-  switchOrg(@CurrentUser('id') userId: string, @Body() dto: SwitchOrgDto) {
-    return this.authService.switchOrg(userId, dto);
+  switchOrg(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('sid') sid: string | null,
+    @Body() dto: SwitchOrgDto,
+    @Headers('user-agent') ua?: string,
+  ) {
+    return this.authService.switchOrg(userId, dto, sid, ua);
   }
 
   @UseGuards(JwtAuthGuard)

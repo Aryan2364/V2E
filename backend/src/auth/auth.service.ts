@@ -25,7 +25,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, userAgent?: string) {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -40,7 +40,7 @@ export class AuthService {
     // organization — and any admin grant — is a privileged action that must go
     // through an authenticated, org-scoped route (POST /org/:orgId/users), never
     // a public body field. See SECURITY_AUDIT.md C1.
-    return this.issueFullTokens(user.id, user.email, null, false);
+    return this.issueFullTokens(user.id, user.email, null, false, { userAgent });
   }
 
   // Resolve a login identity typed as either an email or a phone number. A phone
@@ -71,7 +71,7 @@ export class AuthService {
       : 'Email address not found. Please try another email, or your phone number if registered.';
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, userAgent?: string) {
     const { user, kind } = await this.findUserByIdentifier(dto.identifier, dto.country_code);
     if (!user || !user.is_active) throw new UnauthorizedException(this.identifierNotFoundMessage(kind));
 
@@ -101,7 +101,7 @@ export class AuthService {
 
     if (memberships.length === 1) {
       const m = memberships[0];
-      const tokens = await this.issueFullTokens(user.id, user.email, m.organization_id, false);
+      const tokens = await this.issueFullTokens(user.id, user.email, m.organization_id, false, { userAgent });
       return { ...tokens, user: await this.buildUserPayload(user, m.organization_id, m.is_admin, false) };
     }
 
@@ -125,7 +125,7 @@ export class AuthService {
     };
   }
 
-  async switchOrg(userId: string, dto: SwitchOrgDto) {
+  async switchOrg(userId: string, dto: SwitchOrgDto, sid?: string | null, userAgent?: string) {
     const member = await this.prisma.organizationMember.findFirst({
       where: { user_id: userId, organization_id: dto.organizationId, is_active: true },
       include: { organization: { select: { status: true } } },
@@ -139,7 +139,13 @@ export class AuthService {
       throw new ForbiddenException(ORG_DEACTIVATED_MESSAGE);
     }
 
-    const tokens = await this.issueFullTokens(user.id, user.email, dto.organizationId, false);
+    // Picking an org right after login (selection token, no sid) is the first time
+    // this device gets real tokens, so it opens a session. A genuine org switch
+    // carries the caller's sid and re-keys THAT session instead of adding a row.
+    const tokens = await this.issueFullTokens(user.id, user.email, dto.organizationId, false, {
+      reuseSid: sid ?? undefined,
+      userAgent,
+    });
     return { ...tokens, user: await this.buildUserPayload(user, dto.organizationId, member.is_admin, false) };
   }
 
@@ -162,28 +168,33 @@ export class AuthService {
     });
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string, userAgent?: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
       const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+      if (!user || !user.is_active) throw new UnauthorizedException('Invalid refresh token');
 
-      // Tokens are stored hashed. Accept the current hash, OR the immediately-
-      // previous hash while it's still inside its grace window — this lets a
-      // concurrent/racing refresh (multiple tabs waking together) succeed with a
-      // token that was rotated a moment ago, instead of being force-logged-out.
       const incomingHash = this.hashToken(refreshToken);
-      const matchesCurrent = !!user?.refresh_token && user.refresh_token === incomingHash;
-      const matchesPrev =
-        !!user?.refresh_token_prev &&
-        user.refresh_token_prev === incomingHash &&
-        !!user.refresh_token_prev_exp &&
-        user.refresh_token_prev_exp.getTime() > Date.now();
+      let sid: string | null = null;
 
-      if (!user || !user.is_active || (!matchesCurrent && !matchesPrev)) {
-        throw new UnauthorizedException('Invalid refresh token');
+      if (payload.sid) {
+        sid = await this.checkSession(payload.sid, user.id, incomingHash);
+      } else {
+        // Legacy token (issued before per-device sessions): validate against the
+        // old single-slot columns exactly as before — current hash, or the previous
+        // one inside its 60s grace window. The columns are left untouched; success
+        // below opens a real session so this device is on the new path from now on.
+        const matchesCurrent = !!user.refresh_token && user.refresh_token === incomingHash;
+        const matchesPrev =
+          !!user.refresh_token_prev &&
+          user.refresh_token_prev === incomingHash &&
+          !!user.refresh_token_prev_exp &&
+          user.refresh_token_prev_exp.getTime() > Date.now();
+        if (!matchesCurrent && !matchesPrev) throw new UnauthorizedException('Invalid refresh token');
       }
+
       const organizationId = payload.organizationId ?? null;
       let isAdmin = false;
       if (organizationId) {
@@ -198,10 +209,10 @@ export class AuthService {
         }
         isAdmin = member?.is_admin ?? false;
       }
-      // Rotate, demoting the just-used current hash into the grace slot.
-      const tokens = await this.issueFullTokens(user.id, user.email, organizationId, user.is_super_admin, {
-        demotePrevHash: user.refresh_token,
-      });
+
+      const tokens = sid
+        ? await this.rotateSession(sid, incomingHash, user.id, user.email, organizationId, user.is_super_admin)
+        : await this.issueFullTokens(user.id, user.email, organizationId, user.is_super_admin, { userAgent });
       return {
         ...tokens,
         user: await this.buildUserPayload(user, organizationId, isAdmin, user.is_super_admin),
@@ -211,7 +222,72 @@ export class AuthService {
     }
   }
 
-  async adminLogin(dto: LoginDto) {
+  /**
+   * Validate an incoming refresh token against its session row. Returns the sid.
+   *  - matches the current hash            -> fine.
+   *  - matches the previous hash, and the client never confirmed the current one
+   *    -> fine: the reply carrying the current token was lost, so the old token
+   *    stays valid until the client actually uses a newer one.
+   *  - matches the previous hash after the current one WAS confirmed -> a
+   *    superseded token is being replayed: treat as theft and revoke the session.
+   *  - matches neither (an older generation) -> same: revoke.
+   */
+  private async checkSession(sid: string, userId: string, incomingHash: string): Promise<string> {
+    const session = await this.prisma.userSession.findUnique({ where: { id: sid } });
+    if (!session || session.user_id !== userId || session.expires_at.getTime() <= Date.now()) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    if (session.token_hash === incomingHash) return sid;
+    if (session.prev_token_hash === incomingHash && !session.current_confirmed) return sid;
+    await this.prisma.userSession.deleteMany({ where: { id: sid } });
+    throw new UnauthorizedException('Invalid refresh token');
+  }
+
+  /**
+   * Rotate a session's refresh token in place. Race-safe: the write is a
+   * compare-and-swap (`updateMany` conditional on the hashes we read), so two
+   * concurrent refreshes of one session can never both rotate from the same state.
+   * The loser (count 0) re-reads and, if its token is still acceptable (it is now
+   * the winner's "previous" token), retries ONCE from the new state, chaining
+   * prev = the winner's token so BOTH callers' tokens stay usable. A second loss
+   * is a 401 - the frontend's single-flight lock (lib/api/refresh.ts) means one
+   * client never races itself, so that is only reachable by abuse.
+   */
+  private async rotateSession(
+    sid: string,
+    incomingHash: string,
+    userId: string,
+    email: string | null,
+    organizationId: string | null,
+    isSuperAdmin: boolean,
+  ) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const session = await this.prisma.userSession.findUnique({ where: { id: sid } });
+      if (!session || session.user_id !== userId) break;
+      const matchedCurrent = session.token_hash === incomingHash;
+      if (!matchedCurrent && !(session.prev_token_hash === incomingHash && !session.current_confirmed)) break;
+
+      const tokens = this.signTokens(userId, email, organizationId, isSuperAdmin, sid);
+      const res = await this.prisma.userSession.updateMany({
+        where: { id: sid, token_hash: session.token_hash, prev_token_hash: session.prev_token_hash },
+        data: {
+          token_hash: this.hashToken(tokens.refresh_token),
+          // Presenting the current token proves receipt, so it becomes the fallback.
+          // A retry of the previous token (lost reply) keeps that token as the
+          // fallback until the client proves it has a newer one - except on a lost
+          // race, where the winner's current token is the one that must survive.
+          prev_token_hash: matchedCurrent || attempt > 0 ? session.token_hash : session.prev_token_hash,
+          current_confirmed: false,
+          last_used_at: new Date(),
+          expires_at: this.refreshExpiry(tokens.refresh_token),
+        },
+      });
+      if (res.count === 1) return tokens;
+    }
+    throw new UnauthorizedException('Invalid refresh token');
+  }
+
+  async adminLogin(dto: LoginDto, userAgent?: string) {
     const { user, kind } = await this.findUserByIdentifier(dto.identifier, dto.country_code);
     if (!user || !user.is_active) throw new UnauthorizedException(this.identifierNotFoundMessage(kind));
 
@@ -220,25 +296,48 @@ export class AuthService {
 
     if (!user.is_super_admin) throw new UnauthorizedException('Access denied. Super administrator credentials required.');
 
-    const tokens = await this.issueFullTokens(user.id, user.email, null, true);
+    const tokens = await this.issueFullTokens(user.id, user.email, null, true, { userAgent });
     return { ...tokens, user: await this.buildUserPayload(user, null, false, true) };
   }
 
-  async logout(userId: string) {
+  /** Ends THIS device's session only. A legacy token (no sid) clears the old single slot. */
+  async logout(userId: string, sid?: string | null) {
+    if (sid) {
+      await this.prisma.userSession.deleteMany({ where: { id: sid, user_id: userId } });
+    } else {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { refresh_token: null, refresh_token_prev: null, refresh_token_prev_exp: null },
+      });
+    }
+    return { message: 'Logged out successfully' };
+  }
+
+  /** Ends every device's session, including any pre-sessions (legacy) token. */
+  async logoutAll(userId: string) {
+    await this.revokeAllSessions(userId);
+    return { message: 'Logged out of all devices' };
+  }
+
+  /** Delete all of a user's sessions (optionally sparing one) and clear the legacy slot. */
+  async revokeAllSessions(userId: string, exceptSid?: string | null) {
+    await this.prisma.userSession.deleteMany({
+      where: { user_id: userId, ...(exceptSid ? { id: { not: exceptSid } } : {}) },
+    });
     await this.prisma.user.update({
       where: { id: userId },
       data: { refresh_token: null, refresh_token_prev: null, refresh_token_prev_exp: null },
     });
-    return { message: 'Logged out successfully' };
   }
 
   /**
    * Self-service password change for an already-authenticated user. By product
    * decision this requires neither the current password nor an email OTP — the
-   * live session is treated as sufficient proof. The current session's refresh
-   * tokens are left intact so the user stays logged in after changing it.
+   * live session is treated as sufficient proof. Every OTHER device is signed out
+   * (a changed password should boot anyone else holding a session); the current
+   * session is kept so the user stays logged in after changing it.
    */
-  async changePassword(userId: string, newPassword: string) {
+  async changePassword(userId: string, newPassword: string, sid?: string | null) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new BadRequestException('Account not found.');
     const password_hash = await bcrypt.hash(newPassword, 12);
@@ -246,6 +345,8 @@ export class AuthService {
       where: { id: userId },
       data: { password_hash },
     });
+    // A caller without a sid is on a legacy token, whose slot we must not clear.
+    if (sid) await this.revokeAllSessions(userId, sid);
     return { success: true };
   }
 
@@ -333,19 +434,22 @@ export class AuthService {
     return crypto.createHash('sha256').update(token).digest('hex');
   }
 
-  // Grace window (ms) during which the immediately-previous refresh token still
-  // works after rotation — long enough to absorb a multi-tab wake-up race, short
-  // enough that a leaked old token isn't usable for meaningfully long.
+  // Grace window (ms) during which the immediately-previous LEGACY refresh token
+  // (pre-sessions, no sid) still works after rotation. Per-device sessions use no
+  // timer: the previous token stays valid until the client confirms the new one.
   private static readonly REFRESH_GRACE_MS = 60_000;
+  private static readonly USER_AGENT_MAX = 255;
+  private static readonly DEFAULT_REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-  private async issueFullTokens(
+  /** Sign an access + refresh pair bound to a session via the `sid` claim. */
+  private signTokens(
     userId: string,
     email: string | null, // a phone-only account has no email
     organizationId: string | null,
     isSuperAdmin: boolean,
-    opts?: { demotePrevHash?: string | null },
+    sid: string,
   ) {
-    const payload: Record<string, any> = { sub: userId, email, isSuperAdmin };
+    const payload: Record<string, any> = { sub: userId, email, isSuperAdmin, sid };
     if (organizationId) payload.organizationId = organizationId;
 
     const access_token = this.jwtService.sign(payload, {
@@ -353,25 +457,76 @@ export class AuthService {
       expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') as any,
     });
 
-    const refresh_token = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET')!,
-      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') as any,
-    });
-
-    // Store only the hash. On a rotation (refresh) we keep the just-used hash in
-    // the grace slot; a fresh login clears the grace slot outright.
-    const data: Record<string, any> = { refresh_token: this.hashToken(refresh_token) };
-    if (opts?.demotePrevHash) {
-      data.refresh_token_prev = opts.demotePrevHash;
-      data.refresh_token_prev_exp = new Date(Date.now() + AuthService.REFRESH_GRACE_MS);
-    } else {
-      data.refresh_token_prev = null;
-      data.refresh_token_prev_exp = null;
-    }
-
-    await this.prisma.user.update({ where: { id: userId }, data });
+    // `jti` keeps two refresh tokens minted in the same second distinct (iat has
+    // second resolution), otherwise a rotation could reproduce the same hash.
+    const refresh_token = this.jwtService.sign(
+      { ...payload, jti: crypto.randomUUID() },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET')!,
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') as any,
+      },
+    );
 
     return { access_token, refresh_token };
+  }
+
+  /** The session's sliding expiry = the refresh token's own `exp`. */
+  private refreshExpiry(refreshToken: string): Date {
+    const decoded: any = this.jwtService.decode?.(refreshToken);
+    return decoded?.exp
+      ? new Date(decoded.exp * 1000)
+      : new Date(Date.now() + AuthService.DEFAULT_REFRESH_TTL_MS);
+  }
+
+  /**
+   * Issue tokens for a sign-in. By default opens a NEW session (one per device);
+   * with `reuseSid` (org switch) the caller's existing session is re-keyed instead.
+   * Only the token hash is stored.
+   */
+  private async issueFullTokens(
+    userId: string,
+    email: string | null,
+    organizationId: string | null,
+    isSuperAdmin: boolean,
+    opts?: { reuseSid?: string; userAgent?: string },
+  ) {
+    const user_agent = opts?.userAgent ? opts.userAgent.slice(0, AuthService.USER_AGENT_MAX) : null;
+
+    if (opts?.reuseSid) {
+      const tokens = this.signTokens(userId, email, organizationId, isSuperAdmin, opts.reuseSid);
+      // The old refresh token carried the previous org; the client replaces it, so
+      // no fallback hash is kept.
+      const res = await this.prisma.userSession.updateMany({
+        where: { id: opts.reuseSid, user_id: userId },
+        data: {
+          token_hash: this.hashToken(tokens.refresh_token),
+          prev_token_hash: null,
+          current_confirmed: false,
+          last_used_at: new Date(),
+          expires_at: this.refreshExpiry(tokens.refresh_token),
+        },
+      });
+      if (res.count === 1) return tokens;
+      // The session was revoked meanwhile - fall through and open a fresh one.
+    }
+
+    // Housekeeping: drop this user's expired sessions whenever a new one opens.
+    await this.prisma.userSession.deleteMany({
+      where: { user_id: userId, expires_at: { lte: new Date() } },
+    });
+
+    const sid = crypto.randomUUID();
+    const tokens = this.signTokens(userId, email, organizationId, isSuperAdmin, sid);
+    await this.prisma.userSession.create({
+      data: {
+        id: sid,
+        user_id: userId,
+        token_hash: this.hashToken(tokens.refresh_token),
+        user_agent,
+        expires_at: this.refreshExpiry(tokens.refresh_token),
+      },
+    });
+    return tokens;
   }
 
   private async buildUserPayload(

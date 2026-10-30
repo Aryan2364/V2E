@@ -50,6 +50,7 @@ describe('POST /auth/register cross-org self-join (SECURITY_AUDIT C1)', () => {
       }),
       update: jest.fn().mockResolvedValue({}),
     },
+    userSession: { deleteMany: jest.fn(() => Promise.resolve({ count: 0 })), create: jest.fn(() => Promise.resolve({})) },
     organizationMember: {
       create: jest.fn().mockResolvedValue({ id: 'member-1' }),
     },

@@ -224,6 +224,9 @@ model User {
   // hash; `refresh_token_prev` is the immediately-previous hash, honoured only
   // until `refresh_token_prev_exp` (a short grace window) so a racing/concurrent
   // refresh from another tab isn't force-logged-out.
+  // LEGACY single-session columns: only read for refresh tokens issued before
+  // per-device sessions (no `sid` claim). Safe to drop once every pre-sessions
+  // token has expired (30 days after the sessions deploy). See UserSession.
   refresh_token          String?
   refresh_token_prev     String?
   refresh_token_prev_exp DateTime?
@@ -234,6 +237,7 @@ model User {
   created_at             DateTime  @default(now())
   updated_at             DateTime  @updatedAt
 
+  sessions                  UserSession[]
   organization_memberships  OrganizationMember[]
   employee_profiles         EmployeeProfile[]
   employee_import_batches   EmployeeImportBatch[]    @relation("EmployeeImportedBy")
@@ -4527,4 +4531,28 @@ model DelegationCriterion {
   @@index([delegation_id])
   @@index([organization_id])
   @@map("delegation_criteria")
+}
+
+/// One row per signed-in DEVICE (a login creates one; refreshes rotate it in
+/// place), so the phone and the computer no longer overwrite each other's refresh
+/// token. Hashes are sha256 of the refresh JWT, never the raw token.
+/// `prev_token_hash` stays valid while `current_confirmed` is false — i.e. until
+/// the client has presented the current token — so a refresh reply lost on a bad
+/// mobile connection doesn't log the device out.
+model UserSession {
+  id                String   @id @default(uuid())
+  user_id           String
+  token_hash        String
+  prev_token_hash   String?
+  current_confirmed Boolean  @default(false)
+  user_agent        String?
+  created_at        DateTime @default(now())
+  last_used_at      DateTime @default(now())
+  expires_at        DateTime
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([token_hash])
+  @@map("user_sessions")
 }

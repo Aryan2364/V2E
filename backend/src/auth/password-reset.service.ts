@@ -120,6 +120,7 @@ export class PasswordResetService {
         refresh_token_prev_exp: null,
       },
     });
+    await this.prisma.userSession.deleteMany({ where: { user_id: user.id } });
     await this.prisma.passwordReset.update({
       where: { id: row.id },
       data: { consumed_at: new Date() },
