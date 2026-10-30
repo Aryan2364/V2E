@@ -5,58 +5,43 @@ import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
-import { meetingsApi } from '@/lib/api/meetings'
-import { getEmployees } from '@/lib/api/employees'
-import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector'
-import type { MeetingType } from '@/lib/types/meetings'
-import { MEETINGS_HREF, type PhoneRoute } from '@/lib/phone-routes'
+import { meetingsApi, type RhythmScheduleInput } from '@/lib/api/meetings'
+import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
+import { defaultScheduleEntry, scheduleEntryError } from '@/lib/tasks/recurring-payload'
+import { apiErrorMessage } from '@/lib/tasks/api-error'
+import { MEETINGS_HREF, meetingHref, meetingRhythmHref, type PhoneRoute } from '@/lib/phone-routes'
 import { useDraft } from '@/lib/drafts'
 import { DraftBanner } from '../DraftBanner'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneButton, PhoneField, GrowTextarea, PHONE_INPUT, cx, enterMovesNext, focusFirstInvalid } from '../primitives'
-import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
-import { PeoplePickerSheet, SelectedPeopleList, type PickerSection } from '../PeoplePickerSheet'
+import { RepeatFields } from '../RepeatFields'
+import {
+  EMPTY_MEETING_FORM,
+  MeetingFormFields,
+  toIso,
+  useInvitees,
+  validateMeetingForm,
+  type MeetingFormValues,
+} from '../MeetingFormFields'
 
 /*
- * Create meeting - plan-phone-2026-10-14.md §5.9, grounded in
- * CreateMeetingDto. One column, Save fixed at the bottom (§41.7 rule 3).
- * "Log a past meeting" and rhythms stay computer-only (owner scope, D11).
+ * Create meeting - plan-phone-2026-10-14.md section 5.9, grounded in
+ * CreateMeetingDto. One column, Save fixed at the bottom (41.7 rule 3).
+ * The fields are shared with Edit meeting (MeetingFormFields). A meeting can
+ * repeat: that creates a recurring meeting (POST meetings/rhythms) exactly as
+ * desktop's CreateMeetingModal does (~173-235), with the same schedule fields
+ * recurring tasks use. Not on phone yet: linking to a goal, task or ticket,
+ * logging a past meeting, and Find a time.
  *
- * Draft: lib/drafts.ts (kit §41.7 rules 12-15), form id "meeting-create",
+ * Draft: lib/drafts.ts (kit 41.7 rules 12-15), form id "meeting-create",
  * record "new". Offered back with a banner, never restored silently;
  * cleared on a successful save and on sign-out (lib/auth's logout calls
  * clearDrafts).
  */
 
-type MeetingCreateValues = {
-  title: string
-  type: MeetingType
-  date: string
-  startTime: string
-  endTime: string
-  onlineLink: string
-  location: string
-  agenda: string
-}
-type AttendeeOption = PersonOption & { department?: string | null; role?: string | null }
+type MeetingCreateDraft = Omit<MeetingFormValues, 'attendeeIds' | 'optionalIds'> & { agenda: string }
 
-/** Departments A-Z, people A-Z inside each, people without a department last (like the task assignee picker). */
-function groupByDepartment(people: AttendeeOption[]): PickerSection[] {
-  const byName = (a: AttendeeOption, b: AttendeeOption) => a.name.localeCompare(b.name)
-  const groups = new Map<string, AttendeeOption[]>()
-  for (const p of people) {
-    const key = p.department?.trim() || ''
-    groups.set(key, [...(groups.get(key) ?? []), p])
-  }
-  const toSection = (name: string, list: AttendeeOption[]): PickerSection => ({
-    id: name || 'none',
-    name: name || 'No department',
-    people: [...list].sort(byName).map((p) => ({ user_id: p.user_id, name: p.name, role: p.role ?? null, department: p.department ?? null })),
-  })
-  const named = [...groups.keys()].filter(Boolean).sort((a, b) => a.localeCompare(b)).map((k) => toSection(k, groups.get(k)!))
-  const none = groups.get('')
-  return none ? [...named, toSection('', none)] : named
-}
+const LENGTHS = [15, 30, 45, 60, 90, 120]
 
 export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
   const router = useRouter()
@@ -64,218 +49,181 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
   const { addToast } = useToast()
   const orgId = user?.organizationId ?? ''
 
-  const [title, setTitle] = React.useState('')
-  const [type, setType] = React.useState<MeetingType>('online')
-  const [date, setDate] = React.useState('')
-  const [startTime, setStartTime] = React.useState('')
-  const [endTime, setEndTime] = React.useState('')
-  const [onlineLink, setOnlineLink] = React.useState('')
-  const [location, setLocation] = React.useState('')
+  const [form, setForm] = React.useState<MeetingFormValues>(EMPTY_MEETING_FORM)
   const [agendaOpen, setAgendaOpen] = React.useState(false)
   const [agenda, setAgenda] = React.useState('')
+  const [repeats, setRepeats] = React.useState(false)
+  const [sched, setSched] = React.useState<ScheduleEntryDraft>(() => ({ ...defaultScheduleEntry(), schedule_type: 'weekly', time: '10:00' }))
+  const [durationMin, setDurationMin] = React.useState(30)
+  const [skipHolidays, setSkipHolidays] = React.useState(true)
+  const [showSchedErrors, setShowSchedErrors] = React.useState(false)
 
-  const [people, setPeople] = React.useState<AttendeeOption[]>([])
-  const [attendeeIds, setAttendeeIds] = React.useState<string[]>([])
-  const [optionalIds, setOptionalIds] = React.useState<string[]>([])
-  const [pickerOpen, setPickerOpen] = React.useState(false)
-
+  const people = useInvitees(orgId, user?.id)
   const [saving, setSaving] = React.useState(false)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
-  const [titleTouched, setTitleTouched] = React.useState(false)
   const formRef = React.useRef<HTMLFormElement>(null)
 
-  const draftValues: MeetingCreateValues = {
-    title,
-    type,
-    date,
-    startTime,
-    endTime,
-    onlineLink,
-    location,
+  const patch = (p: Partial<MeetingFormValues>) => setForm((f) => ({ ...f, ...p }))
+
+  const draftValues: MeetingCreateDraft = {
+    title: form.title,
+    type: form.type,
+    date: form.date,
+    startTime: form.startTime,
+    endTime: form.endTime,
+    onlineLink: form.onlineLink,
+    onlinePassword: form.onlinePassword,
+    location: form.location,
     agenda,
   }
-  const draft = useDraft<MeetingCreateValues>({
+  const draft = useDraft<MeetingCreateDraft>({
     person: user?.id,
     form: 'meeting-create',
     record: 'new',
     values: draftValues,
   })
 
-  function restoreDraft(kept: Partial<MeetingCreateValues>) {
-    if (kept.title !== undefined) setTitle(kept.title)
-    if (kept.type !== undefined) setType(kept.type)
-    if (kept.date !== undefined) setDate(kept.date)
-    if (kept.startTime !== undefined) setStartTime(kept.startTime)
-    if (kept.endTime !== undefined) setEndTime(kept.endTime)
-    if (kept.onlineLink !== undefined) setOnlineLink(kept.onlineLink)
-    if (kept.location !== undefined) setLocation(kept.location)
-    if (kept.agenda !== undefined) {
-      setAgenda(kept.agenda)
-      if (kept.agenda) setAgendaOpen(true)
+  function restoreDraft(kept: Partial<MeetingCreateDraft>) {
+    const { agenda: keptAgenda, ...rest } = kept
+    setForm((f) => ({ ...f, ...rest }))
+    if (keptAgenda !== undefined) {
+      setAgenda(keptAgenda)
+      if (keptAgenda) setAgendaOpen(true)
     }
-  }
-
-  React.useEffect(() => {
-    if (!orgId) return
-    getEmployees(orgId)
-      .then((emps) =>
-        setPeople(
-          emps
-            .filter((e) => e.user_id !== user?.id)
-            .map((e: any) => ({ user_id: e.user_id, name: e.user?.name ?? e.name ?? e.email ?? 'Unknown', email: e.user?.email, department: e.department?.name ?? null, role: e.role?.name ?? null })),
-        ),
-      )
-      .catch(() => setPeople([]))
-  }, [orgId, user?.id])
-
-  function toIso(dateStr: string, timeStr: string): string | undefined {
-    if (!dateStr || !timeStr) return undefined
-    const d = new Date(`${dateStr}T${timeStr}:00`)
-    return isNaN(d.getTime()) ? undefined : d.toISOString()
   }
 
   function validate(): boolean {
-    const next: Record<string, string> = {}
-    if (!title.trim()) next.title = 'Enter a title.'
-    if (!date) next.date = 'Choose a date.'
-    if (!startTime) next.startTime = 'Choose a start time.'
-    if (date && startTime && endTime) {
-      const s = toIso(date, startTime)
-      const e = toIso(date, endTime)
-      if (s && e && new Date(e).getTime() <= new Date(s).getTime()) next.endTime = 'End time must be after the start time.'
-    }
+    const next = validateMeetingForm(form, { needsWhen: !repeats })
+    const schedError = repeats ? scheduleEntryError(sched) : null
+    setShowSchedErrors(repeats)
     setErrors(next)
-    if (Object.keys(next).length > 0) focusFirstInvalid(formRef.current)
-    return Object.keys(next).length === 0
+    const ok = Object.keys(next).length === 0 && !schedError
+    if (!ok) focusFirstInvalid(formRef.current)
+    return ok
   }
 
   async function onSave() {
     if (!validate()) return
     setSaving(true)
     try {
+      const link = form.type !== 'offline' ? form.onlineLink.trim() || undefined : undefined
+      const password = form.type !== 'offline' ? form.onlinePassword.trim() || undefined : undefined
+      const location = form.type !== 'online' ? form.location.trim() || undefined : undefined
+      if (repeats) {
+        // Desktop CreateMeetingModal ~173-235: a repeating meeting is a rhythm.
+        const schedule: RhythmScheduleInput = {
+          schedule_type: sched.schedule_type,
+          every: sched.every,
+          days: sched.schedule_type === 'weekly' ? sched.days : undefined,
+          month_days: sched.schedule_type === 'monthly' ? sched.month_days : undefined,
+          yearly_dates: sched.schedule_type === 'yearly' ? sched.yearly_dates : undefined,
+          time: sched.time,
+          start_date: new Date(`${sched.start_date}T00:00`).toISOString(),
+          end_condition: sched.end_condition,
+          end_date: sched.end_condition === 'on_date' && sched.end_date ? new Date(`${sched.end_date}T23:59`).toISOString() : undefined,
+          end_after: sched.end_condition === 'after_n' ? sched.end_after : undefined,
+          skip_holidays: skipHolidays,
+        }
+        const rhythm = await meetingsApi.createRhythm(orgId, {
+          title: form.title.trim(),
+          type: form.type,
+          online_link: link,
+          online_password: password,
+          location,
+          agenda: agenda.trim() || undefined,
+          duration_min: durationMin,
+          attendee_user_ids: form.attendeeIds,
+          optional_user_ids: form.optionalIds,
+          schedule,
+        })
+        draft.clear()
+        addToast('Recurring meeting added. Its meetings will appear in your list.', 'success')
+        router.replace(meetingRhythmHref(rhythm.id))
+        return
+      }
       const meeting = await meetingsApi.create(orgId, {
-        title: title.trim(),
-        type,
-        online_link: type === 'online' ? onlineLink.trim() || undefined : undefined,
-        location: type === 'offline' ? location.trim() || undefined : undefined,
-        scheduled_start: toIso(date, startTime),
-        scheduled_end: toIso(date, endTime),
-        attendee_user_ids: attendeeIds,
-        optional_user_ids: optionalIds,
+        title: form.title.trim(),
+        type: form.type,
+        online_link: link,
+        online_password: password,
+        location,
+        scheduled_start: toIso(form.date, form.startTime),
+        scheduled_end: toIso(form.date, form.endTime),
+        attendee_user_ids: form.attendeeIds,
+        optional_user_ids: form.optionalIds,
         agenda: agenda.trim() || undefined,
       })
       draft.clear()
       addToast('Meeting created', 'success')
-      router.replace(`/dashboard/governance/meetings/${meeting.id}`)
-    } catch {
-      addToast('Could not create the meeting. Check your connection and try again.', 'error')
+      router.replace(meetingHref(meeting.id))
+    } catch (e) {
+      addToast(apiErrorMessage(e, 'Could not create the meeting. Check your connection and try again.'), 'error')
     } finally {
       setSaving(false)
     }
   }
 
-  const selectedPeople = people.filter((p) => attendeeIds.includes(p.user_id))
+  const repeatSlot = (
+    <div className="flex flex-col gap-[16px]">
+      <RepeatFields entry={sched} onChange={setSched} showErrors={showSchedErrors} />
+      <PhoneField label="How long">
+        <div role="group" aria-label="How long" className="flex flex-wrap gap-[8px]">
+          {LENGTHS.map((m) => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={durationMin === m}
+              onClick={() => setDurationMin(m)}
+              className={cx(
+                'min-h-(--h-control) min-w-[64px] flex-1 rounded-[8px] border-2 px-[8px] text-body font-medium',
+                durationMin === m ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border bg-surface text-text-secondary',
+              )}
+            >
+              {m >= 60 && m % 60 === 0 ? `${m / 60} h` : `${m} min`}
+            </button>
+          ))}
+        </div>
+      </PhoneField>
+      <label className="flex min-h-[48px] items-start gap-[12px] py-[8px] text-body text-text-primary">
+        <input
+          type="checkbox"
+          checked={skipHolidays}
+          onChange={(e) => setSkipHolidays(e.target.checked)}
+          className="mt-[2px] size-[20px] shrink-0 accent-primary"
+        />
+        <span>Skip company holidays</span>
+      </label>
+    </div>
+  )
 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? MEETINGS_HREF}>
       <form ref={formRef} noValidate onKeyDown={enterMovesNext} onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-[20px] pb-[96px]">
         <DraftBanner draft={draft} onUse={restoreDraft} />
 
-        <PhoneField label="Title" htmlFor="meeting-title" required error={errors.title ?? (titleTouched && !title.trim() ? 'Enter a title.' : null)}>
-          <input
-            id="meeting-title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => setTitleTouched(true)}
-            maxLength={250}
-            enterKeyHint="next"
-            autoComplete="off"
-            autoFocus
-            placeholder="For example, Weekly sync"
-            aria-invalid={errors.title || (titleTouched && !title.trim()) ? true : undefined}
-            className={PHONE_INPUT}
-          />
-        </PhoneField>
-
-        <PhoneField label="Type">
-          <div role="group" aria-label="Type" className="flex gap-[8px]">
-            {(['online', 'offline'] as const).map((t) => (
+        <PhoneField label="Repeats">
+          <div role="group" aria-label="Repeats" className="flex gap-[8px]">
+            {([false, true] as const).map((r) => (
               <button
-                key={t}
+                key={String(r)}
                 type="button"
-                aria-pressed={type === t}
-                onClick={() => setType(t)}
+                aria-pressed={repeats === r}
+                onClick={() => setRepeats(r)}
                 className={cx(
                   'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-body font-medium',
-                  type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border bg-surface text-text-secondary',
+                  repeats === r ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border bg-surface text-text-secondary',
                 )}
               >
-                {t === 'online' ? 'Online' : 'In person'}
+                {r ? 'Repeats' : 'Happens once'}
               </button>
             ))}
           </div>
         </PhoneField>
 
-        {type === 'online' ? (
-          <PhoneField label="Meeting link" htmlFor="meeting-link">
-            <input
-              id="meeting-link"
-              type="url"
-              value={onlineLink}
-              onChange={(e) => setOnlineLink(e.target.value)}
-              placeholder="https://meet.example.com/abc"
-              enterKeyHint="next"
-              autoComplete="off"
-              inputMode="url"
-              className={PHONE_INPUT}
-            />
-          </PhoneField>
-        ) : (
-          <PhoneField label="Location" htmlFor="meeting-location">
-            <input
-              id="meeting-location"
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="For example, Conference room 2"
-              enterKeyHint="next"
-              className={PHONE_INPUT}
-            />
-          </PhoneField>
-        )}
-
-        <PhoneDateField id="meeting-date" label="Date" required value={date} onChange={setDate} error={errors.date} />
-
-        <div className="grid grid-cols-2 gap-[12px]">
-          <PhoneTimeField id="meeting-start" label="Start time" required value={startTime} onChange={setStartTime} error={errors.startTime} />
-          <PhoneTimeField id="meeting-end" label="End time" value={endTime} onChange={setEndTime} error={errors.endTime} />
-        </div>
-
-        <PhoneField label="Attendees" htmlFor="meeting-attendees">
-          <button
-            id="meeting-attendees"
-            type="button"
-            data-field
-            onClick={() => setPickerOpen(true)}
-            className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-strong bg-surface px-[12px] text-left active:bg-surface-control"
-          >
-            <span className={cx('text-body', selectedPeople.length > 0 ? 'text-text-primary' : 'text-text-secondary')}>
-              {selectedPeople.length > 0 ? `${selectedPeople.length} chosen` : 'Choose who is invited'}
-            </span>
-            <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
-          </button>
-        </PhoneField>
-        <SelectedPeopleList
-          people={selectedPeople}
-          onRemove={(id) => {
-            setAttendeeIds((cur) => cur.filter((x) => x !== id))
-            setOptionalIds((cur) => cur.filter((x) => x !== id))
-          }}
-        />
+        <MeetingFormFields values={form} onChange={patch} errors={errors} people={people} whenSlot={repeats ? repeatSlot : undefined} />
 
         {agendaOpen ? (
-          <PhoneField label="Agenda" htmlFor="meeting-agenda">
+          <PhoneField label={repeats ? 'Standing agenda' : 'Agenda'} htmlFor="meeting-agenda">
             <GrowTextarea
               id="meeting-agenda"
               value={agenda}
@@ -291,7 +239,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
             onClick={() => setAgendaOpen(true)}
             className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-strong bg-surface px-[12px] text-left active:bg-surface-control"
           >
-            <span className="text-body text-text-primary">Add agenda</span>
+            <span className="text-body text-text-primary">{repeats ? 'Add standing agenda' : 'Add agenda'}</span>
             <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
           </button>
         )}
@@ -304,23 +252,9 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         )}
       >
         <PhoneButton variant="primary" fullWidth loading={saving} onClick={() => void onSave()}>
-          Save meeting
+          {repeats ? 'Save recurring meeting' : 'Save meeting'}
         </PhoneButton>
       </div>
-
-      <PeoplePickerSheet
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        title="Invite"
-        sections={groupByDepartment(people)}
-        selected={selectedPeople}
-        optionalIds={optionalIds}
-        allowOptional
-        onDone={(sel, opt) => {
-          setAttendeeIds(sel.map((p) => p.user_id))
-          setOptionalIds(opt)
-        }}
-      />
     </PhoneScreen>
   )
 }

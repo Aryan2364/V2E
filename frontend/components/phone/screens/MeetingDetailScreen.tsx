@@ -2,25 +2,39 @@
 
 import { fmtDateTime, fmtTime } from '@/lib/phone-format'
 import React from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { ChevronRight, Video, MapPin } from 'lucide-react'
+import { ChevronRight, Video, MapPin, MoreHorizontal } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import { meetingsApi } from '@/lib/api/meetings'
 import type { Meeting } from '@/lib/types/meetings'
 import { MEETING_STATUS_META } from '@/lib/types/meetings'
-import { PHONE_HOME, MEETINGS_HREF, type PhoneRoute } from '@/lib/phone-routes'
+import { MEETINGS_HREF, meetingRhythmHref, type PhoneRoute } from '@/lib/phone-routes'
 import PhoneScreen from '../PhoneScreen'
-import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
+import { PhoneFailedState } from '../PhoneEmptyState'
 import { PhoneButton, PhoneLinkButton, cx } from '../primitives'
 import { DeclineMeetingSheet } from '../DeclineMeetingSheet'
 import { AttendeesListSheet } from '../AttendeesListSheet'
+import { APP_BAR_BUTTON } from '../PhoneAppBar'
+import { MeetingActionsSheet } from '../MeetingActionsSheet'
+import { MeetingPasswordRow } from '../MeetingPasswordRow'
+import { MeetingLifecycleBar } from '../meeting/MeetingLifecycleBar'
+import { MeetingMinutesSection } from '../meeting/MeetingMinutesSection'
+import { MeetingAttendanceSheet } from '../meeting/MeetingAttendanceSheet'
+import { MeetingActionItemsSection } from '../meeting/MeetingActionItemsSection'
+import { MeetingDecisionsSection } from '../meeting/MeetingDecisionsSection'
+import { MeetingMyNoteSection } from '../meeting/MeetingMyNoteSection'
+import { meetingEditGates } from '../meeting/meetingShared'
 
 /*
  * Meeting detail - plan-phone-2026-10-14.md §5.8, kit §41.6. Title + status,
  * 4 key facts, Join/decline in the action bar, attendees and agenda below.
- * Start/End/Close/Cancel/Reopen and minutes stay on the computer (owner
- * scope, D11) — not drawn here even though the endpoints exist.
+ * Running a meeting is on the phone too (the owner's rule: no meeting flow
+ * is half on the phone and half on the computer): Start/End/Close/Reopen,
+ * attendance, minutes, action items, decisions and my private note, drawn
+ * from components/phone/meeting/ with the computer's gates. This replaces
+ * the earlier D11 "left out on purpose".
  */
 export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
   const params = useParams<{ meetingId: string }>()
@@ -33,6 +47,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
   const [error, setError] = React.useState(false)
   const [declineOpen, setDeclineOpen] = React.useState(false)
   const [attendeesOpen, setAttendeesOpen] = React.useState(false)
+  const [menuOpen, setMenuOpen] = React.useState(false)
   const [busy, setBusy] = React.useState(false)
 
   const load = React.useCallback(() => {
@@ -107,7 +122,8 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
   }
 
   function onJoinOrDirections() {
-    if (meeting!.type === 'online' && meeting!.online_link) {
+    // Desktop shows the join link for anything that is not in person (MP ~144), hybrid included.
+    if (meeting!.type !== 'offline' && meeting!.online_link) {
       window.open(meeting!.online_link, '_blank', 'noopener,noreferrer')
     } else if (meeting!.location) {
       window.open(`https://maps.google.com/?q=${encodeURIComponent(meeting!.location)}`, '_blank', 'noopener,noreferrer')
@@ -120,20 +136,32 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
       }`
     : 'No time set'
 
-  const where = meeting.type === 'online' ? meeting.online_link || 'Online meeting' : meeting.location || 'No location set'
+  const hasOnline = meeting.type !== 'offline'
+  const hasPlace = meeting.type !== 'online'
 
   const facts: { label: string; value: React.ReactNode }[] = [
     { label: 'When', value: when },
-    { label: meeting.type === 'online' ? 'Join' : 'Where', value: where },
+    ...(hasOnline ? [{ label: 'Join', value: meeting.online_link || 'Online meeting' }] : []),
+    ...(hasPlace ? [{ label: 'Where', value: meeting.location || 'No location set' }] : []),
     { label: 'Organiser', value: meeting.organizer?.name ?? '—' },
     { label: 'My response', value: amAttendee ? (declined ? "Won't make it" : 'Attending') : 'Not an attendee' },
   ]
 
-  const canJoin = (meeting.type === 'online' && !!meeting.online_link) || (meeting.type !== 'online' && !!meeting.location)
+  const hasLink = hasOnline && !!meeting.online_link
+  const canJoin = hasLink || (hasPlace && !!meeting.location)
   const showDecline = amAttendee && meeting.status !== 'cancelled' && meeting.status !== 'closed'
+  const gates = meetingEditGates(meeting, user?.id)
 
   return (
-    <PhoneScreen title="Meeting" parent={route.parent ?? MEETINGS_HREF}>
+    <PhoneScreen
+      title="Meeting"
+      parent={route.parent ?? MEETINGS_HREF}
+      actions={
+        <button type="button" aria-label="More options" className={APP_BAR_BUTTON} onClick={() => setMenuOpen(true)}>
+          <MoreHorizontal aria-hidden />
+        </button>
+      }
+    >
       <div className="flex flex-col gap-[20px] pb-[16px]">
         <div className="flex flex-col gap-[8px]">
           <h2 className="text-card-heading font-medium text-text-primary">{meeting.title}</h2>
@@ -154,6 +182,20 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
           ))}
         </dl>
 
+        {hasOnline && meeting.online_password ? <MeetingPasswordRow password={meeting.online_password} /> : null}
+
+        {meeting.rhythm_id ? (
+          <Link
+            href={meetingRhythmHref(meeting.rhythm_id)}
+            className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-strong bg-surface px-[12px] active:bg-surface-control"
+          >
+            <span className="text-body text-text-primary">Part of a recurring meeting</span>
+            <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
+          </Link>
+        ) : null}
+
+        <MeetingLifecycleBar orgId={orgId} meeting={meeting} onChanged={setMeeting} />
+
         <button
           type="button"
           onClick={() => setAttendeesOpen(true)}
@@ -169,6 +211,12 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
             <p className="whitespace-pre-wrap text-body text-text-primary">{meeting.agenda}</p>
           </div>
         ) : null}
+
+        <MeetingAttendanceSheet orgId={orgId} meeting={meeting} onChanged={setMeeting} />
+        <MeetingMinutesSection orgId={orgId} meeting={meeting} locked={gates.locked} canEdit={gates.canEdit} onChanged={setMeeting} />
+        <MeetingActionItemsSection orgId={orgId} meeting={meeting} locked={gates.locked} canEdit={gates.canEdit} onChanged={setMeeting} />
+        <MeetingDecisionsSection orgId={orgId} meeting={meeting} locked={gates.locked} canEdit={gates.canEdit} onChanged={setMeeting} />
+        <MeetingMyNoteSection orgId={orgId} meeting={meeting} />
       </div>
 
       {canJoin || showDecline ? (
@@ -191,7 +239,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
           ) : null}
           {canJoin ? (
             <PhoneButton variant="primary" className="flex-1" onClick={onJoinOrDirections}>
-              {meeting.type === 'online' ? (
+              {hasLink ? (
                 <>
                   <Video aria-hidden /> Join meeting
                 </>
@@ -206,6 +254,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
       ) : null}
 
       <DeclineMeetingSheet open={declineOpen} onOpenChange={setDeclineOpen} onConfirm={(reason) => void doDecline(reason)} submitting={busy} />
+      {menuOpen ? <MeetingActionsSheet orgId={orgId} meeting={meeting} open={menuOpen} onOpenChange={setMenuOpen} /> : null}
       <AttendeesListSheet
         open={attendeesOpen}
         onOpenChange={setAttendeesOpen}

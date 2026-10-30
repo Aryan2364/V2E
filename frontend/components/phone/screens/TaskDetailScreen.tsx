@@ -39,6 +39,10 @@ import { TaskPartsSection } from '../TaskPartsSection'
 import { CompletionModeSheet, StatusSheet } from '../TaskStatusSheets'
 import { ActivitySheet } from '../ActivitySheet'
 import { useUndoToast } from '../UndoToast'
+import { WorkflowStepBanner } from '../WorkflowStepBanner'
+import { WorkflowDiscussion } from '../WorkflowDiscussion'
+import { REASONS, gate, useWorkflowsWritable } from '@/components/workflows/shared'
+import type { WorkflowStepContext } from '@/lib/types/workflows'
 
 /*
  * The full task detail screen - plan-phone-2026-10-14.md §5.3, kit §41.6.
@@ -70,6 +74,11 @@ import { useUndoToast } from '../UndoToast'
  *     file can be marked as proof, as on the computer. There are no @mentions
  *     in TASK comments on the computer either (only workflow discussions have
  *     them; addComment takes no mention list), so none are faked here.
+ *   - A task a workflow step created (desktop task page ~1009 and ~1204) shows the
+ *     workflow banner (WorkflowStepBanner: step, run, notes, Send back) under the
+ *     title, and its Comments are the run's ONE shared discussion
+ *     (WorkflowDiscussion) instead of task comments, when the server says the
+ *     viewer can see the run; otherwise the plain task comments below stay.
  *   - The ... menu also carries the owner and status controls of the computer's
  *     task page: Complete for everyone, Mark whole task incomplete, Change
  *     status and Completion mode, each behind that page's own gate.
@@ -113,6 +122,9 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const [markingProofId, setMarkingProofId] = React.useState<string | null>(null)
   // Bumped after a comment file is marked as proof, so the Files & proof section re-lists.
   const [proofToken, setProofToken] = React.useState(0)
+  // A workflow step task: its run's context (undefined = still loading, null = none / could not load).
+  const [stepCtx, setStepCtx] = React.useState<WorkflowStepContext | null | undefined>(undefined)
+  const workflowsWritable = useWorkflowsWritable()
 
   const load = React.useCallback(() => {
     if (!orgId || !taskId) return
@@ -251,6 +263,13 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const orderedComments = (comments ?? []).slice().sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
   const visibleComments = orderedComments.slice(Math.max(0, orderedComments.length - commentCount))
   const totalCommentCount = comments?.length ?? task._count?.comments ?? 0
+  // Desktop (~1204): a workflow step task shows its run's discussion, once the context says the viewer can see it.
+  const isWorkflowTask = !!task.workflow_instance_step_id
+  const showDiscussion = isWorkflowTask && !!stepCtx?.can_view_discussion
+  // Desktop (~822): everyone who can see the run may write, except on a simulated-future task.
+  const discussionGate = isFutureTask
+    ? { allowed: false as boolean | undefined, reason: 'Comments are locked on tasks created in a simulated future.' }
+    : gate(true, workflowsWritable, REASONS.message)
 
   /** Reopen with no reason (inside the undo window, or just my own part). Shows the server's message if refused. */
   async function reopenNow() {
@@ -420,6 +439,17 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
 
         <h1 className="whitespace-pre-wrap text-page-title font-medium text-text-primary">{task.title}</h1>
 
+        {isWorkflowTask ? (
+          <WorkflowStepBanner
+            orgId={orgId}
+            taskId={task.id}
+            workflowInstanceStepId={task.workflow_instance_step_id}
+            fallback={task.workflow_step ?? null}
+            onChanged={load}
+            onContext={setStepCtx}
+          />
+        ) : null}
+
         <dl className="grid grid-cols-2 gap-y-[12px] gap-x-[12px]">
           {facts.map((f) => (
             <div key={f.label} className="flex flex-col gap-[2px]">
@@ -467,6 +497,31 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
 
         <TaskFilesSection key={proofToken} orgId={orgId} task={task} onTaskUpdate={updateTask} />
 
+        {isWorkflowTask && stepCtx === undefined ? (
+          <div className="flex flex-col gap-[8px]" aria-busy>
+            <span className="h-[16px] w-1/3 rounded-full bg-surface-control" />
+            <span className="h-[56px] rounded-[8px] bg-surface-control" />
+          </div>
+        ) : showDiscussion && stepCtx ? (
+          <WorkflowDiscussion
+            orgId={orgId}
+            templateId={stepCtx.template_id}
+            instanceId={stepCtx.instance_id}
+            taskId={task.id}
+            canWrite={discussionGate.allowed}
+            writeReason={discussionGate.reason}
+            proof={{
+              canSubmit: !!task.proof_required && iAmAssignee && !sharedDone,
+              allowedExtensions: proofExts,
+              onMark: async (attachmentId) => {
+                await tasksApi.markCommentAttachmentAsProof(orgId, task.id, attachmentId)
+                load()
+                setProofToken((n) => n + 1)
+              },
+            }}
+            onChanged={() => setProofToken((n) => n + 1)}
+          />
+        ) : (
         <section className="flex flex-col gap-[8px]">
           <h2 className="text-label font-medium text-text-secondary">
             Comments{totalCommentCount > 0 ? ` (${totalCommentCount})` : ''}
@@ -543,8 +598,11 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           />
           )}
         </section>
+        )}
       </div>
 
+      {!isWorkflowTask || (stepCtx !== undefined && !showDiscussion) ? (
+      <>
       <input
         ref={commentFileInput}
         type="file"
@@ -579,6 +637,8 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           </button>
         }
       />
+      </>
+      ) : null}
 
       <FinishTaskSheet
         open={sheetOpen}

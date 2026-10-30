@@ -25,6 +25,9 @@ import RecurringInstancesScreen from './screens/RecurringInstancesScreen'
 import MeetingsScreen from './screens/MeetingsScreen'
 import MeetingDetailScreen from './screens/MeetingDetailScreen'
 import MeetingCreateScreen from './screens/MeetingCreateScreen'
+import WorkflowRunScreen from './screens/WorkflowRunScreen'
+import MeetingEditScreen from './screens/MeetingEditScreen'
+import MeetingRhythmScreen from './screens/MeetingRhythmScreen'
 import { UndoToastProvider } from './UndoToast'
 import { ComputerOnlyScreen, ModuleOffScreen } from './screens/PlaceholderScreens'
 
@@ -113,6 +116,12 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
       return <MeetingDetailScreen route={route} />
     case 'meeting-create':
       return <MeetingCreateScreen route={route} />
+    case 'meeting-edit':
+      return <MeetingEditScreen route={route} />
+    case 'meeting-rhythm':
+      return <MeetingRhythmScreen route={route} />
+    case 'workflow-run':
+      return <WorkflowRunScreen route={route} />
     case 'notifications':
       return <NotificationsScreen title={route.title} />
     case 'more':

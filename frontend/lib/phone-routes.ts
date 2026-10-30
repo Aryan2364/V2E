@@ -59,6 +59,29 @@ export function recurringEditHref(templateId: string): string {
   return `${recurringInstancesHref(templateId)}/edit`
 }
 
+/** A workflow run - the same address desktop uses (workflow notifications link here). */
+export function workflowRunHref(templateId: string, instanceId: string): string {
+  return `/dashboard/tasks/workflows/${templateId}/instances/${instanceId}`
+}
+
+/** A meeting's record - the same address desktop uses. */
+export function meetingHref(meetingId: string): string {
+  return `/dashboard/governance/meetings/${meetingId}`
+}
+
+/**
+ * Edit a meeting (phone only). Desktop edits in a dialog, so on desktop this
+ * address forwards to the meeting.
+ */
+export function meetingEditHref(meetingId: string): string {
+  return `${meetingHref(meetingId)}/edit`
+}
+
+/** A recurring meeting series - the same address desktop uses. */
+export function meetingRhythmHref(rhythmId: string): string {
+  return `/dashboard/governance/meetings/rhythms/${rhythmId}`
+}
+
 /** The phone screens slice 1/5 know how to draw. */
 export type PhoneScreenKey =
   | 'my-work'
@@ -72,6 +95,9 @@ export type PhoneScreenKey =
   | 'task-edit'
   | 'cc-tasks'
   | 'recurring-edit'
+  | 'workflow-run'
+  | 'meeting-edit'
+  | 'meeting-rhythm'
   | 'meeting-record'
   | 'meeting-create'
   | 'recurring-templates'
@@ -193,6 +219,31 @@ export function phoneRouteFor(rawPathname: string): PhoneRoute | null {
       title: 'Recurring task',
       parent: RECURRING_TEMPLATES_HREF,
       entitlement: 'tasks',
+    }
+  }
+
+  const workflowRun = /^\/dashboard\/tasks\/workflows\/([^/]+)\/instances\/([^/]+)$/.exec(pathname)
+  if (workflowRun) {
+    return { key: 'workflow-run', title: 'Workflow', parent: PHONE_HOME, entitlement: 'workflows' }
+  }
+
+  const meetingEdit = /^\/dashboard\/governance\/meetings\/([^/]+)\/edit$/.exec(pathname)
+  if (meetingEdit && !MEETING_SECTIONS.has(meetingEdit[1])) {
+    return {
+      key: 'meeting-edit',
+      title: 'Edit meeting',
+      parent: meetingHref(meetingEdit[1]),
+      entitlement: 'governance.meetings',
+    }
+  }
+
+  const meetingRhythm = /^\/dashboard\/governance\/meetings\/rhythms\/([^/]+)$/.exec(pathname)
+  if (meetingRhythm) {
+    return {
+      key: 'meeting-rhythm',
+      title: 'Recurring meeting',
+      parent: MEETINGS_HREF,
+      entitlement: 'governance.meetings',
     }
   }
 
