@@ -12,6 +12,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PasswordResetService } from './password-reset.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { MEMBERSHIP_ENDED_MESSAGE } from '../common/org-status.util';
 
 const SECRET = 's';
 const REFRESH_SECRET = 'r';
@@ -245,5 +247,48 @@ describe('per-device sessions', () => {
     await login();
     expect(sessions).toHaveLength(1);
     expect(sessions[0].expires_at.getTime()).toBeGreaterThan(Date.now());
+  });
+});
+
+describe('removed members lose access', () => {
+  it('refresh is refused once the person is removed from the org, and that session ends', async () => {
+    const { auth, login, prisma, sessions } = setup();
+    const t = await login();
+    expect((new JwtService({}).decode(t.refresh_token) as any).organizationId).toBe('org-1');
+
+    // The membership query only finds ACTIVE rows: removed or deactivated -> null.
+    prisma.organizationMember.findFirst.mockResolvedValueOnce(null);
+    await expect(auth.refresh(t.refresh_token)).rejects.toThrow(UnauthorizedException);
+    expect(sessions).toHaveLength(0);
+  });
+
+  it('every request with an existing access token is refused for a removed or deactivated member', async () => {
+    const prisma: any = {
+      user: { findUnique: jest.fn(() => Promise.resolve({ id: 'u1', is_active: true, is_super_admin: false })) },
+      organization: { findUnique: jest.fn(() => Promise.resolve({ is_test: false, status: 'active' })) },
+      employeeProfile: { findFirst: jest.fn(() => Promise.resolve(null)) },
+      organizationMember: { findUnique: jest.fn(() => Promise.resolve({ is_admin: false, is_active: true })) },
+    };
+    const strategy = new JwtStrategy({ get: () => SECRET } as any, prisma);
+    const payload = { sub: 'u1', organizationId: 'org-1', sid: 's1' };
+
+    await expect(strategy.validate(payload)).resolves.toMatchObject({ id: 'u1', organizationId: 'org-1' });
+
+    prisma.organizationMember.findUnique.mockResolvedValueOnce({ is_admin: false, is_active: false });
+    await expect(strategy.validate(payload)).rejects.toThrow(MEMBERSHIP_ENDED_MESSAGE);
+
+    prisma.organizationMember.findUnique.mockResolvedValueOnce(null);
+    await expect(strategy.validate(payload)).rejects.toThrow(MEMBERSHIP_ENDED_MESSAGE);
+  });
+
+  it('a super admin is not a member of the firms they open, and is still let in', async () => {
+    const prisma: any = {
+      user: { findUnique: jest.fn(() => Promise.resolve({ id: 'sa', is_active: true, is_super_admin: true })) },
+      organization: { findUnique: jest.fn(() => Promise.resolve({ is_test: false, status: 'active' })) },
+      employeeProfile: { findFirst: jest.fn(() => Promise.resolve(null)) },
+      organizationMember: { findUnique: jest.fn(() => Promise.resolve(null)) },
+    };
+    const strategy = new JwtStrategy({ get: () => SECRET } as any, prisma);
+    await expect(strategy.validate({ sub: 'sa', organizationId: 'org-1' })).resolves.toMatchObject({ id: 'sa' });
   });
 });

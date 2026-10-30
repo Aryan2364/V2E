@@ -84,6 +84,12 @@ export class WsAuthService {
         select: { status: true },
       });
       if (isOrganizationDeactivated(org?.status)) return null;
+      // ...and so is a person removed or deactivated in this org.
+      const member = await this.prisma.organizationMember.findUnique({
+        where: { organization_id_user_id: { organization_id: organizationId, user_id: user.id } },
+        select: { is_active: true },
+      });
+      if (!member?.is_active) return null;
     }
 
     return { userId: user.id, organizationId };

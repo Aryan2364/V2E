@@ -25,6 +25,7 @@ describe('WsAuthService (SECURITY_AUDIT C4/C5)', () => {
   const prisma = {
     user: { findUnique: jest.fn() },
     organization: { findUnique: jest.fn() },
+    organizationMember: { findUnique: jest.fn() },
   };
 
   const sign = (payload: object, opts: object = {}) =>
@@ -57,6 +58,8 @@ describe('WsAuthService (SECURITY_AUDIT C4/C5)', () => {
     prisma.user.findUnique.mockResolvedValue({ id: 'user-A', is_active: true });
     // Default: the token's org is a live firm (not deactivated by a super admin).
     prisma.organization.findUnique.mockResolvedValue({ status: 'active' });
+    // Default: the user is still an active member of that org.
+    prisma.organizationMember.findUnique.mockResolvedValue({ is_active: true });
   });
 
   // ─── The hole: no token / spoofed id ──────────────────────────────────────
@@ -138,6 +141,18 @@ describe('WsAuthService (SECURITY_AUDIT C4/C5)', () => {
 
   it('rejects a valid token whose ORGANIZATION has been deactivated', async () => {
     prisma.organization.findUnique.mockResolvedValue({ status: 'inactive' });
+    const token = sign({ sub: 'user-A', organizationId: 'org-1' });
+    expect(await svc.authenticate(socketWith({ token }))).toBeNull();
+  });
+
+  it('rejects a valid token whose holder was REMOVED from the organization', async () => {
+    prisma.organizationMember.findUnique.mockResolvedValue(null);
+    const token = sign({ sub: 'user-A', organizationId: 'org-1' });
+    expect(await svc.authenticate(socketWith({ token }))).toBeNull();
+  });
+
+  it('rejects a valid token whose holder was DEACTIVATED in the organization', async () => {
+    prisma.organizationMember.findUnique.mockResolvedValue({ is_active: false });
     const token = sign({ sub: 'user-A', organizationId: 'org-1' });
     expect(await svc.authenticate(socketWith({ token }))).toBeNull();
   });

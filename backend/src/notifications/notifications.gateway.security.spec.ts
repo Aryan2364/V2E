@@ -29,6 +29,7 @@ describe('NotificationsGateway handshake auth (SECURITY_AUDIT C4)', () => {
   const prisma = {
     user: { findUnique: jest.fn() },
     organization: { findUnique: jest.fn().mockResolvedValue({ status: 'active' }) },
+    organizationMember: { findUnique: jest.fn().mockResolvedValue({ is_active: true }) },
   };
 
   const sign = (payload: object, opts: object = {}) =>

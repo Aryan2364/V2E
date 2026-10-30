@@ -15,7 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { SwitchOrgDto } from './dto/switch-org.dto';
 import { classifyIdentifier } from '../common/identifier.util';
-import { ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../common/org-status.util';
+import { MEMBERSHIP_ENDED_MESSAGE, ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../common/org-status.util';
 
 @Injectable()
 export class AuthService {
@@ -206,6 +206,12 @@ export class AuthService {
         // block new logins — so a refresh for a dead org is refused.
         if (!user.is_super_admin && isOrganizationDeactivated(member?.organization?.status)) {
           throw new UnauthorizedException(ORG_DEACTIVATED_MESSAGE);
+        }
+        // Removed or deactivated in this org (the query only finds active rows):
+        // no new tokens, and this device's session for it ends here.
+        if (!user.is_super_admin && !member) {
+          if (sid) await this.prisma.userSession.deleteMany({ where: { id: sid, user_id: user.id } });
+          throw new UnauthorizedException(MEMBERSHIP_ENDED_MESSAGE);
         }
         isAdmin = member?.is_admin ?? false;
       }

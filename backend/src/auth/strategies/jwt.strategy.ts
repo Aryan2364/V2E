@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../../common/org-status.util';
+import { MEMBERSHIP_ENDED_MESSAGE, ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../../common/org-status.util';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -46,7 +46,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }),
         this.prisma.organizationMember.findUnique({
           where: { organization_id_user_id: { organization_id: organizationId, user_id: user.id } },
-          select: { is_admin: true },
+          select: { is_admin: true, is_active: true },
         }),
       ]);
       // A firm deactivated from the super-admin portal loses access immediately —
@@ -55,6 +55,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // can still open the firm to inspect or reactivate it.
       if (!user.is_super_admin && isOrganizationDeactivated(org?.status)) {
         throw new UnauthorizedException(ORG_DEACTIVATED_MESSAGE);
+      }
+      // A person removed or deactivated in this org loses access immediately, the
+      // same way a deactivated firm does (org-status.util.ts).
+      if (!user.is_super_admin && !member?.is_active) {
+        throw new UnauthorizedException(MEMBERSHIP_ENDED_MESSAGE);
       }
 
       isTestOrg = org?.is_test ?? false;

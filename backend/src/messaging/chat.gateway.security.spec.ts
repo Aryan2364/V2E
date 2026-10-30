@@ -31,6 +31,7 @@ describe('ChatGateway handshake auth (SECURITY_AUDIT C5)', () => {
   const prisma = {
     user: { findUnique: jest.fn() },
     organization: { findUnique: jest.fn().mockResolvedValue({ status: 'active' }) },
+    organizationMember: { findUnique: jest.fn().mockResolvedValue({ is_active: true }) },
   };
   const messaging = {
     getConversation: jest.fn(),
