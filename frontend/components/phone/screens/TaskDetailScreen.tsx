@@ -3,18 +3,24 @@
 import { fmtDateTime, fmtDue } from '@/lib/phone-format'
 import React from 'react'
 import { createPortal } from 'react-dom'
-import { useParams } from 'next/navigation'
-import { Ellipsis, Paperclip, RotateCcw, Send, X } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
+import { Ellipsis, History, Info, Paperclip, Pencil, RotateCcw, Trash2, X, XCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
+import { usePermissions } from '@/lib/auth/use-permissions'
+import { getNow } from '@/lib/clock'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
-import type { Task, TaskComment, TaskChecklistItem } from '@/lib/types/tasks'
+import type { Task, TaskComment, TaskChecklistItem, TaskMasterConfig } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
-import { PHONE_HOME, type PhoneRoute } from '@/lib/phone-routes'
+import { PHONE_HOME, taskEditHref, type PhoneRoute } from '@/lib/phone-routes'
 import { shrinkImageForUpload } from '@/lib/image-resize'
 import { canQuickComplete, unfinishedChecklistItems } from '@/lib/tasks/finish-rules'
 import { useTaskBadge } from '@/lib/task-badge'
-import { COMPLETED_UNDO_MESSAGE, completeForMe, undoCompleteForMe } from '@/lib/tasks/complete-for-me'
+import { COMPLETED_UNDO_MESSAGE, completeForMe, isUndoWindowOpen, reopenAfterWindow, undoCompleteForMe } from '@/lib/tasks/complete-for-me'
+import { apiErrorMessage } from '@/lib/tasks/api-error'
+import useCanEditTask from '@/lib/tasks/useCanEditTask'
+import TagChip from '@/components/ui/TagChip'
+import { PermissionTooltip } from '@/components/ui/permission-tooltip'
 import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import { CommentBox } from '@/components/ui/comment-box'
 import { CommentThread, type ThreadItem } from '@/components/ui/comment-thread'
@@ -26,14 +32,22 @@ import { PhoneSheet } from '../PhoneSheet'
 import { NotificationOfferSheet } from '../NotificationOfferSheet'
 import { FinishTaskSheet } from '../FinishTaskSheet'
 import { TaskFilesSection } from '../TaskFilesSection'
+import { TaskCcSection } from '../TaskCcSection'
+import { TaskReasonSheet } from '../TaskReasonSheet'
+import { ActivitySheet } from '../ActivitySheet'
 import { useUndoToast } from '../UndoToast'
 
 /*
  * The full task detail screen - plan-phone-2026-10-14.md §5.3, kit §41.6.
  * Replaces slice 3's minimal read-only placeholder.
  *
- *   - App bar: back + three-dot menu (a read-only "Details" sheet: who gave
- *     it, when, and its id - nothing invented beyond what the record has).
+ *   - App bar: back + three-dot menu sheet: Edit task, Can't complete,
+ *     Activity, Details (read-only: who gave it and when) and Delete. Each
+ *     mirrors the desktop task page's rule for it; one that applies to the
+ *     person but is not allowed is disabled with its reason on tap, one that
+ *     cannot apply (Can't complete for a non-assignee) is left out.
+ *   - CC people (add / remove) and the task's tags (read-only) sit under the
+ *     facts. Reopen after the undo window is creator/admin only, with a reason.
  *   - Title, status badge(s), the 4 key facts, description, checklist
  *     (tickable through the SAME endpoints the Finish sheet uses), "Files &
  *     proof" as one row with a count opening a full-screen files/proof
@@ -63,6 +77,8 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const { addToast } = useToast()
   const { showUndo } = useUndoToast()
   const { refresh: refreshBadge } = useTaskBadge()
+  const router = useRouter()
+  const perms = usePermissions()
   const orgId = user?.organizationId ?? ''
   const userId = user?.id
 
@@ -70,7 +86,10 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const [error, setError] = React.useState(false)
   const [checking, setChecking] = React.useState<Set<string>>(new Set())
   const [sheetOpen, setSheetOpen] = React.useState(false)
-  const [detailsOpen, setDetailsOpen] = React.useState(false)
+  // One panel open at a time: the ... menu and the sheets it leads to.
+  const [panel, setPanel] = React.useState<null | 'menu' | 'details' | 'activity' | 'cant' | 'delete' | 'reopen'>(null)
+  const [config, setConfig] = React.useState<TaskMasterConfig | null | undefined>(undefined)
+  const [, setWindowTick] = React.useState(0)
   const [offerPush, setOfferPush] = React.useState(false)
   const [comments, setComments] = React.useState<TaskComment[] | null>(null)
   const [commentsFailed, setCommentsFailed] = React.useState(false)
@@ -92,6 +111,25 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   }, [orgId, taskId])
 
   React.useEffect(load, [load])
+
+  // Delete's rule needs the org's task config (task_delete_roles), as on desktop.
+  React.useEffect(() => {
+    if (!orgId) return
+    tasksApi.getConfig(orgId).then(setConfig).catch(() => setConfig(null))
+  }, [orgId])
+
+  // Re-evaluate who may reopen the moment the undo window ends.
+  const reopenExpiresAt = task?.reopen_expires_at
+  React.useEffect(() => {
+    if (!reopenExpiresAt) return
+    const ms = new Date(reopenExpiresAt).getTime() - getNow().getTime()
+    if (ms <= 0) return
+    const id = setTimeout(() => setWindowTick((n) => n + 1), ms + 50)
+    return () => clearTimeout(id)
+  }, [reopenExpiresAt])
+
+  // Edit: the same rule the server applies to updateTask (undefined = not known yet).
+  const canEditTask = useCanEditTask(task)
 
   const loadComments = React.useCallback(() => {
     if (!orgId || !taskId) return
@@ -145,10 +183,62 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   // Whether THIS viewer's part is already done (drives "Complete task" vs "Undo"/"Reopen").
   const myPartDone = task.completion_mode === 'all_must_complete' ? !!myAssignment?.is_completed : sharedDone
 
+  // Desktop page.tsx: canEdit (~835) = creator or admin; canManageCc (~846) = (that, or on the
+  // task as assignee or CC) and not a simulated-future task and not closed; canDelete (~772).
+  const isCreator = task.created_by_user_id === userId
+  const isAdminUser = !!user?.is_admin || perms.isAdmin
+  const isFutureTask = new Date(task.created_at) > getNow()
+  const isCc = (task.assignees ?? []).some((a) => a.user_id === userId && a.is_cc)
+  const canManageCc = (isCreator || isAdminUser || isAssignee || isCc) && !isFutureTask && !sharedDone
+  const canDelete: boolean | undefined = user?.is_admin
+    ? true
+    : config === undefined
+      ? undefined
+      : (config?.task_delete_roles ?? []).includes('employee')
+  const allMust = task.completion_mode === 'all_must_complete'
+  // Can't complete: desktop's "Can't complete (my part)" / "mark incomplete" (~1099-1132). An open
+  // task, an assignee whose part is not already finished or flagged.
+  const canCantComplete = isAssignee && !isFutureTask && !sharedDone && !myAssignment?.is_completed && !myAssignment?.cannot_complete
+  // Reopen (backend reopenTask ~3528-3550): inside the undo window any participant reverses a
+  // closure with no reason; after it only the creator or an admin may, with a reason. In
+  // all_must_complete an assignee can also take back just their own finished part (~937-960).
+  const windowOpen = isUndoWindowOpen(task)
+  const reopenKind: 'direct' | 'reason' | null = sharedDone
+    ? windowOpen && (isAssignee || isCreator || isAdminUser)
+      ? 'direct'
+      : isCreator || isAdminUser
+        ? 'reason'
+        : null
+    : allMust && !!myAssignment?.is_completed
+      ? 'direct'
+      : null
+  const partReopen = allMust && !!myAssignment?.is_completed
+  const tags = task.tags ?? []
+
   // Oldest first; "Show earlier" adds 10 older ones at the top.
   const orderedComments = (comments ?? []).slice().sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
   const visibleComments = orderedComments.slice(Math.max(0, orderedComments.length - commentCount))
   const totalCommentCount = comments?.length ?? task._count?.comments ?? 0
+
+  /** Reopen with no reason (inside the undo window, or just my own part). Shows the server's message if refused. */
+  async function reopenNow() {
+    if (!task) return
+    try {
+      if (partReopen) await undoCompleteForMe(orgId, task)
+      else await tasksApi.reopenTask(orgId, task.id)
+      load()
+      void refreshBadge()
+    } catch (e) {
+      addToast(apiErrorMessage(e, 'Could not reopen the task. Try again.'), 'error')
+      load()
+    }
+  }
+
+  /** Switches to another panel once the current sheet has finished closing (each sheet owns a history entry). */
+  function goPanel(next: 'details' | 'activity' | 'cant' | 'delete' | 'reopen') {
+    setPanel(null)
+    window.setTimeout(() => setPanel(next), 250)
+  }
 
   function updateTask(updated: Task) {
     setTask(updated)
@@ -257,7 +347,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       title="Task"
       parent={route.parent ?? PHONE_HOME}
       actions={
-        <button type="button" aria-label="More options" className={APP_BAR_BUTTON} onClick={() => setDetailsOpen(true)}>
+        <button type="button" aria-label="More options" className={APP_BAR_BUTTON} onClick={() => setPanel('menu')}>
           <Ellipsis aria-hidden />
         </button>
       }
@@ -283,29 +373,30 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           ))}
         </dl>
 
-        {isAssignee ? (
-          myPartDone ? (
-            <PhoneButton
-              type="button"
-              variant="secondary"
-              fullWidth
-              onClick={() => {
-                callUndo(task)
-                  .then(() => {
-                    load()
-                    void refreshBadge()
-                  })
-                  .catch(() => addToast('Could not reopen the task. Try again.', 'error'))
-              }}
-            >
-              Reopen task
-            </PhoneButton>
-          ) : (
-            <PhoneButton type="button" variant="primary" fullWidth loading={completing} onClick={onTapComplete}>
-              Complete task
-            </PhoneButton>
-          )
+        {reopenKind ? (
+          <PhoneButton type="button" variant="secondary" fullWidth onClick={() => (reopenKind === 'reason' ? setPanel('reopen') : void reopenNow())}>
+            Reopen task
+          </PhoneButton>
+        ) : isAssignee && !myPartDone && !sharedDone ? (
+          <PhoneButton type="button" variant="primary" fullWidth loading={completing} onClick={onTapComplete}>
+            Complete task
+          </PhoneButton>
+        ) : isAssignee && sharedDone ? (
+          <p className="text-label text-text-secondary">This task is closed. Only the person who gave it, or an admin, can reopen it.</p>
         ) : null}
+
+        {tags.length > 0 ? (
+          <section className="flex flex-col gap-[8px]">
+            <h2 className="text-label font-medium text-text-secondary">Tags</h2>
+            <div className="flex flex-wrap gap-[8px]">
+              {tags.map((t) => (
+                <TagChip key={t.id} tag={t} size="md" />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <TaskCcSection orgId={orgId} task={task} canManage={canManageCc} onTaskUpdate={updateTask} />
 
         {task.description ? (
           <div className="flex flex-col gap-[4px]">
@@ -448,7 +539,32 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         }}
       />
 
-      <PhoneSheet open={detailsOpen} onOpenChange={setDetailsOpen} title="Details">
+      <PhoneSheet open={panel === 'menu'} onOpenChange={(o) => !o && setPanel(null)} title="More">
+        <ul className={ROW_BLOCK}>
+          <MenuItem
+            icon={<Pencil aria-hidden />}
+            label="Edit task"
+            allowed={canEditTask}
+            reason="Only people allowed to edit this task can change it"
+            onClick={() => router.push(taskEditHref(task.id))}
+          />
+          {canCantComplete ? (
+            <MenuItem icon={<XCircle aria-hidden />} label="Can't complete" onClick={() => goPanel('cant')} />
+          ) : null}
+          <MenuItem icon={<History aria-hidden />} label="Activity" onClick={() => goPanel('activity')} />
+          <MenuItem icon={<Info aria-hidden />} label="Details" onClick={() => goPanel('details')} />
+          <MenuItem
+            icon={<Trash2 aria-hidden />}
+            label="Delete task"
+            danger
+            allowed={canDelete}
+            reason="Only people allowed to delete tasks can do this"
+            onClick={() => goPanel('delete')}
+          />
+        </ul>
+      </PhoneSheet>
+
+      <PhoneSheet open={panel === 'details'} onOpenChange={(o) => !o && setPanel(null)} title="Details">
         <dl className="flex flex-col gap-[12px]">
           <Detail label="Given by" value={task.created_by?.name ?? '—'} />
           <Detail label="Created" value={fmtDateTime(task.created_at)} />
@@ -457,6 +573,63 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         </dl>
       </PhoneSheet>
 
+      <ActivitySheet open={panel === 'activity'} onOpenChange={(o) => !o && setPanel(null)} orgId={orgId} taskId={task.id} />
+
+      <TaskReasonSheet
+        open={panel === 'reopen'}
+        onOpenChange={(o) => !o && setPanel(null)}
+        title="Reopen task"
+        intro="The undo window has ended, so reopening needs a reason. It is recorded in the activity."
+        placeholder="For example, the work needs another pass"
+        confirmLabel="Reopen task"
+        busyLabel="Reopening…"
+        onConfirm={async (reason) => {
+          await reopenAfterWindow(orgId, task.id, reason)
+          load()
+          void refreshBadge()
+        }}
+      />
+
+      <TaskReasonSheet
+        open={panel === 'cant'}
+        onOpenChange={(o) => !o && setPanel(null)}
+        title="Can't complete"
+        intro={
+          allMust
+            ? 'This closes only your part as not done. The person who gave the task is told why.'
+            : 'This closes the whole task as incomplete. The person who gave the task is told why.'
+        }
+        placeholder="For example, I am waiting on a supplier"
+        confirmLabel={allMust ? 'Flag my part' : 'Mark incomplete'}
+        busyLabel="Saving…"
+        onConfirm={async (reason) => {
+          // Desktop: all_must_complete flags my part (flagCannotComplete); otherwise any assignee closes the task incomplete.
+          const updated = allMust
+            ? await tasksApi.flagCannotComplete(orgId, task.id, reason)
+            : await tasksApi.markIncomplete(orgId, task.id, reason)
+          setTask(updated)
+          load()
+          void refreshBadge()
+        }}
+      />
+
+      <TaskReasonSheet
+        open={panel === 'delete'}
+        onOpenChange={(o) => !o && setPanel(null)}
+        title="Delete task"
+        intro="This deletes the task for everyone and cannot be undone."
+        placeholder="Why is it being deleted?"
+        confirmLabel="Delete task"
+        busyLabel="Deleting…"
+        destructive
+        onConfirm={async (reason) => {
+          await tasksApi.deleteTask(orgId, task.id, reason)
+          void refreshBadge()
+          addToast('Task deleted', 'success')
+          router.replace(route.parent ?? PHONE_HOME)
+        }}
+      />
+
       <NotificationOfferSheet
         orgId={orgId}
         open={offerPush}
@@ -464,6 +637,43 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         onDeclined={() => declinePushOffer(userId)}
       />
     </PhoneScreen>
+  )
+}
+
+/**
+ * One row of the ... menu. `allowed` false: disabled, its reason on tap
+ * (kit 41.8 rule 17); undefined: disabled with no reason yet (not known is
+ * not "not allowed"); omitted: always available.
+ */
+function MenuItem({
+  icon,
+  label,
+  onClick,
+  danger = false,
+  allowed = true,
+  reason = '',
+}: {
+  icon: React.ReactNode
+  label: string
+  onClick: () => void
+  danger?: boolean
+  allowed?: boolean | undefined
+  reason?: string
+}) {
+  return (
+    <li className="[&>span]:flex [&>span]:w-full">
+      <PermissionTooltip allowed={allowed} reason={reason}>
+        <button
+          type="button"
+          disabled={allowed !== true}
+          onClick={onClick}
+          className={cx(ROW, '[&_svg]:size-[20px] [&_svg]:shrink-0', danger && 'text-danger', 'disabled:pointer-events-none disabled:text-text-muted')}
+        >
+          {icon}
+          {label}
+        </button>
+      </PermissionTooltip>
+    </li>
   )
 }
 

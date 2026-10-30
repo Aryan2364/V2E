@@ -16,6 +16,7 @@ import NotificationChoicesScreen from './screens/NotificationChoicesScreen'
 import MyWorkScreen from './screens/MyWorkScreen'
 import TaskDetailScreen from './screens/TaskDetailScreen'
 import GiveTaskScreen from './screens/GiveTaskScreen'
+import EditTaskScreen from './screens/EditTaskScreen'
 import GivenScreen from './screens/GivenScreen'
 import RecurringTemplatesScreen from './screens/RecurringTemplatesScreen'
 import RecurringInstancesScreen from './screens/RecurringInstancesScreen'
@@ -98,6 +99,8 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
       return <MeetingsScreen route={route} />
     case 'task-record':
       return <TaskDetailScreen route={route} />
+    case 'task-edit':
+      return <EditTaskScreen route={route} />
     case 'give-task':
       return <GiveTaskScreen route={route} />
     case 'meeting-record':

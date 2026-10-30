@@ -2,14 +2,19 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
+import { Plus } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
+import { apiErrorMessage } from '@/lib/tasks/api-error'
 import { tasksApi } from '@/lib/api/tasks'
 import { useBack } from '@/lib/back'
+import { ACCEPT_ATTR, validateFile } from '@/lib/attachments'
+import { shrinkImageForUpload } from '@/lib/image-resize'
 import type { TaskPriority } from '@/lib/types/tasks'
 import { PHONE_HOME, RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
 import { makeReminderRow, buildReminderSpecs } from '@/components/tasks/RemindersField'
+import { buildChecklistItems } from '@/components/tasks/ChecklistBuilderField'
 import { buildRecurringPayload, scheduleEntryError } from '@/lib/tasks/recurring-payload'
 import type { RecurringScheduleType } from '@/lib/types/tasks'
 import { useDraft } from '@/lib/drafts'
@@ -17,12 +22,22 @@ import { DraftBanner } from '../DraftBanner'
 import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { PeoplePickerSheet, SelectedPeopleList, type PickedPerson, type PickerSection } from '../PeoplePickerSheet'
-import { useEligibleAssignees, type AssigneeSortMode } from '@/components/tasks/useEligibleAssignees'
 import { NotificationOfferSheet } from '../NotificationOfferSheet'
 import { RepeatFields, entryForFrequency } from '../RepeatFields'
-import { PhoneButton, PhoneField, GrowTextarea, ROW, PHONE_INPUT, cx, enterMovesNext, focusFirstInvalid } from '../primitives'
-import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
+import { PhoneButton, PhoneField, cx, enterMovesNext, focusFirstInvalid } from '../primitives'
+import { StagedFileRow, newStagedFile, type StagedFile } from '../FileRows'
+import {
+  TaskFormFields,
+  HolidayKeepDialog,
+  EMPTY_TASK_FORM,
+  TITLE_MAX,
+  DESCRIPTION_MAX,
+  checklistPayload,
+  cleanChecklist,
+  deadlineToIso,
+  isHolidayRefusal,
+  type TaskFormValues,
+} from '../TaskFormFields'
 
 /*
  * "Give task" - plan-phone-2026-10-14.md §5.4 (slice 4), kit §41.7.
@@ -30,19 +45,26 @@ import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
  *   - Minimum fields: title, assignee(s) via a searchable bottom sheet, due
  *     date via the browser's native picker, priority. Description is one
  *     tap away (an expandable field, not a separate screen).
+ *   - The fields themselves live in components/phone/TaskFormFields.tsx and
+ *     are shared with Edit task. Behind "Add ..." rows: CC, description,
+ *     checklist (with "Add from template"), tags. Also on the form: proof
+ *     required, and "who completes it" once there are 2+ assignees.
+ *   - Files: picked here, kept in memory, and uploaded one by one right after
+ *     the task is created (as the computer's create dialog does), with the
+ *     same size and type limits (lib/attachments validateFile).
  *   - Validated against the real CreateTaskDto: title required, <= 50
  *     chars; description <= 2000.
  *   - Draft: lib/drafts.ts (kit §41.7 rules 12-15), form id "task-give",
  *     record "new". Offered back with a banner ("You have an unsaved
  *     draft from ...") - never restored silently. Cleared on save and on
  *     Discard draft; also cleared for everyone on sign-out (lib/auth's
- *     logout calls clearDrafts).
+ *     logout calls clearDrafts). Picked files are not part of a draft.
  *   - Repeat (Daily/Weekly/Monthly/Yearly): choosing one swaps the Due date
  *     for the schedule fields (components/phone/RepeatFields.tsx) and Save
  *     creates a recurring TEMPLATE with the desktop's own payload builder
  *     (lib/tasks/recurring-payload.ts). Everything the phone form does not
- *     show takes the desktop's default (any assignee completes, no proof, no
- *     escalation, no goal, one reminder from the org's default days before).
+ *     show takes the desktop's default (no escalation, no goal, one reminder
+ *     from the org's default days before).
  *     Then the recurring list opens.
  *   - After saving: back to the previous list with a toast. The task only
  *     shows on My work if the current user is actually one of its
@@ -50,20 +72,12 @@ import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
  *     screen has to enforce.
  */
 
-const TITLE_MAX = 50
-const DESCRIPTION_MAX = 2000
-
-type GiveTaskValues = {
-  title: string
-  description: string
-  deadline: string
-  priorityId: string
-  assignees: { user_id: string; name: string }[]
+type GiveTaskValues = TaskFormValues & {
   /** null = does not repeat. */
   schedule: ScheduleEntryDraft | null
 }
 
-const EMPTY_DRAFT: GiveTaskValues = { title: '', description: '', deadline: '', priorityId: '', assignees: [], schedule: null }
+const EMPTY_DRAFT: GiveTaskValues = { ...EMPTY_TASK_FORM, schedule: null }
 
 export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const { user } = useAuth()
@@ -73,15 +87,17 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const orgId = user?.organizationId ?? ''
 
   const [draftValues, setDraft] = React.useState<GiveTaskValues>(EMPTY_DRAFT)
-  const [showDescription, setShowDescription] = React.useState(false)
   const [priorities, setPriorities] = React.useState<TaskPriority[]>([])
-  const [assigneePicker, setAssigneePicker] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
   const [offerPush, setOfferPush] = React.useState(false)
   const [attempted, setAttempted] = React.useState(false)
   const [titleTouched, setTitleTouched] = React.useState(false)
   const formRef = React.useRef<HTMLFormElement>(null)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
   const [reminderDays, setReminderDays] = React.useState(1)
+  const [files, setFiles] = React.useState<StagedFile[]>([])
+  const [fileErrors, setFileErrors] = React.useState<string[]>([])
+  const [holidayMessage, setHolidayMessage] = React.useState<string | null>(null)
   const recurring = React.useRef(false)
 
   const draft = draftValues
@@ -116,7 +132,39 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
     else back()
   }
 
-  async function onSave() {
+  function onFilesPicked(list: FileList | null) {
+    const picked = list ? Array.from(list) : []
+    if (picked.length === 0) return
+    const errors: string[] = []
+    const good: StagedFile[] = []
+    for (const f of picked) {
+      const err = validateFile(f)
+      if (err) errors.push(err)
+      else good.push(newStagedFile(f))
+    }
+    setFileErrors(errors)
+    if (good.length > 0) setFiles((prev) => [...prev, ...good])
+  }
+
+  const patchFile = (id: string, change: Partial<StagedFile>) =>
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, ...change } : f)))
+
+  /** Uploads the picked files to the new task (or template), one at a time. Returns false if any failed. */
+  async function uploadFiles(upload: (file: File, onProgress: (pct: number) => void) => Promise<unknown>): Promise<boolean> {
+    let ok = true
+    for (const item of files) {
+      patchFile(item.id, { status: 'uploading', progress: 0 })
+      try {
+        await upload(await shrinkImageForUpload(item.file), (pct) => patchFile(item.id, { progress: pct }))
+      } catch {
+        patchFile(item.id, { status: 'failed' })
+        ok = false
+      }
+    }
+    return ok
+  }
+
+  async function onSave(holidayOverride = false) {
     if (saving) return
     setAttempted(true)
     const invalid =
@@ -133,38 +181,53 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
     setSaving(true)
     try {
       if (schedule) {
-        await tasksApi.createRecurring(
+        const template = await tasksApi.createRecurring(
           orgId,
           buildRecurringPayload({
             title: draft.title,
             description: draft.description,
             priorityId: draft.priorityId,
+            tagIds: draft.tags.map((t) => t.id),
             scheduleEntries: [schedule],
-            completionMode: 'any_can_complete',
-            proofRequired: false,
+            completionMode: draft.completionMode,
+            proofRequired: draft.proofRequired,
             proofAllowedExtensions: [],
             escalationIds: [],
-            assignees: draft.assignees,
-            checklistItems: undefined,
+            assignees: [
+              ...draft.assignees.map((a) => ({ ...a, is_cc: false })),
+              ...draft.cc.map((a) => ({ ...a, is_cc: true })),
+            ],
+            checklistItems: buildChecklistItems(cleanChecklist(draft.checklist)),
             reminders: buildReminderSpecs([makeReminderRow({ offsetDays: reminderDays })], false),
           }),
         )
         recurring.current = true
         fileDraft.clear()
-        addToast('Recurring task created', 'success')
+        const filesOk = await uploadFiles((file, onProgress) => tasksApi.uploadRecurringAttachment(orgId, template.id, file, onProgress))
+        if (filesOk) addToast('Recurring task created', 'success')
+        else addToast('Recurring task created, but a file could not be uploaded. Add it again from the recurring task.', 'warning')
         if (shouldOfferPushNow(user?.id)) setOfferPush(true)
         else leave()
         return
       }
-      await tasksApi.createTask(orgId, {
+      const created = await tasksApi.createTask(orgId, {
         title: draft.title.trim(),
         description: draft.description.trim() || undefined,
         priority_id: draft.priorityId || undefined,
-        deadline: draft.deadline ? new Date(draft.deadline.length === 10 ? `${draft.deadline}T23:59` : draft.deadline).toISOString() : undefined,
+        ...(draft.tags.length > 0 ? { tag_ids: draft.tags.map((t) => t.id) } : {}),
+        deadline: deadlineToIso(draft.deadline),
+        holiday_override: holidayOverride,
+        completion_mode: draft.completionMode,
+        proof_required: draft.proofRequired,
+        proof_allowed_extensions: [],
         assignee_user_ids: draft.assignees.map((a) => a.user_id),
-      })
+        cc_user_ids: draft.cc.map((a) => a.user_id),
+        ...checklistPayload(draft.checklist),
+      } as Parameters<typeof tasksApi.createTask>[1])
       fileDraft.clear()
-      addToast('Task created', 'success')
+      const filesOk = await uploadFiles((file, onProgress) => tasksApi.uploadTaskAttachment(orgId, created.id, file, onProgress))
+      if (filesOk) addToast('Task created', 'success')
+      else addToast('Task created, but a file could not be uploaded. Open the task to add it again.', 'warning')
       // The first useful moment to ask (plan §9, kit §41.12 rule 4): giving a
       // task is something you'd want to hear back about. Offered at most once
       // until declined/granted/denied; the screen still navigates back either way.
@@ -173,8 +236,12 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
       } else {
         leave()
       }
-    } catch {
-      addToast(schedule ? 'Could not create the recurring task. Check your connection and try again.' : 'Could not create the task. Check your connection and try again.', 'error')
+    } catch (e) {
+      const message = apiErrorMessage(e, '')
+      // The holiday rule never forces itself - offer to keep the chosen date.
+      if (!schedule && isHolidayRefusal(message)) setHolidayMessage(message)
+      else if (message) addToast(message, 'error')
+      else addToast(schedule ? 'Could not create the recurring task. Check your connection and try again.' : 'Could not create the task. Check your connection and try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -183,6 +250,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   function onDiscard() {
     fileDraft.clear()
     setDraft(EMPTY_DRAFT)
+    setFiles([])
     back()
   }
 
@@ -195,149 +263,107 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         onKeyDown={enterMovesNext}
         onSubmit={(e) => e.preventDefault()}
       >
-        <DraftBanner
-          draft={fileDraft}
-          onUse={(kept) => {
-            setDraft((d) => ({ ...d, ...kept }))
-            if (kept.description) setShowDescription(true)
-          }}
+        <DraftBanner draft={fileDraft} onUse={(kept) => setDraft((d) => ({ ...d, ...kept }))} />
+
+        <TaskFormFields
+          values={draft}
+          setValues={setDraft}
+          priorities={priorities}
+          orgId={orgId}
+          idPrefix="task"
+          titleError={titleError}
+          descriptionError={descriptionError}
+          assigneesError={noAssigneeError}
+          autoFocusTitle
+          onTitleBlur={() => setTitleTouched(true)}
+          /* When: Repeat first, then either the one-off Due date or the schedule
+              fields in its place - one decision, in one place. */
+          beforeWhen={
+            <PhoneField label="Repeat">
+              <Select
+                value={schedule?.schedule_type ?? 'none'}
+                items={REPEAT_ITEMS}
+                onValueChange={(value) => {
+                  setAttempted(false)
+                  setDraft((d) => {
+                    if (!value || value === 'none') return { ...d, schedule: null }
+                    const next = entryForFrequency(d.schedule, value as RecurringScheduleType)
+                    // Switching from a one-off due date: carry its date and time over as the
+                    // schedule's start, so what the user already picked is not thrown away.
+                    if (!d.schedule && d.deadline) {
+                      next.start_date = d.deadline.slice(0, 10)
+                      if (d.deadline.length >= 16) next.time = d.deadline.slice(11, 16)
+                    }
+                    return { ...d, schedule: next }
+                  })
+                }}
+              >
+                <SelectTrigger aria-label="Repeat">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(REPEAT_ITEMS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </PhoneField>
+          }
+          when={
+            schedule ? (
+              <RepeatFields entry={schedule} onChange={(next) => setDraft((d) => ({ ...d, schedule: next }))} showErrors={attempted} />
+            ) : undefined
+          }
         />
 
-        <PhoneField label="Title" htmlFor="task-title" required error={titleError}>
-          <input
-            id="task-title"
-            type="text"
-            value={draft.title}
-            onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-            onBlur={() => setTitleTouched(true)}
-            placeholder="For example, Send the quarterly report"
-            maxLength={TITLE_MAX + 20}
-            enterKeyHint="next"
-            autoComplete="off"
-            autoFocus
-            aria-invalid={titleError ? true : undefined}
-            className={PHONE_INPUT}
-          />
-        </PhoneField>
-
-        <PhoneField label="Assignees" htmlFor="task-assignees" required error={noAssigneeError}>
-          <div className="flex flex-col gap-[8px]">
-            <button
-              id="task-assignees"
-              type="button"
-              data-field
-              aria-invalid={noAssigneeError ? true : undefined}
-              onClick={() => setAssigneePicker(true)}
-              className={cx(ROW, 'mx-0 rounded-[8px] border bg-surface', noAssigneeError ? 'border-danger' : 'border-border-strong')}
-            >
-              <span className="min-w-0 flex-1 truncate text-left">
-                {draft.assignees.length === 0 ? (
-                  <span className="text-text-secondary">Choose who this is for</span>
-                ) : (
-                  <span>{draft.assignees.length} chosen</span>
-                )}
-              </span>
-            </button>
-            <SelectedPeopleList
-              people={draft.assignees}
-              onRemove={(id) => setDraft((d) => ({ ...d, assignees: d.assignees.filter((a) => a.user_id !== id) }))}
-            />
-          </div>
-        </PhoneField>
-
-        {/* When: Repeat first, then either the one-off Due date or the schedule
-            fields in its place - one decision, in one place. */}
-        <PhoneField label="Repeat">
-          <Select
-            value={schedule?.schedule_type ?? 'none'}
-            items={REPEAT_ITEMS}
-            onValueChange={(value) => {
-              setAttempted(false)
-              setDraft((d) => {
-                if (!value || value === 'none') return { ...d, schedule: null }
-                const next = entryForFrequency(d.schedule, value as RecurringScheduleType)
-                // Switching from a one-off due date: carry its date and time over as the
-                // schedule's start, so what the user already picked is not thrown away.
-                if (!d.schedule && d.deadline) {
-                  next.start_date = d.deadline.slice(0, 10)
-                  if (d.deadline.length >= 16) next.time = d.deadline.slice(11, 16)
-                }
-                return { ...d, schedule: next }
-              })
-            }}
-          >
-            <SelectTrigger aria-label="Repeat">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(REPEAT_ITEMS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
+        <section className="flex flex-col gap-[8px]">
+          {files.length > 0 ? (
+            <>
+              <h2 className="text-label font-medium text-text-secondary">Files</h2>
+              <ul className="flex flex-col gap-[8px]">
+                {files.map((f) => (
+                  <StagedFileRow
+                    key={f.id}
+                    item={f}
+                    onRetry={() => {}}
+                    onRemove={(id) => setFiles((prev) => prev.filter((x) => x.id !== id))}
+                  />
+                ))}
+              </ul>
+            </>
+          ) : null}
+          {fileErrors.length > 0 ? (
+            <ul className="flex flex-col gap-[4px]" role="alert">
+              {fileErrors.map((m) => (
+                <li key={m} className="text-meta text-danger">
+                  {m}
+                </li>
               ))}
-            </SelectContent>
-          </Select>
-        </PhoneField>
-
-        {schedule ? (
-          <RepeatFields entry={schedule} onChange={(next) => setDraft((d) => ({ ...d, schedule: next }))} showErrors={attempted} />
-        ) : null}
-
-        {schedule ? null : (
-          <div className="grid grid-cols-2 gap-[12px]">
-            <PhoneDateField
-              id="task-due-date"
-              label="Due date"
-              value={draft.deadline.slice(0, 10)}
-              onChange={(v) => setDraft((d) => ({ ...d, deadline: v ? `${v}${d.deadline.length >= 16 ? d.deadline.slice(10) : ''}` : '' }))}
-            />
-            <PhoneTimeField
-              id="task-due-time"
-              label="Due time"
-              value={draft.deadline.slice(11, 16)}
-              onChange={(v) =>
-                setDraft((d) => ({ ...d, deadline: d.deadline.length >= 10 ? `${d.deadline.slice(0, 10)}${v ? `T${v}` : ''}` : d.deadline }))
-              }
-            />
-          </div>
-        )}
-
-        <PhoneField label="Priority">
-          <Select
-            value={draft.priorityId || 'none'}
-            items={{ none: 'No priority', ...Object.fromEntries(priorities.map((p) => [p.id, p.label])) }}
-            onValueChange={(value) => setDraft((d) => ({ ...d, priorityId: !value || value === 'none' ? '' : String(value) }))}
+            </ul>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex min-h-[44px] items-center gap-[4px] self-start text-label font-medium text-primary-text"
           >
-            <SelectTrigger aria-label="Priority">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No priority</SelectItem>
-              {priorities.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </PhoneField>
-
-        {showDescription ? (
-          <PhoneField label="Description" htmlFor="task-description" error={descriptionError}>
-            <GrowTextarea
-              id="task-description"
-              value={draft.description}
-              onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-              rows={4}
-              aria-invalid={descriptionError ? true : undefined}
-              className={cx(PHONE_INPUT, 'py-[10px]')}
-            />
-          </PhoneField>
-        ) : (
-          <button type="button" onClick={() => setShowDescription(true)} className="flex min-h-[44px] items-center self-start text-label font-medium text-primary-text">
-            Add description
+            <Plus aria-hidden className="size-[16px]" />
+            {files.length > 0 ? 'Add another file' : 'Add file'}
           </button>
-        )}
+          {/* The phone's own picker: Camera, Photos & videos and Files in one list. No `capture`. */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ACCEPT_ATTR}
+            className="hidden"
+            onChange={(e) => {
+              onFilesPicked(e.target.files)
+              e.target.value = ''
+            }}
+          />
+        </section>
 
         {(draft.title || draft.description) ? (
           <button type="button" onClick={onDiscard} className="flex min-h-[44px] items-center self-start text-label font-medium text-danger">
@@ -357,13 +383,13 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         </PhoneButton>
       </div>
 
-      <AssigneePicker
-        open={assigneePicker}
-        onOpenChange={setAssigneePicker}
-        orgId={orgId}
-        currentUser={user ? { user_id: user.id, name: user.name } : undefined}
-        selected={draft.assignees}
-        onDone={(assignees) => setDraft((d) => ({ ...d, assignees }))}
+      <HolidayKeepDialog
+        message={holidayMessage}
+        onCancel={() => setHolidayMessage(null)}
+        onKeep={() => {
+          setHolidayMessage(null)
+          void onSave(true)
+        }}
       />
 
       <NotificationOfferSheet
@@ -385,64 +411,4 @@ const REPEAT_ITEMS: Record<string, string> = {
   weekly: 'Weekly',
   monthly: 'Monthly',
   yearly: 'Yearly',
-}
-
-const ASSIGNEE_SORTS: { key: AssigneeSortMode; label: string }[] = [
-  { key: 'frequency', label: 'Frequent' },
-  { key: 'workload', label: 'Workload' },
-  { key: 'name', label: 'A-Z' },
-]
-
-/* Task assignees: the shared people picker fed by useEligibleAssignees. */
-function AssigneePicker({
-  open,
-  onOpenChange,
-  orgId,
-  currentUser,
-  selected,
-  onDone,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  orgId: string
-  currentUser?: PickedPerson
-  selected: PickedPerson[]
-  onDone: (selected: PickedPerson[]) => void
-}) {
-  const { search, setSearch, sort, setSort, loading, failed, departments, data, reload } = useEligibleAssignees({
-    orgId,
-    open,
-    currentUserId: currentUser?.user_id,
-  })
-  const sections: PickerSection[] = departments.map((d) => ({
-    id: d.department_id,
-    name: d.department_id === 'search' ? undefined : d.department_name,
-    people: d.users.map((u) => ({
-      user_id: u.user_id,
-      name: u.name,
-      role: u.role_title,
-      department: u.department_id === 'search' ? null : u.department_name,
-      note: u.on_leave_today ? 'On leave' : null,
-    })),
-  }))
-  const me = data?.departments.flatMap((d) => d.users).find((u) => u.user_id === currentUser?.user_id)
-  return (
-    <PeoplePickerSheet<AssigneeSortMode>
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Assign to"
-      sections={sections}
-      loading={loading}
-      failed={failed}
-      onRetry={reload}
-      currentUser={currentUser ? { ...currentUser, role: me?.role_title, department: me?.department_name } : undefined}
-      meLabel="Assign to me"
-      selected={selected}
-      onDone={(people) => onDone(people)}
-      search={search}
-      onSearchChange={setSearch}
-      searchPlaceholder="Search by name, role or department"
-      sort={{ value: sort, onChange: setSort, options: ASSIGNEE_SORTS }}
-    />
-  )
 }

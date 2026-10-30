@@ -35,6 +35,19 @@ export function recurringInstancesHref(templateId: string): string {
   return `${RECURRING_TEMPLATES_HREF}/${templateId}`
 }
 
+/** A task's record - the same address desktop uses. */
+export function taskHref(taskId: string): string {
+  return `/dashboard/tasks/${taskId}`
+}
+
+/**
+ * Edit task (phone only). Desktop edits in a dialog on the record, so on
+ * desktop this address forwards to the record.
+ */
+export function taskEditHref(taskId: string): string {
+  return `${taskHref(taskId)}/edit`
+}
+
 /** The phone screens slice 1/5 know how to draw. */
 export type PhoneScreenKey =
   | 'my-work'
@@ -45,6 +58,7 @@ export type PhoneScreenKey =
   | 'notification-choices'
   | 'task-record'
   | 'give-task'
+  | 'task-edit'
   | 'meeting-record'
   | 'meeting-create'
   | 'recurring-templates'
@@ -141,6 +155,11 @@ export function phoneRouteFor(rawPathname: string): PhoneRoute | null {
   const task = /^\/dashboard\/tasks\/([^/]+)$/.exec(pathname)
   if (task && !TASK_SECTIONS.has(task[1])) {
     return { key: 'task-record', title: 'Task', parent: PHONE_HOME, entitlement: 'tasks' }
+  }
+
+  const taskEdit = /^\/dashboard\/tasks\/([^/]+)\/edit$/.exec(pathname)
+  if (taskEdit && !TASK_SECTIONS.has(taskEdit[1])) {
+    return { key: 'task-edit', title: 'Edit task', parent: taskHref(taskEdit[1]), entitlement: 'tasks' }
   }
 
   const recurringInstance = /^\/dashboard\/tasks\/recurring\/([^/]+)$/.exec(pathname)

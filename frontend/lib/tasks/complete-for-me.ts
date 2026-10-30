@@ -1,4 +1,5 @@
 import { tasksApi } from '@/lib/api/tasks'
+import { getNow } from '@/lib/clock'
 import type { Task } from '@/lib/types/tasks'
 
 /*
@@ -17,7 +18,26 @@ export function completeForMe(orgId: string, task: Task): Promise<Task> {
   return tasksApi.completeTask(orgId, task.id)
 }
 
-/** Reverses completeForMe - the Undo toast's handler and the detail screen's "Reopen task". */
+/**
+ * Is the task's undo window still open? Mirrors reopenTask in tasks.service.ts:
+ * inside the window any participant reverses a closure with no reason; once
+ * `reopen_expires_at` has passed only the creator or an admin may reopen, and
+ * a reason is required (see reopenAfterWindow).
+ */
+export function isUndoWindowOpen(task: Pick<Task, 'reopen_expires_at'>): boolean {
+  return !!task.reopen_expires_at && new Date(task.reopen_expires_at) > getNow()
+}
+
+/** Reopens a closed task after its undo window: creator/admin only, reason required. */
+export function reopenAfterWindow(orgId: string, taskId: string, reason: string): Promise<Task> {
+  return tasksApi.reopenTask(orgId, taskId, reason.trim())
+}
+
+/**
+ * Reverses completeForMe INSIDE the undo window - the Undo toast's handler and
+ * the detail screen's "Reopen task" while the window is open. It sends no
+ * reason, so after the window the backend refuses it: use reopenAfterWindow.
+ */
 export async function undoCompleteForMe(orgId: string, task: Task): Promise<void> {
   if (task.completion_mode === 'all_must_complete') {
     await tasksApi.reopenAssigneePart(orgId, task.id, 'me')
