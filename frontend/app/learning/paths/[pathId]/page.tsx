@@ -30,6 +30,8 @@ import Tooltip from '@/components/ui/tooltip'
 import { PageHeader } from '@/components/shell/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 
+import { getErrorMessage } from '@/lib/errors'
+import axios from 'axios'
 type Tab = 'materials' | 'assignments' | 'engagement'
 
 const TYPE_ICONS: Record<ContentType, any> = {
@@ -141,12 +143,12 @@ export default function ManagePathPage() {
     try {
       await deletePath(orgId, pathId)
       router.push('/learning/paths')
-    } catch (e: any) {
+    } catch (e: unknown) {
       setDeleting(false)
       setDeleteError(
-        e?.response?.status === 403
+        axios.isAxiosError(e) && e.response?.status === 403
           ? 'You don’t have permission to delete this course — only an administrator can.'
-          : e?.response?.data?.message ?? 'Could not delete the course. Please try again.',
+          : getErrorMessage(e, 'Could not delete the course. Please try again.'),
       )
     }
   }

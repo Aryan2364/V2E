@@ -32,6 +32,7 @@ import NodeDocuments from './node-materials'
 import { useToast } from '@/components/ui/Toast'
 import { Label } from '@/components/ui/label'
 
+import { getErrorMessage } from '@/lib/errors'
 const DRILLABLE = new Set(['container', 'subprocess'])
 const CONTAINER_KINDS = new Set(['container', 'subprocess'])
 const POOL_LABEL: Record<ProcessPool, string> = { customer: 'Customer', company: 'Company', vendor: 'Vendor' }
@@ -251,7 +252,7 @@ export default function NodeDrawer({
     if (detaching) return
     setDetaching(true)
     try { await processHierarchyApi.detachNode(orgId, mapId, nodeId); await reloadNode(); onChanged(); addToast('Made an independent copy — edits here no longer affect the original.', 'success') }
-    catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not make a copy.', 'error') }
+    catch (e: unknown) { addToast(getErrorMessage(e, 'Could not make a copy.'), 'error') }
     finally { setDetaching(false) }
   }
 
@@ -261,7 +262,7 @@ export default function NodeDrawer({
     try {
       await processHierarchyApi.makeNodeReusable(orgId, mapId, nodeId); await reloadNode(); onChanged()
       addToast('This is now its own map — reference it as a line item in any map via Add → Reference a map.', 'success')
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not make this reusable.', 'error') }
+    } catch (e: unknown) { addToast(getErrorMessage(e, 'Could not make this reusable.'), 'error') }
     finally { setMakingReusable(false) }
   }
 

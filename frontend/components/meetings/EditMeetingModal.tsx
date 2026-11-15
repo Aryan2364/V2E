@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
+import { getErrorMessage } from '@/lib/errors'
 const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -143,8 +144,8 @@ export default function EditMeetingModal({
       addToast('Meeting saved', 'success')
       onSaved(updated)
       onClose()
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? 'Could not save the meeting. Try again.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Could not save the meeting. Try again.'))
     } finally {
       setSaving(false)
     }

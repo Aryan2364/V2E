@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import { getInitials as initials } from '@/lib/initials'
+import { getErrorMessage } from '@/lib/errors'
 const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
 function avatarColor(name: string): string {
   let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
@@ -58,7 +59,7 @@ export default function ManageAccessModal({
     let cancelled = false
     tasksApi.getRecurringAccess(orgId, templateId)
       .then((p) => { if (!cancelled) setPanel(p) })
-      .catch((e) => { if (!cancelled) setError(e?.response?.data?.message ?? 'Could not load access settings.') })
+      .catch((e) => { if (!cancelled) setError(getErrorMessage(e, 'Could not load access settings.')) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [orgId, templateId])
@@ -82,8 +83,8 @@ export default function ManageAccessModal({
     setError(null)
     try {
       setPanel(await fn())
-    } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'Could not update access. Please try again.')
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Could not update access. Please try again.'))
     } finally {
       setBusyUser(null)
     }

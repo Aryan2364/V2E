@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button'
 import { Banner, BannerDescription } from '@/components/ui/banner'
 import { Label } from '@/components/ui/label'
 
+import { getErrorMessage } from '@/lib/errors'
 export default function CourseBuilderPage() {
   const router = useRouter()
   const params = useSearchParams()
@@ -270,8 +271,8 @@ export default function CourseBuilderPage() {
         await assignPath(orgId, pid, selectedEmployees, dueDate || undefined)
       }
       router.push(`/learning/paths/${pid}`)
-    } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'Could not save the course. Please try again.')
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Could not save the course. Please try again.'))
       setPublishing(false)
     }
   }

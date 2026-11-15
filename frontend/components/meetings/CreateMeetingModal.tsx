@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
+import { getErrorMessage } from '@/lib/errors'
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-body font-medium text-text-secondary mb-1'
@@ -231,8 +232,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         addToast('Recurring meeting added. Its occurrences will appear on the calendar.', 'success')
         onCreated(rhythm as unknown as Meeting)
         onClose()
-      } catch (err: any) {
-        addToast(err?.response?.data?.message ?? 'Could not add the recurring meeting. Try again.', 'error')
+      } catch (err: unknown) {
+        addToast(getErrorMessage(err, 'Could not add the recurring meeting. Try again.'), 'error')
       } finally {
         setSaving(false)
       }
@@ -269,8 +270,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
       addToast('Meeting added', 'success')
       onCreated(m)
       onClose()
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not add the meeting. Try again.', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, 'Could not add the meeting. Try again.'), 'error')
     } finally {
       setSaving(false)
     }
