@@ -5,7 +5,7 @@ import { AssigneeVisibilityService } from '../assignee-visibility/assignee-visib
 import { ChecklistAccessService } from '../task-masters/checklist-access.service';
 import { HolidaysService } from '../holidays/holidays.service';
 import { LeaveService } from '../leave/leave.service';
-import { TasksService } from './tasks.service';
+import { TaskCommandService } from './task-command.service';
 import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { MAX_TAGS_PER_TASK, tagNameKey } from '../task-masters/task-tag.constants';
@@ -95,8 +95,8 @@ export class TaskImportService {
     private readonly checklistAccess: ChecklistAccessService,
     private readonly holidays: HolidaysService,
     private readonly leave: LeaveService,
-    @Inject(forwardRef(() => TasksService))
-    private readonly tasks: TasksService,
+    @Inject(forwardRef(() => TaskCommandService))
+    private readonly tasks: TaskCommandService,
   ) {}
 
   // ─── Public API ─────────────────────────────────────────────────────────────

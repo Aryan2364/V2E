@@ -20,7 +20,18 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { OrgScopeGuard } from '../common/guards/org-scope.guard';
 import { RequireAdmin } from '../common/decorators/require-admin.decorator';
-import { TasksService } from './tasks.service';
+import { TaskCommandService } from './task-command.service';
+import { TaskQueryService } from './task-query.service';
+import { TaskAssigneePreviewService } from './task-assignee-preview.service';
+import { TaskReportsService } from './task-reports.service';
+import { TaskBulkService } from './task-bulk.service';
+import { TaskDetailService } from './task-detail.service';
+import { TaskCompletionService } from './task-completion.service';
+import { TaskStatusService } from './task-status.service';
+import { TaskAccessService } from './task-access.service';
+import { TaskCommentsService } from './task-comments.service';
+import { TaskChecklistService } from './task-checklist.service';
+import { TaskAssigneeService } from './task-assignee.service';
 import { TaskImportService } from './task-import.service';
 import { BulkImportTasksDto } from './dto/bulk-import-task.dto';
 import { TaskAttachmentsService, MAX_ATTACHMENT_BYTES, type UploadedFile as UploadedFileType } from './task-attachments.service';
@@ -73,7 +84,7 @@ export class TasksController {
     @Request() req: any,
     @Body() dto: CreateTaskDto,
   ) {
-    return this.service.createTask(orgId, req.user.id, dto);
+    return this.taskCommand.createTask(orgId, req.user.id, dto);
   }
 
   @Get()
@@ -94,7 +105,7 @@ export class TasksController {
     @Query('to_date') to_date?: string,
     @Query('from_workflows') from_workflows?: string,
   ) {
-    return this.service.listTasks(orgId, principalFromUser(req.user), {
+    return this.taskQuery.listTasks(orgId, principalFromUser(req.user), {
       status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), quadrant, type,
       assignee_user_id, goal_id, search, from_date, to_date, from_workflows,
     });
@@ -148,7 +159,7 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('sort') sort?: 'frequency' | 'workload' | 'name',
   ) {
-    return this.service.getEligibleAssignees(orgId, req.user.id, search, sort ?? 'frequency');
+    return this.taskAssigneePreview.getEligibleAssignees(orgId, req.user.id, search, sort ?? 'frequency');
   }
 
   @Get('eligible-assignees-for/:userId')
@@ -158,49 +169,49 @@ export class TasksController {
     @Param('userId') userId: string,
     @Query('search') search?: string,
   ) {
-    return this.service.getEmployeeAssigneePreview(orgId, userId, search);
+    return this.taskAssigneePreview.getEmployeeAssigneePreview(orgId, userId, search);
   }
 
   @Get('archive')
   @ApiOperation({ summary: 'Get archived (deleted) tasks' })
   getArchive(@Param('orgId') orgId: string, @Request() req: any) {
-    return this.service.getArchive(orgId, req.user.id);
+    return this.taskQuery.getArchive(orgId, req.user.id);
   }
 
   @Get('my')
   @ApiOperation({ summary: 'Get tasks assigned to me' })
   getMyTasks(@Param('orgId') orgId: string, @Request() req: any) {
-    return this.service.getMyTasks(orgId, req.user.id);
+    return this.taskQuery.getMyTasks(orgId, req.user.id);
   }
 
   @Get('my/grouped')
   @ApiOperation({ summary: 'Get tasks assigned to me, bucketed by deadline (phone app home screen)' })
   getMyTasksGrouped(@Param('orgId') orgId: string, @Request() req: any) {
-    return this.service.getMyTasksGrouped(orgId, req.user.id);
+    return this.taskQuery.getMyTasksGrouped(orgId, req.user.id);
   }
 
   @Get('badge-count')
   @ApiOperation({ summary: 'How many of my tasks are overdue or due today (phone app icon badge)' })
   async getBadgeCount(@Param('orgId') orgId: string, @Request() req: any) {
-    return { count: await this.service.getBadgeCount(orgId, req.user.id) };
+    return { count: await this.taskQuery.getBadgeCount(orgId, req.user.id) };
   }
 
   @Get('cc')
   @ApiOperation({ summary: 'Get tasks where I am CC\'d' })
   getMyCCTasks(@Param('orgId') orgId: string, @Request() req: any) {
-    return this.service.getMyCCTasks(orgId, req.user.id);
+    return this.taskQuery.getMyCCTasks(orgId, req.user.id);
   }
 
   @Get('assigned-by-me')
   @ApiOperation({ summary: 'Get tasks I created' })
   getAssignedByMe(@Param('orgId') orgId: string, @Request() req: any) {
-    return this.service.getTasksAssignedByMe(orgId, req.user.id);
+    return this.taskQuery.getTasksAssignedByMe(orgId, req.user.id);
   }
 
   @Get('escalated')
   @ApiOperation({ summary: 'Get tasks escalated to me' })
   getEscalated(@Param('orgId') orgId: string, @Request() req: any) {
-    return this.service.getEscalatedTasks(orgId, req.user.id);
+    return this.taskQuery.getEscalatedTasks(orgId, req.user.id);
   }
 
   @Get('reports')
@@ -211,7 +222,7 @@ export class TasksController {
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
   ) {
-    return this.service.getReports(orgId, from_date, to_date);
+    return this.taskReports.getReports(orgId, from_date, to_date);
   }
 
   @Get('dashboard')
@@ -235,7 +246,7 @@ export class TasksController {
     @Query('to_date') to_date?: string,
     @Query('from_workflows') from_workflows?: string,
   ) {
-    return this.service.getDashboard(orgId, principalFromUser(req.user), {
+    return this.taskReports.getDashboard(orgId, principalFromUser(req.user), {
       scope: toDataScope(scope),
       status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, created_by_user_id,
       assignee_user_id, type, search, from_date, to_date, from_workflows,
@@ -260,7 +271,7 @@ export class TasksController {
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
   ) {
-    return this.service.getWorkFlow(orgId, principalFromUser(req.user), {
+    return this.taskReports.getWorkFlow(orgId, principalFromUser(req.user), {
       scope: toDataScope(scope),
       status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, type, search, from_date, to_date,
     });
@@ -294,7 +305,7 @@ export class TasksController {
     @Query('to_date') to_date?: string,
     @Query('from_workflows') from_workflows?: string,
   ) {
-    return this.service.listTasksPaged(
+    return this.taskQuery.listTasksPaged(
       orgId,
       principalFromUser(req.user),
       { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date, from_workflows },
@@ -324,7 +335,7 @@ export class TasksController {
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
   ) {
-    return this.service.getPeopleTree(orgId, principalFromUser(req.user), toDataScope(scope), {
+    return this.taskReports.getPeopleTree(orgId, principalFromUser(req.user), toDataScope(scope), {
       status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, type, search, from_date, to_date,
     });
   }
@@ -338,7 +349,7 @@ export class TasksController {
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
   ) {
-    return this.service.getEmployeeReport(orgId, principalFromUser(req.user), userId, { from_date, to_date });
+    return this.taskReports.getEmployeeReport(orgId, principalFromUser(req.user), userId, { from_date, to_date });
   }
 
   @Get('export')
@@ -366,7 +377,7 @@ export class TasksController {
     @Query('to_date') to_date?: string,
     @Query('from_workflows') from_workflows?: string,
   ) {
-    return this.service.exportCsv(
+    return this.taskReports.exportCsv(
       orgId,
       principalFromUser(req.user),
       { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date, from_workflows },
@@ -382,7 +393,7 @@ export class TasksController {
     @Request() req: any,
     @Body() body: BulkUpdateTasksDto,
   ) {
-    return this.service.bulkUpdate(orgId, principalFromUser(req.user), body.task_ids ?? [], body.action, {
+    return this.taskBulk.bulkUpdate(orgId, principalFromUser(req.user), body.task_ids ?? [], body.action, {
       status_id: body.status_id,
       deadline: body.deadline,
       tag_ids: body.tag_ids,
@@ -432,7 +443,7 @@ export class TasksController {
   @Get(':id')
   @ApiOperation({ summary: 'Get task by ID' })
   getOne(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
-    return this.service.getTask(orgId, id, principalFromUser(req.user));
+    return this.taskDetail.getTask(orgId, id, principalFromUser(req.user));
   }
 
   @Patch(':id')
@@ -443,7 +454,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() dto: UpdateTaskDto,
   ) {
-    return this.service.updateTask(orgId, req.user.id, id, dto);
+    return this.taskCommand.updateTask(orgId, req.user.id, id, dto);
   }
 
   @Delete(':id')
@@ -454,7 +465,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() body: DeleteTaskDto,
   ) {
-    return this.service.deleteTask(orgId, req.user.id, id, body.reason);
+    return this.taskCommand.deleteTask(orgId, req.user.id, id, body.reason);
   }
 
   // ─── Task Actions ─────────────────────────────────────────────────────────────
@@ -467,7 +478,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() body: CompleteTaskDto,
   ) {
-    return this.service.completeTask(orgId, req.user.id, id, undefined, !!body?.close_whole_task);
+    return this.taskCompletion.completeTask(orgId, req.user.id, id, undefined, !!body?.close_whole_task);
   }
 
   @Post(':id/assignees/:userId/complete')
@@ -478,7 +489,7 @@ export class TasksController {
     @Param('id') id: string,
     @Param('userId') userId: string,
   ) {
-    return this.service.completeTask(orgId, req.user.id, id, userId);
+    return this.taskCompletion.completeTask(orgId, req.user.id, id, userId);
   }
 
   @Post(':id/assignees/:userId/reopen')
@@ -491,7 +502,7 @@ export class TasksController {
     @Body() body: TaskReasonDto,
   ) {
     const target = userId === 'me' ? req.user.id : userId;
-    return this.service.reopenAssigneePart(orgId, req.user.id, id, target, body?.reason);
+    return this.taskStatus.reopenAssigneePart(orgId, req.user.id, id, target, body?.reason);
   }
 
   @Patch(':id/assignee-status')
@@ -502,7 +513,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() body: SetAssigneeStatusDto,
   ) {
-    return this.service.setAssigneeStatus(orgId, req.user.id, id, body.user_id ?? req.user.id, body.status_id);
+    return this.taskStatus.setAssigneeStatus(orgId, req.user.id, id, body.user_id ?? req.user.id, body.status_id);
   }
 
   @Patch(':id/shared-status')
@@ -513,7 +524,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() body: SetSharedStatusDto,
   ) {
-    return this.service.setSharedStatus(orgId, req.user.id, id, body.status_id);
+    return this.taskStatus.setSharedStatus(orgId, req.user.id, id, body.status_id);
   }
 
   @Post(':id/incomplete')
@@ -524,7 +535,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() body: TaskReasonDto,
   ) {
-    return this.service.markTaskIncomplete(orgId, req.user.id, id, body?.reason);
+    return this.taskCompletion.markTaskIncomplete(orgId, req.user.id, id, body?.reason);
   }
 
   @Post(':id/assignees/:userId/cannot-complete')
@@ -537,7 +548,7 @@ export class TasksController {
     @Body() body: TaskReasonDto,
   ) {
     const target = userId === 'me' ? req.user.id : userId;
-    return this.service.setAssigneeCannotComplete(orgId, req.user.id, id, target, body?.reason);
+    return this.taskCompletion.setAssigneeCannotComplete(orgId, req.user.id, id, target, body?.reason);
   }
 
   @Post(':id/assignees/:userId/can-complete')
@@ -549,13 +560,13 @@ export class TasksController {
     @Param('userId') userId: string,
   ) {
     const target = userId === 'me' ? req.user.id : userId;
-    return this.service.clearAssigneeCannotComplete(orgId, req.user.id, id, target);
+    return this.taskCompletion.clearAssigneeCannotComplete(orgId, req.user.id, id, target);
   }
 
   @Post(':id/reopen')
   @ApiOperation({ summary: 'Reopen a completed task (within window)' })
   reopen(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Body() body: TaskReasonDto) {
-    return this.service.reopenTask(orgId, req.user.id, id, body?.reason);
+    return this.taskCompletion.reopenTask(orgId, req.user.id, id, body?.reason);
   }
 
   // ─── Proof of completion (file uploads → Cloudflare R2) ──────────────────────
@@ -571,7 +582,7 @@ export class TasksController {
     @UploadedFile() file: UploadedFileType,
     @Body() dto: SubmitProofDto,
   ) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.uploadProof(orgId, req.user.id, id, file, dto.visibility ?? 'private');
   }
 
@@ -583,14 +594,14 @@ export class TasksController {
     @Param('id') id: string,
     @Param('attachmentId') attachmentId: string,
   ) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.markCommentAttachmentAsProof(orgId, req.user.id, id, attachmentId);
   }
 
   @Get(':id/proofs')
   @ApiOperation({ summary: 'List proof files the current viewer may see' })
   async listProofs(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.listProofs(orgId, id, {
       userId: req.user.id,
       isAdmin: !!(req.user.is_admin || req.user.isSuperAdmin),
@@ -605,7 +616,7 @@ export class TasksController {
     @Param('attachmentId') attachmentId: string,
     @Request() req: any,
   ) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.getProofDownloadUrl(orgId, id, attachmentId, {
       userId: req.user.id,
       isAdmin: !!(req.user.is_admin || req.user.isSuperAdmin),
@@ -617,7 +628,7 @@ export class TasksController {
   @Get(':id/logs')
   @ApiOperation({ summary: 'Get task activity log' })
   getLogs(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
-    return this.service.getActivityLog(orgId, id, principalFromUser(req.user));
+    return this.taskComments.getActivityLog(orgId, id, principalFromUser(req.user));
   }
 
   // ─── Comments ────────────────────────────────────────────────────────────────
@@ -625,7 +636,7 @@ export class TasksController {
   @Get(':id/comments')
   @ApiOperation({ summary: 'Get task comments' })
   getComments(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
-    return this.service.getComments(orgId, id, principalFromUser(req.user));
+    return this.taskComments.getComments(orgId, id, principalFromUser(req.user));
   }
 
   @Post(':id/comments')
@@ -636,7 +647,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() dto: CreateCommentDto,
   ) {
-    return this.service.addComment(orgId, req.user.id, id, dto, principalFromUser(req.user));
+    return this.taskComments.addComment(orgId, req.user.id, id, dto, principalFromUser(req.user));
   }
 
   @Delete(':id/comments/:commentId')
@@ -646,7 +657,7 @@ export class TasksController {
     @Request() req: any,
     @Param('commentId') commentId: string,
   ) {
-    return this.service.deleteComment(orgId, req.user.id, commentId);
+    return this.taskComments.deleteComment(orgId, req.user.id, commentId);
   }
 
   // ─── Attachments (real document upload → Cloudflare R2) ──────────────────────
@@ -662,7 +673,7 @@ export class TasksController {
     @UploadedFile() file: UploadedFileType,
   ) {
     // Only someone who may read the task may add files to it (same gate as proof upload).
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.upload(orgId, req.user.id, id, file);
   }
 
@@ -677,14 +688,14 @@ export class TasksController {
     @Param('commentId') commentId: string,
     @UploadedFile() file: UploadedFileType,
   ) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.upload(orgId, req.user.id, id, file, commentId);
   }
 
   @Get(':id/attachments')
   @ApiOperation({ summary: 'List task-level attachments (private proofs visibility-filtered)' })
   async listAttachments(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.listForTask(orgId, id, {
       userId: req.user.id,
       isAdmin: !!(req.user.is_admin || req.user.isSuperAdmin),
@@ -694,7 +705,7 @@ export class TasksController {
   @Get(':id/attachments/all')
   @ApiOperation({ summary: 'List every attachment on the task (task-level + comment files; private proofs visibility-filtered)' })
   async listAllAttachments(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.listAllForTask(orgId, id, {
       userId: req.user.id,
       isAdmin: !!(req.user.is_admin || req.user.isSuperAdmin),
@@ -709,7 +720,7 @@ export class TasksController {
     @Param('attachmentId') attachmentId: string,
     @Request() req: any,
   ) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.getDownloadUrl(orgId, id, attachmentId, {
       userId: req.user.id,
       isAdmin: !!(req.user.is_admin || req.user.isSuperAdmin),
@@ -734,15 +745,15 @@ export class TasksController {
   @Post(':id/checklist/:itemId/check')
   @ApiOperation({ summary: 'Mark a checklist item done (own item in all_must; shared tick otherwise)' })
   async checkChecklistItem(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Param('itemId') itemId: string) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
-    return this.service.checkChecklistItem(orgId, req.user.id, id, itemId);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    return this.taskChecklist.checkChecklistItem(orgId, req.user.id, id, itemId);
   }
 
   @Post(':id/checklist/:itemId/uncheck')
   @ApiOperation({ summary: 'Clear a checklist item back to Not started' })
   async uncheckChecklistItem(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Param('itemId') itemId: string) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
-    return this.service.uncheckChecklistItem(orgId, req.user.id, id, itemId);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    return this.taskChecklist.uncheckChecklistItem(orgId, req.user.id, id, itemId);
   }
 
   @Post(':id/checklist/:itemId/skip')
@@ -754,22 +765,22 @@ export class TasksController {
     @Param('itemId') itemId: string,
     @Body() body: TaskReasonDto,
   ) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
-    return this.service.skipChecklistItem(orgId, req.user.id, id, itemId, body?.reason);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    return this.taskChecklist.skipChecklistItem(orgId, req.user.id, id, itemId, body?.reason);
   }
 
   @Post(':id/checklist/:itemId/override')
   @ApiOperation({ summary: 'Assigner: mark a checklist item done for everyone (all_must)' })
   async overrideChecklistItem(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Param('itemId') itemId: string) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
-    return this.service.overrideChecklistItem(orgId, req.user.id, id, itemId);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    return this.taskChecklist.overrideChecklistItem(orgId, req.user.id, id, itemId);
   }
 
   @Post(':id/checklist/:itemId/clear-override')
   @ApiOperation({ summary: 'Assigner: undo a "done for everyone" override' })
   async clearChecklistOverride(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Param('itemId') itemId: string) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
-    return this.service.clearChecklistOverride(orgId, req.user.id, id, itemId);
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    return this.taskChecklist.clearChecklistOverride(orgId, req.user.id, id, itemId);
   }
 
   @Post(':id/checklist/:itemId/challenge')
@@ -781,8 +792,8 @@ export class TasksController {
     @Param('itemId') itemId: string,
     @Body() body: ChallengeChecklistItemDto,
   ) {
-    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
-    return this.service.challengeChecklistItem(orgId, req.user.id, id, itemId, body?.user_id ?? '');
+    await this.taskAccess.assertCanViewTask(orgId, principalFromUser(req.user), id);
+    return this.taskChecklist.challengeChecklistItem(orgId, req.user.id, id, itemId, body?.user_id ?? '');
   }
 
   // ─── Assignees ────────────────────────────────────────────────────────────────
@@ -795,7 +806,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() dto: AddAssigneeDto,
   ) {
-    return this.service.addAssignee(orgId, req.user.id, id, dto);
+    return this.taskAssignee.addAssignee(orgId, req.user.id, id, dto);
   }
 
   @Delete(':id/assignees/:userId')
@@ -806,6 +817,6 @@ export class TasksController {
     @Param('id') id: string,
     @Param('userId') assigneeUserId: string,
   ) {
-    return this.service.removeAssignee(orgId, req.user.id, id, assigneeUserId);
+    return this.taskAssignee.removeAssignee(orgId, req.user.id, id, assigneeUserId);
   }
 }

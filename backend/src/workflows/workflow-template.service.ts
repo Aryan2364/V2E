@@ -32,7 +32,7 @@ import {
 } from '../common/task-masters-usable'
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee'
 import { ALLOWED_ATTACHMENT_EXTENSIONS, normaliseExtensions, type UploadedFile } from '../tasks/task-attachments.service'
-import { TasksService } from '../tasks/tasks.service'
+import { TaskAccessService } from '../tasks/task-access.service'
 import { TimelineStepInput, WorkflowEngineService, isWaitingRow } from './workflow-engine.service'
 import { SCHEDULE_START } from './engine/schedule'
 import {
@@ -657,9 +657,9 @@ export class WorkflowTemplateService {
    * closed when the tasks module isn't available.
    */
   private async assertCanViewTask(orgId: string, p: Principal, taskId: string): Promise<void> {
-    let tasks: TasksService | null = null
+    let tasks: TaskAccessService | null = null
     try {
-      tasks = this.moduleRef?.get(TasksService, { strict: false }) ?? null
+      tasks = this.moduleRef?.get(TaskAccessService, { strict: false }) ?? null
     } catch {
       tasks = null
     }
