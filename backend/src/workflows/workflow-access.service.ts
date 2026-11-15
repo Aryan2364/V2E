@@ -5,7 +5,7 @@ import { DEFAULT_TZ, InstanceStepRow, MSG_ARCHIVED, MSG_EDIT, MSG_INSTANCE_VIEW,
 import { ModuleRef } from '@nestjs/core'
 import { Principal } from '../access-rights/permissions.service'
 import { PrismaService } from '../prisma/prisma.service'
-import { TasksService } from '../tasks/tasks.service'
+import { TaskAccessService } from '../tasks/task-access.service'
 import { capabilitiesFor } from './workflow-access'
 import { isRunParticipant, taskParticipantWhere } from './run-access'
 import { unique } from './workflow-view.formatter'
@@ -53,9 +53,9 @@ export class WorkflowAccessService {
    * closed when the tasks module isn't available.
    */
   async assertCanViewTask(orgId: string, p: Principal, taskId: string): Promise<void> {
-    let tasks: TasksService | null = null
+    let tasks: TaskAccessService | null = null
     try {
-      tasks = this.moduleRef?.get(TasksService, { strict: false }) ?? null
+      tasks = this.moduleRef?.get(TaskAccessService, { strict: false }) ?? null
     } catch {
       tasks = null
     }

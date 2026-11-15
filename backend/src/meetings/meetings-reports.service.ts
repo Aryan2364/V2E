@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataScope, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { TasksService } from '../tasks/tasks.service';
+import { TaskDetailService } from '../tasks/task-detail.service';
 import { ScopeService } from '../access-rights/scope.service';
 import { principalFromUser } from '../access-rights/permissions.service';
 import { Actor } from './meetings.service';
@@ -23,7 +23,7 @@ const GOVERNANCE_SCOPE_CEILING: DataScope = DataScope.own;
 export class MeetingsReportsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly tasks: TasksService,
+    private readonly tasks: TaskDetailService,
     private readonly scope: ScopeService,
   ) {}
 

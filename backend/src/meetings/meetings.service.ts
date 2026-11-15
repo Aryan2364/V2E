@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClockService } from '../clock/clock.service';
-import { TasksService } from '../tasks/tasks.service';
+import { TaskCreateService } from '../tasks/task-create.service';
 import { LeaveService } from '../leave/leave.service';
 import { HolidaysService } from '../holidays/holidays.service';
 import { PermissionsService, principalFromUser } from '../access-rights/permissions.service';
@@ -72,7 +72,7 @@ export class MeetingsService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly clock: ClockService,
-    private readonly tasks: TasksService,
+    private readonly tasks: TaskCreateService,
     private readonly leave: LeaveService,
     private readonly holidays: HolidaysService,
     private readonly permissions: PermissionsService,
