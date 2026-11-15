@@ -26,7 +26,16 @@ import {
   MAX_ATTACHMENT_BYTES,
   type UploadedFile as UploadedFileType,
 } from '../tasks/task-attachments.service';
-import { ProcessHierarchyService } from './process-hierarchy.service';
+import { ProcessMapService } from './process-map.service';
+import { ProcessLaneService } from './process-lane.service';
+import { ProcessNodeService } from './process-node.service';
+import { ProcessConnectionService } from './process-connection.service';
+import { ProcessArtifactService } from './process-artifact.service';
+import { ProcessAccessRulesService } from './process-access-rules.service';
+import { ProcessSnapshotService } from './process-snapshot.service';
+import { ProcessReviewService } from './process-review.service';
+import { ProcessTemplateService } from './process-template.service';
+import { ProcessNodeCopyService } from './process-node-copy.service';
 import { CreateMapDto, UpdateMapDto } from './dto/map.dto';
 import { BulkPositionDto, CreateNodeDto, PasteNodesDto, UpdateNodeDto } from './dto/node.dto';
 import { CreateConnectionDto, UpdateConnectionDto } from './dto/connection.dto';
@@ -44,42 +53,53 @@ const LEAF = 'process_hierarchy.map.manage';
 @UseGuards(JwtAuthGuard, OrgScopeGuard, PermissionsGuard)
 @Controller('api/v1/org/:orgId/process-hierarchy')
 export class ProcessHierarchyController {
-  constructor(private readonly service: ProcessHierarchyService) {}
+  constructor(
+    private readonly maps: ProcessMapService,
+    private readonly lanes: ProcessLaneService,
+    private readonly nodes: ProcessNodeService,
+    private readonly conns: ProcessConnectionService,
+    private readonly artifacts: ProcessArtifactService,
+    private readonly rules: ProcessAccessRulesService,
+    private readonly snapshots: ProcessSnapshotService,
+    private readonly review: ProcessReviewService,
+    private readonly templates: ProcessTemplateService,
+    private readonly copy: ProcessNodeCopyService,
+  ) {}
 
   // ─── Maps ──────────────────────────────────────────────────────────────────
   @Get('maps')
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'List process maps visible to the caller' })
   listMaps(@Param('orgId') orgId: string, @Request() req: any) {
-    return this.service.listMaps(orgId, principalFromUser(req.user));
+    return this.maps.listMaps(orgId, principalFromUser(req.user));
   }
 
   @Post('maps')
   @RequirePermission(LEAF, PermissionAction.write)
   @ApiOperation({ summary: 'Create a process map (caller becomes owner)' })
   createMap(@Param('orgId') orgId: string, @Request() req: any, @Body() dto: CreateMapDto) {
-    return this.service.createMap(orgId, req.user.id, dto);
+    return this.maps.createMap(orgId, req.user.id, dto);
   }
 
   @Get('maps/:mapId')
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'Process map detail' })
   getMap(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any) {
-    return this.service.getMap(orgId, principalFromUser(req.user), mapId);
+    return this.maps.getMap(orgId, principalFromUser(req.user), mapId);
   }
 
   @Patch('maps/:mapId')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Rename / re-describe a process map (owner or admin)' })
   updateMap(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: UpdateMapDto) {
-    return this.service.updateMap(orgId, principalFromUser(req.user), mapId, dto);
+    return this.maps.updateMap(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Delete('maps/:mapId')
   @RequirePermission(LEAF, PermissionAction.delete)
   @ApiOperation({ summary: 'Delete a process map (admin only)' })
   deleteMap(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any) {
-    return this.service.deleteMap(orgId, principalFromUser(req.user), mapId);
+    return this.maps.deleteMap(orgId, principalFromUser(req.user), mapId);
   }
 
   // ─── Flow (one drill level) ──────────────────────────────────────────────────
@@ -92,14 +112,14 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Query('parentNodeId') parentNodeId?: string,
   ) {
-    return this.service.getFlow(orgId, principalFromUser(req.user), mapId, parentNodeId || null);
+    return this.maps.getFlow(orgId, principalFromUser(req.user), mapId, parentNodeId || null);
   }
 
   @Get('maps/:mapId/tree')
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'Flat list of every node in the map (for the outline tree + search)' })
   getTree(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any) {
-    return this.service.getTree(orgId, principalFromUser(req.user), mapId);
+    return this.maps.getTree(orgId, principalFromUser(req.user), mapId);
   }
 
   // ─── Nodes ───────────────────────────────────────────────────────────────────
@@ -107,21 +127,21 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.write)
   @ApiOperation({ summary: 'Add a node to a flow' })
   createNode(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: CreateNodeDto) {
-    return this.service.createNode(orgId, principalFromUser(req.user), mapId, dto);
+    return this.nodes.createNode(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Post('maps/:mapId/nodes/paste')
   @RequirePermission(LEAF, PermissionAction.write)
   @ApiOperation({ summary: 'Paste copied nodes (with sub-trees) into this map/level' })
   pasteNodes(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: PasteNodesDto) {
-    return this.service.pasteNodes(orgId, principalFromUser(req.user), mapId, dto);
+    return this.copy.pasteNodes(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Get('maps/:mapId/nodes/:nodeId')
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'Full node detail (checklist, inputs/outputs, sharing)' })
   getNode(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('nodeId') nodeId: string, @Request() req: any) {
-    return this.service.getNode(orgId, principalFromUser(req.user), mapId, nodeId);
+    return this.nodes.getNode(orgId, principalFromUser(req.user), mapId, nodeId);
   }
 
   @Patch('maps/:mapId/nodes/:nodeId')
@@ -134,35 +154,35 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: UpdateNodeDto,
   ) {
-    return this.service.updateNode(orgId, principalFromUser(req.user), mapId, nodeId, dto);
+    return this.nodes.updateNode(orgId, principalFromUser(req.user), mapId, nodeId, dto);
   }
 
   @Post('maps/:mapId/node-positions')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Bulk-save node positions after a canvas drag' })
   bulkPosition(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: BulkPositionDto) {
-    return this.service.bulkPosition(orgId, principalFromUser(req.user), mapId, dto);
+    return this.nodes.bulkPosition(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Delete('maps/:mapId/nodes/:nodeId')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Delete a node and its sub-tree' })
   deleteNode(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('nodeId') nodeId: string, @Request() req: any) {
-    return this.service.deleteNode(orgId, principalFromUser(req.user), mapId, nodeId);
+    return this.nodes.deleteNode(orgId, principalFromUser(req.user), mapId, nodeId);
   }
 
   @Post('maps/:mapId/nodes/:nodeId/detach')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Detach a reference into its own independent copy (copy-on-write)' })
   detachNode(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('nodeId') nodeId: string, @Request() req: any) {
-    return this.service.detachNode(orgId, principalFromUser(req.user), mapId, nodeId);
+    return this.copy.detachNode(orgId, principalFromUser(req.user), mapId, nodeId);
   }
 
   @Post('maps/:mapId/nodes/:nodeId/make-reusable')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Turn a container into a standalone map that can be referenced anywhere' })
   makeNodeReusable(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('nodeId') nodeId: string, @Request() req: any) {
-    return this.service.makeNodeReusable(orgId, principalFromUser(req.user), mapId, nodeId);
+    return this.copy.makeNodeReusable(orgId, principalFromUser(req.user), mapId, nodeId);
   }
 
   // ─── Status workflow (draft → in_review → final) ─────────────────────────────
@@ -176,7 +196,7 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: RequestReviewDto,
   ) {
-    return this.service.requestReview(orgId, principalFromUser(req.user), mapId, nodeId, !!dto.cascade);
+    return this.review.requestReview(orgId, principalFromUser(req.user), mapId, nodeId, !!dto.cascade);
   }
 
   @Post('maps/:mapId/nodes/:nodeId/decide-status')
@@ -189,7 +209,7 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: DecideStatusDto,
   ) {
-    return this.service.decideStatus(orgId, principalFromUser(req.user), mapId, nodeId, dto.status, !!dto.cascade);
+    return this.review.decideStatus(orgId, principalFromUser(req.user), mapId, nodeId, dto.status, !!dto.cascade);
   }
 
   // ─── Connections ─────────────────────────────────────────────────────────────
@@ -197,7 +217,7 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Draw a connection between two steps in a flow' })
   createConnection(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: CreateConnectionDto) {
-    return this.service.createConnection(orgId, principalFromUser(req.user), mapId, dto);
+    return this.conns.createConnection(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Patch('maps/:mapId/connections/:connId')
@@ -210,14 +230,14 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: UpdateConnectionDto,
   ) {
-    return this.service.updateConnection(orgId, principalFromUser(req.user), mapId, connId, dto);
+    return this.conns.updateConnection(orgId, principalFromUser(req.user), mapId, connId, dto);
   }
 
   @Delete('maps/:mapId/connections/:connId')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Delete a connection' })
   deleteConnection(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('connId') connId: string, @Request() req: any) {
-    return this.service.deleteConnection(orgId, principalFromUser(req.user), mapId, connId);
+    return this.conns.deleteConnection(orgId, principalFromUser(req.user), mapId, connId);
   }
 
   // ─── Swimlanes ───────────────────────────────────────────────────────────────
@@ -225,21 +245,21 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Create an (empty) swimlane for a department in a level' })
   createLane(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: CreateLaneDto) {
-    return this.service.createLane(orgId, principalFromUser(req.user), mapId, dto);
+    return this.lanes.createLane(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Patch('maps/:mapId/lanes-order')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Reorder the department lanes at a level (top→bottom)' })
   reorderLanes(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: ReorderLanesDto) {
-    return this.service.reorderLanes(orgId, principalFromUser(req.user), mapId, dto.parent_node_id ?? null, dto.lane_ids);
+    return this.lanes.reorderLanes(orgId, principalFromUser(req.user), mapId, dto.parent_node_id ?? null, dto.lane_ids);
   }
 
   @Patch('maps/:mapId/pool-order')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Reorder the pools (customer/company/vendor) at a level (top→bottom)' })
   setPoolOrder(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: PoolOrderDto) {
-    return this.service.setPoolOrder(orgId, principalFromUser(req.user), mapId, dto.parent_node_id ?? null, dto.pools as ProcessPool[]);
+    return this.lanes.setPoolOrder(orgId, principalFromUser(req.user), mapId, dto.parent_node_id ?? null, dto.pools as ProcessPool[]);
   }
 
   @Patch('maps/:mapId/lanes/:laneId')
@@ -252,7 +272,7 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: ReassignLaneDto,
   ) {
-    return this.service.reassignLane(orgId, principalFromUser(req.user), mapId, laneId, dto.department_id);
+    return this.lanes.reassignLane(orgId, principalFromUser(req.user), mapId, laneId, dto.department_id);
   }
 
   @Delete('maps/:mapId/lanes/:laneId')
@@ -265,7 +285,7 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Query('move_to_department_id') moveToDepartmentId?: string,
   ) {
-    return this.service.deleteLane(orgId, principalFromUser(req.user), mapId, laneId, moveToDepartmentId);
+    return this.lanes.deleteLane(orgId, principalFromUser(req.user), mapId, laneId, moveToDepartmentId);
   }
 
   // ─── Artifacts ────────────────────────────────────────────────────────────────
@@ -273,21 +293,21 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'List the map artifact library' })
   listArtifacts(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any) {
-    return this.service.listArtifacts(orgId, principalFromUser(req.user), mapId);
+    return this.artifacts.listArtifacts(orgId, principalFromUser(req.user), mapId);
   }
 
   @Post('maps/:mapId/artifacts')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Create a metadata-only artifact' })
   createArtifact(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: CreateArtifactDto) {
-    return this.service.createArtifact(orgId, principalFromUser(req.user), mapId, dto);
+    return this.artifacts.createArtifact(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Post('maps/:mapId/materials')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Create a link or article material (no file)' })
   createMaterial(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: CreateMaterialDto) {
-    return this.service.createMaterial(orgId, principalFromUser(req.user), mapId, dto);
+    return this.artifacts.createMaterial(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Post('maps/:mapId/artifacts/upload')
@@ -302,7 +322,7 @@ export class ProcessHierarchyController {
     @UploadedFile() file: UploadedFileType,
     @Body() dto: CreateArtifactDto,
   ) {
-    return this.service.uploadArtifact(orgId, principalFromUser(req.user), mapId, dto, file);
+    return this.artifacts.uploadArtifact(orgId, principalFromUser(req.user), mapId, dto, file);
   }
 
   @Patch('maps/:mapId/artifacts/:artifactId')
@@ -315,28 +335,28 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: UpdateArtifactDto,
   ) {
-    return this.service.updateArtifact(orgId, principalFromUser(req.user), mapId, artifactId, dto);
+    return this.artifacts.updateArtifact(orgId, principalFromUser(req.user), mapId, artifactId, dto);
   }
 
   @Delete('maps/:mapId/artifacts/:artifactId')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Delete an artifact (and its file)' })
   deleteArtifact(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('artifactId') artifactId: string, @Request() req: any) {
-    return this.service.deleteArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
+    return this.artifacts.deleteArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
   }
 
   @Get('maps/:mapId/artifacts/:artifactId')
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'Full detail for one artifact (preview a document from the canvas)' })
   getArtifact(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('artifactId') artifactId: string, @Request() req: any) {
-    return this.service.getArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
+    return this.artifacts.getArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
   }
 
   @Get('maps/:mapId/artifacts/:artifactId/view')
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'Inline signed URL for previewing a file (respects view-only for downloads)' })
   viewArtifact(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('artifactId') artifactId: string, @Request() req: any) {
-    return this.service.viewArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
+    return this.artifacts.viewArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
   }
 
   @Get('maps/:mapId/artifacts/:artifactId/view-file')
@@ -349,7 +369,7 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Res() res: Response,
   ) {
-    const { buffer, mime, fileName } = await this.service.getArtifactBytes(orgId, principalFromUser(req.user), mapId, artifactId);
+    const { buffer, mime, fileName } = await this.artifacts.getArtifactBytes(orgId, principalFromUser(req.user), mapId, artifactId);
     const safe = fileName.replace(/"/g, '');
     res.setHeader('Content-Type', mime);
     res.setHeader('Content-Disposition', `inline; filename="${safe}"`);
@@ -361,7 +381,7 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'Short-lived signed download URL for an artifact file' })
   downloadArtifact(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('artifactId') artifactId: string, @Request() req: any) {
-    return this.service.downloadArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
+    return this.artifacts.downloadArtifact(orgId, principalFromUser(req.user), mapId, artifactId);
   }
 
   @Post('maps/:mapId/nodes/:nodeId/artifacts')
@@ -374,7 +394,7 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: LinkArtifactDto,
   ) {
-    return this.service.linkArtifact(orgId, principalFromUser(req.user), mapId, nodeId, dto);
+    return this.artifacts.linkArtifact(orgId, principalFromUser(req.user), mapId, nodeId, dto);
   }
 
   @Delete('maps/:mapId/nodes/:nodeId/artifacts/:linkId')
@@ -387,7 +407,7 @@ export class ProcessHierarchyController {
     @Param('linkId') linkId: string,
     @Request() req: any,
   ) {
-    return this.service.unlinkArtifact(orgId, principalFromUser(req.user), mapId, nodeId, linkId);
+    return this.artifacts.unlinkArtifact(orgId, principalFromUser(req.user), mapId, nodeId, linkId);
   }
 
   // ─── Access / sharing ───────────────────────────────────────────────────────
@@ -395,7 +415,7 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'List sharing/attachment rules on a node' })
   listAccess(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('nodeId') nodeId: string, @Request() req: any) {
-    return this.service.listNodeAccess(orgId, principalFromUser(req.user), mapId, nodeId);
+    return this.rules.listNodeAccess(orgId, principalFromUser(req.user), mapId, nodeId);
   }
 
   @Post('maps/:mapId/nodes/:nodeId/access')
@@ -408,7 +428,7 @@ export class ProcessHierarchyController {
     @Request() req: any,
     @Body() dto: AddAccessRuleDto,
   ) {
-    return this.service.addAccessRule(orgId, principalFromUser(req.user), mapId, nodeId, dto);
+    return this.rules.addAccessRule(orgId, principalFromUser(req.user), mapId, nodeId, dto);
   }
 
   @Delete('maps/:mapId/nodes/:nodeId/access/:ruleId')
@@ -421,7 +441,7 @@ export class ProcessHierarchyController {
     @Param('ruleId') ruleId: string,
     @Request() req: any,
   ) {
-    return this.service.removeAccessRule(orgId, principalFromUser(req.user), mapId, nodeId, ruleId);
+    return this.rules.removeAccessRule(orgId, principalFromUser(req.user), mapId, nodeId, ruleId);
   }
 
   // ─── Snapshots (create + restore; diff is Phase 2) ───────────────────────────
@@ -429,21 +449,21 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'List saved versions (as-is / to-be) of a map' })
   listSnapshots(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any) {
-    return this.service.listSnapshots(orgId, principalFromUser(req.user), mapId);
+    return this.snapshots.listSnapshots(orgId, principalFromUser(req.user), mapId);
   }
 
   @Post('maps/:mapId/snapshots')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Freeze the current map into a named version' })
   createSnapshot(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: CreateSnapshotDto) {
-    return this.service.createSnapshot(orgId, principalFromUser(req.user), mapId, dto);
+    return this.snapshots.createSnapshot(orgId, principalFromUser(req.user), mapId, dto);
   }
 
   @Post('maps/:mapId/snapshots/:snapshotId/restore')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Replace the working map from a saved version' })
   restoreSnapshot(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Param('snapshotId') snapshotId: string, @Request() req: any) {
-    return this.service.restoreSnapshot(orgId, principalFromUser(req.user), mapId, snapshotId);
+    return this.snapshots.restoreSnapshot(orgId, principalFromUser(req.user), mapId, snapshotId);
   }
 
   // ─── Undo/redo (session history) — capture + restore state without a version row ─
@@ -451,14 +471,14 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Serialize the current map (for the editor undo stack)' })
   exportState(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any) {
-    return this.service.exportState(orgId, principalFromUser(req.user), mapId);
+    return this.snapshots.exportState(orgId, principalFromUser(req.user), mapId);
   }
 
   @Post('maps/:mapId/restore-state')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Rebuild the map from a captured state (undo/redo step)' })
   restoreState(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: RestoreStateDto) {
-    return this.service.restoreState(orgId, principalFromUser(req.user), mapId, dto.tree_json);
+    return this.snapshots.restoreState(orgId, principalFromUser(req.user), mapId, dto.tree_json);
   }
 
   // ─── Diff (as-is vs to-be) ────────────────────────────────────────────────────
@@ -472,7 +492,7 @@ export class ProcessHierarchyController {
     @Query('base') base: string,
     @Query('target') target: string,
   ) {
-    return this.service.diff(orgId, principalFromUser(req.user), mapId, base || 'live', target || 'live');
+    return this.snapshots.diff(orgId, principalFromUser(req.user), mapId, base || 'live', target || 'live');
   }
 
   // ─── Templates (reusable blueprints) ──────────────────────────────────────────
@@ -480,27 +500,27 @@ export class ProcessHierarchyController {
   @RequirePermission(LEAF, PermissionAction.read)
   @ApiOperation({ summary: 'List reusable process templates' })
   listTemplates(@Param('orgId') orgId: string) {
-    return this.service.listTemplates(orgId);
+    return this.templates.listTemplates(orgId);
   }
 
   @Post('maps/:mapId/save-as-template')
   @RequirePermission(LEAF, PermissionAction.write)
   @ApiOperation({ summary: 'Save the current map as a reusable template' })
   saveAsTemplate(@Param('orgId') orgId: string, @Param('mapId') mapId: string, @Request() req: any, @Body() dto: SaveAsTemplateDto) {
-    return this.service.saveAsTemplate(orgId, principalFromUser(req.user), mapId, dto.name, dto.description);
+    return this.templates.saveAsTemplate(orgId, principalFromUser(req.user), mapId, dto.name, dto.description);
   }
 
   @Post('templates/:templateId/instantiate')
   @RequirePermission(LEAF, PermissionAction.write)
   @ApiOperation({ summary: 'Create a new map from a template' })
   instantiateTemplate(@Param('orgId') orgId: string, @Param('templateId') templateId: string, @Request() req: any, @Body() dto: InstantiateTemplateDto) {
-    return this.service.instantiateTemplate(orgId, principalFromUser(req.user), templateId, dto.name);
+    return this.templates.instantiateTemplate(orgId, principalFromUser(req.user), templateId, dto.name);
   }
 
   @Delete('templates/:templateId')
   @RequirePermission(LEAF, PermissionAction.edit)
   @ApiOperation({ summary: 'Delete a template (creator or admin)' })
   deleteTemplate(@Param('orgId') orgId: string, @Param('templateId') templateId: string, @Request() req: any) {
-    return this.service.deleteTemplate(orgId, principalFromUser(req.user), templateId);
+    return this.templates.deleteTemplate(orgId, principalFromUser(req.user), templateId);
   }
 }
