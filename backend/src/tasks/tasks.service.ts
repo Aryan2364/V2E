@@ -57,6 +57,7 @@ import { deadlineBucket, myOpenTasksWhere } from './badge-count.util';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { swallow } from '../common/swallow';
 import { runExclusive } from '../common/run-exclusive';
+import { clampTake } from '../common/pagination';
 
 const TASK_INCLUDE = {
   status: true,
@@ -1297,7 +1298,7 @@ export class TasksService {
     filters = await this.resolveFilters(orgId, filters);
     const where = { ...this.buildTaskWhere(orgId, scopeWhere, filters, 'created_at'), ...this.bucketWhere(bucket, now) };
 
-    const take = Math.min(Math.max(pageSize, 1), 100);
+    const take = clampTake(pageSize, 25, 100);
     const skip = (Math.max(page, 1) - 1) * take;
 
     const [items, total] = await Promise.all([

@@ -30,6 +30,7 @@ import type { ReopenTicketDto } from './dto/reopen-ticket.dto'
 import type { CreateResolverGroupDto, UpdateResolverGroupDto } from './dto/resolver-group.dto'
 import { TicketTemplateAccessService } from './ticket-template-access.service'
 import { runExclusive } from '../common/run-exclusive';
+import { clampTake } from '../common/pagination';
 
 const TICKET_INCLUDE = {
   ticket_type: true,
@@ -811,7 +812,7 @@ export class TicketsService {
       return this.prisma.ticket.findMany({ where, include: TICKET_INCLUDE, orderBy })
     }
 
-    const take = Math.min(Math.max(pageSize ?? 25, 1), 100)
+    const take = clampTake(pageSize, 25, 100)
     const skip = (Math.max(page, 1) - 1) * take
     const [items, total] = await Promise.all([
       this.prisma.ticket.findMany({ where, include: TICKET_INCLUDE, orderBy, skip, take }),
@@ -1293,7 +1294,7 @@ export class TicketsService {
     if (page === undefined) {
       return this.prisma.ticketArchive.findMany({ where, orderBy })
     }
-    const take = Math.min(Math.max(pageSize ?? 25, 1), 100)
+    const take = clampTake(pageSize, 25, 100)
     const skip = (Math.max(page, 1) - 1) * take
     const [items, total] = await Promise.all([
       this.prisma.ticketArchive.findMany({ where, orderBy, skip, take }),
