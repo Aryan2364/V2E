@@ -6,7 +6,7 @@ import KpiCards from './KpiCards'
 import OverdueAgingPanel from './OverdueAgingPanel'
 import DelegationPanel from './DelegationPanel'
 import SourceTimingPanel from './SourceTimingPanel'
-import StatusTimingChart from './StatusTimingChart'
+import { StatusTimingChart } from './lazy-charts'
 
 /**
  * "Mine" layout — an individual's own work + what they delegated. Emphasizes where their

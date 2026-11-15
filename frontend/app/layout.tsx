@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
-import QueryProvider from '@/lib/providers/QueryProvider'
 import { ToastProvider } from '@/components/ui/Toast'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -99,17 +98,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans antialiased bg-surface-sunken text-text-primary">
         <LayoutProvider initial={layout}>
           <TooltipProvider>
-            <QueryProvider>
-              <AuthProvider>
-                <NoScrollNumberInputs />
-                <ToastProvider>
-                  <NotificationsProvider>
-                    <SplashGate>{children}</SplashGate>
-                    <NotificationsOptInPrompt />
-                  </NotificationsProvider>
-                </ToastProvider>
-              </AuthProvider>
-            </QueryProvider>
+            <AuthProvider>
+              <NoScrollNumberInputs />
+              <ToastProvider>
+                <NotificationsProvider>
+                  <SplashGate>{children}</SplashGate>
+                  <NotificationsOptInPrompt />
+                </NotificationsProvider>
+              </ToastProvider>
+            </AuthProvider>
           </TooltipProvider>
           <Toaster />
           {/* 41.12 rule 8: Chrome offers its install prompt once per page load,

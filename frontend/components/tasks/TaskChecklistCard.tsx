@@ -18,6 +18,8 @@ import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
 import { TERMINAL_STATUS_PHASES, type Task, type TaskChecklistItem, type TaskChecklistItemStateEntry } from '@/lib/types/tasks'
 
+import { getInitials as initials } from '@/lib/initials'
+import { getErrorMessage } from '@/lib/errors'
 interface Props {
   task: Task
   orgId: string
@@ -26,12 +28,6 @@ interface Props {
   /** Assigner/admin — may override for everyone and challenge a person's item. */
   canEdit: boolean
   onChanged: (task: Task) => void
-}
-
-function initials(name?: string | null): string {
-  if (!name) return '?'
-  const parts = name.trim().split(/\s+/)
-  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
 }
 
 export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, canEdit, onChanged }: Props) {
@@ -56,10 +52,10 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
     try {
       const updated = await fn()
       onChanged(updated)
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Surface the backend's plain-English reason (e.g. the gate message) via the
       // app's own toast — never a native browser dialog.
-      const msg = e?.response?.data?.message ?? e?.message ?? 'Something went wrong.'
+      const msg = getErrorMessage(e, 'Something went wrong.')
       toast.warning(Array.isArray(msg) ? msg.join('\n') : msg)
     } finally {
       setBusy(null)

@@ -6,6 +6,7 @@ import { Gift, Heart, UserPlus, Award, ArrowRight } from 'lucide-react'
 import WishModal from './WishModal'
 import type { PeopleEvent, PeopleEventsResponse } from '@/lib/types'
 
+import { getInitials } from '@/lib/initials'
 // ─── Avatar helpers ────────────────────────────────────────────────────────────
 
 const avatarColors = [
@@ -17,10 +18,6 @@ function avatarColor(name: string): string {
   let h = 0
   for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return avatarColors[h % avatarColors.length]
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 // ─── Tab config ────────────────────────────────────────────────────────────────

@@ -10,6 +10,7 @@ import { getEmployees } from '@/lib/api/employees'
 import type { LeaveApprovalMode, LeaveMaster } from '@/lib/types/leave'
 import { Label } from '@/components/ui/label'
 
+import { getErrorMessage } from '@/lib/errors'
 interface Person {
   user_id: string
   name: string
@@ -134,8 +135,8 @@ export default function LeaveRulesPage() {
       })
       setMaster(saved)
       toast.success('Leave rules saved')
-    } catch (e: any) {
-      const m = e?.response?.data?.message ?? 'Could not save leave rules'
+    } catch (e: unknown) {
+      const m = getErrorMessage(e, 'Could not save leave rules')
       toast.error(Array.isArray(m) ? m.join(', ') : m)
     } finally {
       setSaving(false)

@@ -18,6 +18,7 @@ import type {
   WorkflowTemplateStatus,
 } from '@/lib/types/workflows'
 
+import { getInitials } from '@/lib/initials'
 export const WORKFLOWS_BASE = '/dashboard/tasks/workflows'
 export const workflowHref = (id: string) => `${WORKFLOWS_BASE}/${id}`
 export const editHref = (id: string) => `${WORKFLOWS_BASE}/${id}/edit`
@@ -444,9 +445,7 @@ export function WorkflowBreadcrumb({ trail }: { trail: { label: string; href?: s
 
 const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger-hover', 'bg-text-secondary']
 
-export function initials(name: string): string {
-  return name.trim().split(/\s+/).map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
+export const initials = getInitials
 
 export function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'md' }) {
   let h = 0

@@ -123,6 +123,9 @@ export default function TaskListRow({
   return (
     <div
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() } }}
       className="group flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-surface-sunken first:rounded-t-[11px] last:rounded-b-[11px]"
     >
       {/* Urgency accent */}

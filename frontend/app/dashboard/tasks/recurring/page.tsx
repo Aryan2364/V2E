@@ -55,6 +55,7 @@ import {
   LayoutGrid, Table as TableIcon, ArrowUpRight, ArrowDownLeft, Inbox,
 } from 'lucide-react'
 
+import { getErrorMessage } from '@/lib/errors'
 // ─── Delete flow ──────────────────────────────────────────────────────────────
 
 type DeleteMode = 'stop' | 'delete-future' | 'delete-all'
@@ -111,7 +112,7 @@ function DeleteConfirmDialog({
             onClick={async () => {
               setBusy(true); setError(null)
               try { await onConfirm() }
-              catch (e: any) { setError(e?.response?.data?.message ?? 'Could not do this — please try again.') }
+              catch (e: unknown) { setError(getErrorMessage(e, 'Could not do this — please try again.')) }
               finally { setBusy(false) }
             }}
           >
@@ -148,8 +149,8 @@ function RecurringCard({
     try {
       if (template.is_active) await onPause()
       else await onResume()
-    } catch (e: any) {
-      setToggleErr(e?.response?.data?.message ?? 'Could not change status.')
+    } catch (e: unknown) {
+      setToggleErr(getErrorMessage(e, 'Could not change status.'))
       setTimeout(() => setToggleErr(null), 3000)
     } finally { setToggling(false) }
   }
@@ -159,8 +160,8 @@ function RecurringCard({
     try {
       const result = await onSpawnToday()
       setSpawnMsg(result.spawned > 0 ? `${result.spawned} task${result.spawned !== 1 ? 's' : ''} created` : 'Already spawned today')
-    } catch (e: any) {
-      setSpawnMsg(e?.response?.data?.message ? 'Failed' : 'Failed')
+    } catch (e: unknown) {
+      setSpawnMsg('Failed')
     } finally {
       setSpawning(false)
       setTimeout(() => setSpawnMsg(null), 3000)
@@ -183,7 +184,7 @@ function RecurringCard({
   ]
 
   return (
-    <div onClick={onClick}
+    <div onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() } }}
       className="bg-surface border border-border-light rounded-card shadow-card p-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group flex flex-col h-[280px]">
       <div className="mb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
