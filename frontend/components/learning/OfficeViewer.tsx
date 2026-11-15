@@ -7,7 +7,7 @@ import type { PreviewKind } from '@/lib/types/learning'
 
 /**
  * Renders Office/text materials IN THE BROWSER from their raw bytes — no server
- * conversion. Word (.docx) via Mammoth → HTML; Excel (.xlsx/.xls) and CSV via SheetJS
+ * conversion. Word (.docx) via Mammoth → HTML; Excel (.xlsx) via ExcelJS and CSV via a small parser
  * → HTML table(s); plain text directly. Libraries are dynamically imported so they
  * only load when such a file is actually opened.
  */
@@ -37,9 +37,7 @@ export default function OfficeViewer({
           if (kind === 'text') {
             setText(new TextDecoder().decode(new Uint8Array(buf)))
           } else {
-            const XLSX: any = await import('xlsx')
-            const wb = XLSX.read(new Uint8Array(buf), { type: 'array' })
-            setHtml(sheetsToHtml(XLSX, wb))
+            setHtml(csvToHtml(new TextDecoder().decode(new Uint8Array(buf))))
           }
         } else if (kind === 'docx') {
           const mammoth: any = await import('mammoth')
@@ -47,9 +45,11 @@ export default function OfficeViewer({
           if (cancelled) return
           setHtml(res.value || '<p>(empty document)</p>')
         } else if (kind === 'xlsx') {
-          const XLSX: any = await import('xlsx')
-          const wb = XLSX.read(new Uint8Array(buf), { type: 'array' })
-          setHtml(sheetsToHtml(XLSX, wb))
+          const ExcelJS = await import('exceljs')
+          const wb = new ExcelJS.Workbook()
+          await wb.xlsx.load(buf)
+          if (cancelled) return
+          setHtml(sheetsToHtml(wb))
         }
         if (!cancelled) setStatus('ready')
       } catch {
@@ -102,7 +102,7 @@ export default function OfficeViewer({
       <style>{OFFICE_CSS}</style>
       <div
         className={kind === 'docx' ? 'prose prose-sm max-w-none text-text-primary' : ''}
-        // Sanitize the library output (Mammoth/SheetJS) before injecting — strips any
+        // Sanitize the library output (Mammoth/ExcelJS) before injecting — strips any
         // script/event-handler/javascript: URI that could ride in via a crafted file.
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
       />
@@ -111,21 +111,60 @@ export default function OfficeViewer({
 }
 
 /** Join all sheets to HTML, labelling each when there's more than one. */
-function sheetsToHtml(XLSX: any, wb: any): string {
-  const names: string[] = wb.SheetNames ?? []
-  return names
-    .map((name) => {
-      const table = XLSX.utils.sheet_to_html(wb.Sheets[name])
-      return names.length > 1 ? `<div class="sheet-name">${escapeHtml(name)}</div>${table}` : table
+function rowsToTable(rows: string[][]): string {
+  const body = rows
+    .map((r) => `<tr>${r.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`)
+    .join('')
+  return `<table><tbody>${body}</tbody></table>`
+}
+
+function sheetsToHtml(wb: import('exceljs').Workbook): string {
+  const sheets = wb.worksheets
+  return sheets
+    .map((ws) => {
+      const cols = ws.columnCount
+      const rows: string[][] = []
+      ws.eachRow({ includeEmpty: true }, (row) => {
+        const cells: string[] = []
+        for (let c = 1; c <= cols; c++) cells.push(row.getCell(c).text ?? '')
+        rows.push(cells)
+      })
+      const table = rowsToTable(rows)
+      return sheets.length > 1 ? `<div class="sheet-name">${escapeHtml(ws.name)}</div>${table}` : table
     })
     .join('')
+}
+
+/** Minimal RFC 4180 CSV parser (quoted fields, escaped quotes, CRLF). */
+function csvToHtml(text: string): string {
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ''
+  let quoted = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (quoted) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i++ } else quoted = false
+      } else cell += ch
+    } else if (ch === '"') quoted = true
+    else if (ch === ',') { row.push(cell); cell = '' }
+    else if (ch === '
+' || ch === '') {
+      if (ch === '' && text[i + 1] === '
+') i++
+      row.push(cell); cell = ''; rows.push(row); row = []
+    } else cell += ch
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row) }
+  return rowsToTable(rows)
 }
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
 }
 
-/** Table styling for SheetJS output (which has no classes of its own). */
+/** Table styling for SheetJS. */
 const OFFICE_CSS = `
 .office-html table { border-collapse: collapse; width: max-content; max-width: 100%; margin-bottom: 16px; font-size: 13px; }
 .office-html td, .office-html th { border: 1px solid var(--border-light); padding: 4px 8px; color: var(--text-primary); white-space: nowrap; }
