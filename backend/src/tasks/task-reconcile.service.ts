@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { CompletionMode, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkflowTaskEventsService } from '../workflows/workflow-task-events.service';
@@ -43,7 +44,11 @@ export class TaskReconcileService {
     if (removed.length) {
       ops.push(
         this.prisma.taskTagLink.deleteMany({
-          where: { task_id: taskId, organization_id: orgId, tag_id: { in: removed } },
+          where: {
+            task_id: taskId,
+            organization_id: orgId,
+            tag_id: { in: removed },
+          },
         }),
       );
     }
@@ -65,7 +70,9 @@ export class TaskReconcileService {
     const addedRefs = await loadTagRefMap(this.prisma, orgId, added);
     const next = [
       ...current.filter((t) => nextSet.has(t.id)),
-      ...added.map((id) => addedRefs.get(id)).filter((t): t is TaskTagRef => !!t),
+      ...added
+        .map((id) => addedRefs.get(id))
+        .filter((t): t is TaskTagRef => !!t),
     ];
     return tagChangeEntry(current, next);
   }
@@ -82,21 +89,31 @@ export class TaskReconcileService {
   async reconcileTaskChecklist(
     orgId: string,
     taskId: string,
-    incoming: { id?: string; title: string; order_index: number; group_title?: string }[],
-    db: Prisma.TransactionClient = this.prisma as unknown as Prisma.TransactionClient,
+    incoming: {
+      id?: string;
+      title: string;
+      order_index: number;
+      group_title?: string;
+    }[],
+    db: Prisma.TransactionClient = this
+      .prisma as unknown as Prisma.TransactionClient,
   ): Promise<boolean> {
     const existing = await db.taskChecklist.findMany({
       where: { task_id: taskId, organization_id: orgId },
     });
     const existingById = new Map(existing.map((c) => [c.id, c]));
     const keepIds = new Set(
-      incoming.map((i) => i.id).filter((id): id is string => !!id && existingById.has(id)),
+      incoming
+        .map((i) => i.id)
+        .filter((id): id is string => !!id && existingById.has(id)),
     );
 
     let changed = false;
 
     // Drop items the edit removed — their per-person states cascade away.
-    const toDelete = existing.filter((c) => !keepIds.has(c.id)).map((c) => c.id);
+    const toDelete = existing
+      .filter((c) => !keepIds.has(c.id))
+      .map((c) => c.id);
     if (toDelete.length > 0) {
       await db.taskChecklist.deleteMany({ where: { id: { in: toDelete } } });
       changed = true;
@@ -104,7 +121,9 @@ export class TaskReconcileService {
 
     // Keep/update or create each incoming item, preserving the payload's order.
     for (const item of incoming) {
-      const groupTitle = item.group_title?.trim() ? item.group_title.trim() : null;
+      const groupTitle = item.group_title?.trim()
+        ? item.group_title.trim()
+        : null;
       const prev = item.id ? existingById.get(item.id) : undefined;
       if (prev) {
         if (
@@ -114,7 +133,11 @@ export class TaskReconcileService {
         ) {
           await db.taskChecklist.update({
             where: { id: prev.id },
-            data: { title: item.title, group_title: groupTitle, order_index: item.order_index },
+            data: {
+              title: item.title,
+              group_title: groupTitle,
+              order_index: item.order_index,
+            },
           });
           changed = true;
         }
@@ -158,7 +181,8 @@ export class TaskReconcileService {
     orgId: string,
     taskId: string,
     newDeadline: Date | null,
-    db: Prisma.TransactionClient = this.prisma as unknown as Prisma.TransactionClient,
+    db: Prisma.TransactionClient = this
+      .prisma as unknown as Prisma.TransactionClient,
   ): Promise<void> {
     const pending = await db.taskReminder.findMany({
       where: {
@@ -173,7 +197,9 @@ export class TaskReconcileService {
 
     // No deadline left to be relative to — a "3 days before" reminder is meaningless.
     if (!newDeadline) {
-      await db.taskReminder.deleteMany({ where: { id: { in: pending.map((r) => r.id) } } });
+      await db.taskReminder.deleteMany({
+        where: { id: { in: pending.map((r) => r.id) } },
+      });
       return;
     }
 
@@ -189,7 +215,10 @@ export class TaskReconcileService {
         continue;
       }
       if (next.getTime() !== prev.getTime()) {
-        await db.taskReminder.update({ where: { id: r.id }, data: { remind_at: next } });
+        await db.taskReminder.update({
+          where: { id: r.id },
+          data: { remind_at: next },
+        });
       }
     }
     if (stale.length) {
@@ -232,7 +261,8 @@ export class TaskReconcileService {
     flipped: { user_id: string; to_cc: boolean }[];
   }> {
     const noChange = { added: [], removed: [], flipped: [] };
-    if (incoming.assigneeIds === undefined && incoming.ccIds === undefined) return noChange;
+    if (incoming.assigneeIds === undefined && incoming.ccIds === undefined)
+      return noChange;
 
     // Who a closed task was assigned to is part of its frozen record — the same rule
     // the checklist follows. Reopen it to change the people.
@@ -271,10 +301,12 @@ export class TaskReconcileService {
     for (const [userId, isCc] of desired) {
       const existing = liveByUser.get(userId);
       if (!existing) added.push({ user_id: userId, is_cc: isCc });
-      else if (existing.is_cc !== isCc) flipped.push({ user_id: userId, to_cc: isCc });
+      else if (existing.is_cc !== isCc)
+        flipped.push({ user_id: userId, to_cc: isCc });
     }
     for (const a of live) {
-      if (!desired.has(a.user_id)) removed.push({ user_id: a.user_id, is_cc: a.is_cc });
+      if (!desired.has(a.user_id))
+        removed.push({ user_id: a.user_id, is_cc: a.is_cc });
     }
 
     if (!added.length && !removed.length && !flipped.length) return noChange;
@@ -285,7 +317,12 @@ export class TaskReconcileService {
     // task, and moving worker→CC only ever reduces what they are being asked to do.
     const newlyOn = added.map((a) => a.user_id);
     if (newlyOn.length) {
-      await assertActiveOrgMembers(this.prisma, orgId, newlyOn, 'assignees or CC recipients');
+      await assertActiveOrgMembers(
+        this.prisma,
+        orgId,
+        newlyOn,
+        'assignees or CC recipients',
+      );
       await this.taskAccess.assertAssigneesVisible(orgId, actorId, newlyOn);
       // Only real workers need to be *assignable*; a CC is an observer.
       await this.subjects.assertAllEligible(
@@ -302,7 +339,8 @@ export class TaskReconcileService {
     // seeded from the task's current open status so the scoreboard stays coherent
     // (same seeding the any→all mode switch performs).
     const seedStatusId =
-      task.completion_mode === CompletionMode.all_must_complete && !isTerminal(task.status?.type)
+      task.completion_mode === CompletionMode.all_must_complete &&
+      !isTerminal(task.status?.type)
         ? task.status_id
         : null;
 
@@ -370,7 +408,10 @@ export class TaskReconcileService {
                 frequency_count: 1,
                 last_assigned_at: new Date(),
               },
-              update: { frequency_count: { increment: 1 }, last_assigned_at: new Date() },
+              update: {
+                frequency_count: { increment: 1 },
+                last_assigned_at: new Date(),
+              },
             })
             .catch(swallow('tasks.reconcileTaskRoster', null)),
         ),
@@ -385,7 +426,8 @@ export class TaskReconcileService {
     if (task.completion_mode === CompletionMode.all_must_complete) {
       const lostAWorker =
         removed.some((r) => !r.is_cc) || flipped.some((f) => f.to_cc);
-      if (lostAWorker) await this.taskStatus.settleAllMustComplete(orgId, task.id, actorId);
+      if (lostAWorker)
+        await this.taskStatus.settleAllMustComplete(orgId, task.id, actorId);
       await this.taskStatus.rollUpTaskOpenStatus(orgId, task.id);
     }
 
@@ -395,7 +437,10 @@ export class TaskReconcileService {
     if (added.length || flipped.length) {
       await this.taskAccess.logActivity(orgId, task.id, actorId, 'assigned', {
         added: added.map((a) => ({ user_id: a.user_id, is_cc: a.is_cc })),
-        role_changed: flipped.map((f) => ({ user_id: f.user_id, is_cc: f.to_cc })),
+        role_changed: flipped.map((f) => ({
+          user_id: f.user_id,
+          is_cc: f.to_cc,
+        })),
       });
     }
     if (removed.length) {
@@ -471,5 +516,4 @@ export class TaskReconcileService {
     return { added, removed, flipped };
   }
 
-  // ─── Delete Task ──────────────────────────────────────────────────────────────
 }

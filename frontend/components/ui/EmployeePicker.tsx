@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, X, Check, UserPlus, ChevronDown } from 'lucide-react'
 
+import { getInitials } from '@/lib/initials'
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 export interface EmployeePickerOption {
@@ -49,10 +50,6 @@ function avatarColor(name: string): string {
   let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return avatarColors[h % avatarColors.length]
 }
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
-
 // ─── User row ─────────────────────────────────────────────────────────────────
 
 function UserRow({

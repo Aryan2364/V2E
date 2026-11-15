@@ -5,6 +5,7 @@ import { Send, Trash2 } from 'lucide-react'
 import type { WorkLogRemark } from '@/lib/types/workLogs'
 import { formatDate } from '@/lib/format'
 
+import { getInitials } from '@/lib/initials'
 // Remarks + threaded replies on a Work Log entry. Ported from TicketCommentThread for
 // consistency: one-level replies, optimistic delete with undo.
 interface Props {
@@ -12,10 +13,6 @@ interface Props {
   currentUserId: string
   onAdd: (body: string, replyTo?: string) => Promise<void>
   onDelete: (remarkId: string) => Promise<void>
-}
-
-function getInitials(name: string) {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
 }
 
 function timeAgo(d: string) {

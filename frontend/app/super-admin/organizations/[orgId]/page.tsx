@@ -63,6 +63,7 @@ import {
 import { DEFAULT_COUNTRY, cleanNationalNumber, nationalDigitsFor } from '@/lib/phone'
 import type { OrgDetail, OrgStatus } from '@/lib/types'
 
+import { getErrorMessage } from '@/lib/errors'
 type OrgMember = NonNullable<OrgDetail['members']>[number]
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -149,8 +150,8 @@ function EntitlementsCard({ orgId }: { orgId: string }) {
       const res = await setEntitlements(orgId, entries)
       setModules(res.modules)
       setEdits(Object.fromEntries(res.modules.map((m) => [m.module_key, m.state])))
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? 'Failed to save entitlements.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to save entitlements.'))
     } finally {
       setSaving(false)
     }
@@ -292,8 +293,8 @@ function EditMemberDialog({
         phone: phoneChanged ? (phoneDigits || null) : (member.user.phone ?? null),
         is_admin: isAdmin,
       })
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? 'Could not save the member. Try again.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Could not save the member. Try again.'))
     } finally {
       setSaving(false)
     }
@@ -426,8 +427,8 @@ export default function OrgDetailPage() {
       await deactivateOrganization(orgId)
       setOrg((prev) => prev ? { ...prev, status: 'inactive' } : prev)
       setShowConfirm(false)
-    } catch (err: any) {
-      setDeactivateError(err?.response?.data?.message ?? 'Failed to deactivate.')
+    } catch (err: unknown) {
+      setDeactivateError(getErrorMessage(err, 'Failed to deactivate.'))
     } finally {
       setIsDeactivating(false)
     }
@@ -441,8 +442,8 @@ export default function OrgDetailPage() {
       await reactivateOrganization(orgId)
       setOrg((prev) => prev ? { ...prev, status: 'active' } : prev)
       setShowReactivate(false)
-    } catch (err: any) {
-      setReactivateError(err?.response?.data?.message ?? 'Failed to reactivate.')
+    } catch (err: unknown) {
+      setReactivateError(getErrorMessage(err, 'Failed to reactivate.'))
     } finally {
       setIsReactivating(false)
     }

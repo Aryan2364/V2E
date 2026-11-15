@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClockService } from '../clock/clock.service';
@@ -35,7 +40,10 @@ export class TaskCommentsService {
       select: { id: true, name: true, email: true },
     });
     const userMap = new Map(users.map((u) => [u.id, u]));
-    return logs.map((l) => ({ ...l, performed_by: userMap.get(l.performed_by_user_id) ?? null }));
+    return logs.map((l) => ({
+      ...l,
+      performed_by: userMap.get(l.performed_by_user_id) ?? null,
+    }));
   }
 
   // ─── Comments ────────────────────────────────────────────────────────────────
@@ -59,7 +67,12 @@ export class TaskCommentsService {
       orderBy: { created_at: 'asc' as const },
     };
     const comments = await this.prisma.taskComment.findMany({
-      where: { task_id: taskId, organization_id: orgId, is_deleted: false, reply_to_comment_id: null },
+      where: {
+        task_id: taskId,
+        organization_id: orgId,
+        is_deleted: false,
+        reply_to_comment_id: null,
+      },
       include: {
         attachments: attachmentSelect,
         replies: {
@@ -91,7 +104,12 @@ export class TaskCommentsService {
         user: u ?? null,
         replies: c.replies.map((r) => {
           const ru = userMap.get(r.user_id);
-          return { ...r, user_name: ru?.name ?? null, user_email: ru?.email ?? null, user: ru ?? null };
+          return {
+            ...r,
+            user_name: ru?.name ?? null,
+            user_email: ru?.email ?? null,
+            user: ru ?? null,
+          };
         }),
       };
     });
@@ -113,23 +131,39 @@ export class TaskCommentsService {
     return rows.map((r) => r.user_id);
   }
 
-  async addComment(orgId: string, userId: string, taskId: string, dto: CreateCommentDto, principal?: Principal) {
+  async addComment(
+    orgId: string,
+    userId: string,
+    taskId: string,
+    dto: CreateCommentDto,
+    principal?: Principal,
+  ) {
     const task = await this.taskAccess.findTaskOrFail(orgId, taskId, true);
     await this.taskAccess.assertCanViewTask(orgId, principal, taskId);
     // A reply must answer a live comment of THIS task (never another task's thread).
     let replyToAuthorId: string | null = null;
     if (dto.reply_to_comment_id) {
       const parent = await this.prisma.taskComment.findFirst({
-        where: { id: dto.reply_to_comment_id, task_id: taskId, organization_id: orgId, is_deleted: false },
+        where: {
+          id: dto.reply_to_comment_id,
+          task_id: taskId,
+          organization_id: orgId,
+          is_deleted: false,
+        },
         select: { id: true, user_id: true },
       });
-      if (!parent) throw new NotFoundException('The comment you are replying to was not found on this task.');
+      if (!parent)
+        throw new NotFoundException(
+          'The comment you are replying to was not found on this task.',
+        );
       replyToAuthorId = parent.user_id;
     }
     // A workflow step task's comments are messages of its instance's ONE discussion.
     const instanceId =
       task.workflow_instance_step_id && this.discussion
-        ? await this.discussion.instanceIdForTask(orgId, taskId).catch(swallow('tasks.addComment', null))
+        ? await this.discussion
+            .instanceIdForTask(orgId, taskId)
+            .catch(swallow('tasks.addComment', null))
         : null;
     // Stamp with the org's clock (respects a test org's simulated time) rather than
     // the DB's real-time default, so comments read in the timeline the user is in.
@@ -146,18 +180,30 @@ export class TaskCommentsService {
         created_at: now,
       },
     });
-    await this.taskAccess.logActivity(orgId, taskId, userId, 'comment_added', { comment_id: comment.id });
+    await this.taskAccess.logActivity(orgId, taskId, userId, 'comment_added', {
+      comment_id: comment.id,
+    });
     // Post-commit enrichment read — the comment already exists, so degrade to a
     // nameless response rather than failing the whole request on a transient.
     const user = await this.prisma.user
-      .findUnique({ where: { id: userId }, select: { id: true, name: true, email: true } })
+      .findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true },
+      })
       .catch(swallow('tasks.addComment', null));
 
     // Workflow step task: the discussion's rules decide who hears (step people, people
     // already in the discussion, the replied-to author, send-back counterparts).
     if (instanceId && this.discussion) {
-      await this.discussion.notifyNewMessage(orgId, comment.id, { replyToAuthorId });
-      return { ...comment, user_name: user?.name ?? null, user_email: user?.email ?? null, user: user ?? null };
+      await this.discussion.notifyNewMessage(orgId, comment.id, {
+        replyToAuthorId,
+      });
+      return {
+        ...comment,
+        user_name: user?.name ?? null,
+        user_email: user?.email ?? null,
+        user: user ?? null,
+      };
     }
 
     // Notify everyone in the conversation except the commenter: the task's people
@@ -165,10 +211,13 @@ export class TaskCommentsService {
     // of the comment being replied to. Lead with WHO commented; show the comment, then the task.
     // A file-only comment (no text yet) reads as an attachment rather than a blank line.
     const trimmed = (dto.body ?? '').trim();
-    const snippet = trimmed.length > 100 ? `${trimmed.slice(0, 100)}…` : trimmed;
+    const snippet =
+      trimmed.length > 100 ? `${trimmed.slice(0, 100)}…` : trimmed;
     const payload = snippet ? `“${snippet}”` : 'Shared an attachment';
     // Extra recipients are best-effort: a failed lookup must never fail the comment.
-    const priorCommenters = await this.priorCommenterIds(orgId, taskId).catch(() => [] as string[]);
+    const priorCommenters = await this.priorCommenterIds(orgId, taskId).catch(
+      () => [] as string[],
+    );
     await this.notifications.emit({
       orgId,
       module: 'tasks',
@@ -190,7 +239,12 @@ export class TaskCommentsService {
       entity: { type: 'task', id: taskId },
     });
 
-    return { ...comment, user_name: user?.name ?? null, user_email: user?.email ?? null, user: user ?? null };
+    return {
+      ...comment,
+      user_name: user?.name ?? null,
+      user_email: user?.email ?? null,
+      user: user ?? null,
+    };
   }
 
   async deleteComment(orgId: string, userId: string, commentId: string) {
@@ -199,9 +253,11 @@ export class TaskCommentsService {
     });
     // Messages written on a workflow instance page (no task) are removed through the
     // instance discussion, never here.
-    if (!comment || !comment.task_id) throw new NotFoundException(`Comment ${commentId} not found`);
+    if (!comment || !comment.task_id)
+      throw new NotFoundException(`Comment ${commentId} not found`);
     await this.taskAccess.findTaskOrFail(orgId, comment.task_id, true);
-    if (comment.user_id !== userId) throw new ForbiddenException('Cannot delete another user\'s comment');
+    if (comment.user_id !== userId)
+      throw new ForbiddenException("Cannot delete another user's comment");
 
     await this.prisma.taskComment.update({
       where: { id: commentId },
@@ -212,21 +268,40 @@ export class TaskCommentsService {
     // marked as proof) in that comment would linger in the attachments/proofs list and
     // keep counting toward the proof gate. Soft-delete the rows, then purge from R2.
     const orphaned = await this.prisma.taskAttachment.findMany({
-      where: { comment_id: commentId, organization_id: orgId, is_deleted: false },
+      where: {
+        comment_id: commentId,
+        organization_id: orgId,
+        is_deleted: false,
+      },
       select: { id: true, storage_key: true },
     });
     if (orphaned.length) {
       await this.prisma.taskAttachment.updateMany({
-        where: { comment_id: commentId, organization_id: orgId, is_deleted: false },
+        where: {
+          comment_id: commentId,
+          organization_id: orgId,
+          is_deleted: false,
+        },
         data: { is_deleted: true, deleted_at: new Date() },
       });
       // Best-effort file purge — never fail the delete on a storage hiccup.
-      await Promise.all(orphaned.map((a) => this.r2.deleteObject(a.storage_key).catch(swallow('tasks.deleteComment'))));
+      await Promise.all(
+        orphaned.map((a) =>
+          this.r2
+            .deleteObject(a.storage_key)
+            .catch(swallow('tasks.deleteComment')),
+        ),
+      );
     }
 
-    await this.taskAccess.logActivity(orgId, comment.task_id, userId, 'comment_deleted', { comment_id: commentId });
+    await this.taskAccess.logActivity(
+      orgId,
+      comment.task_id,
+      userId,
+      'comment_deleted',
+      { comment_id: commentId },
+    );
     return { message: 'Comment deleted' };
   }
 
-  // ─── Checklist (per-person in all_must_complete; shared in any_can_complete) ─────
 }

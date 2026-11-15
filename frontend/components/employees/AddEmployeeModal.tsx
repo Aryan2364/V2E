@@ -25,6 +25,7 @@ import RoleSelect from './RoleSelect'
 import type { Department, Role, User, EmployeeProfile, EmploymentType } from '@/lib/types'
 import { Label } from '@/components/ui/label'
 
+import { getErrorMessage } from '@/lib/errors'
 const STRUCTURE_LEAF = 'settings.organization.structure'
 
 /**
@@ -315,9 +316,9 @@ export default function AddEmployeeModal({
       })
       toast.success(`${form.name.trim()} added`)
       onCreated()
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err?.response?.data?.message ?? 'Could not add the employee. Try again.'
+        getErrorMessage(err, 'Could not add the employee. Try again.')
       setError(Array.isArray(msg) ? msg.join(', ') : msg)
     } finally {
       setSaving(false)

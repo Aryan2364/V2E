@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 
+import { getInitials } from '@/lib/initials'
 // ─── Schedule helpers (mirrors recurring/page.tsx) ────────────────────────────
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -61,10 +62,6 @@ function entryLabel(entry: RecurringScheduleEntry): string {
 
 function formatDate(str: string): string {
   return fmtDate(str)
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 const avatarColors = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary', 'bg-text-secondary']

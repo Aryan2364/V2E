@@ -227,6 +227,9 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
   return (
     <div
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() } }}
       className="bg-surface border border-border-light rounded-xl shadow-card px-4 py-4 flex items-center gap-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group"
     >
       {/* Title + Category + Priority */}

@@ -1,6 +1,12 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { WorkflowEngineService } from './workflow-engine.service'
+import { WorkflowEngineSupportService } from './workflow-engine-support.service'
+import { WorkflowEngineRowsService } from './workflow-engine-rows.service'
+import { WorkflowRunActionsService } from './workflow-run-actions.service'
+import { WorkflowTaskEventsService } from './workflow-task-events.service'
+import { WorkflowSweepsService } from './workflow-sweeps.service'
+import { composeServices } from './testing/compose-services'
 
 /**
  * Engine tests over an in-memory Prisma double: instances, instance rows, events,
@@ -215,7 +221,14 @@ function makeDb() {
   const notifications = { emit: jest.fn().mockResolvedValue(1) }
   const auditWriter = { runAsSystem: jest.fn((_p: unknown, fn: () => Promise<unknown>) => fn()) }
   const clock = { now: jest.fn().mockResolvedValue(NOW) }
-  const engine = new WorkflowEngineService(prisma, holidays as any, notifications as any, auditWriter as any, clock as any)
+  const support = new WorkflowEngineSupportService(prisma, holidays as any, notifications as any, clock as any)
+  const rows = new WorkflowEngineRowsService(prisma, holidays as any, clock as any, support)
+  const core = new WorkflowEngineService(prisma, clock as any, support, rows)
+  const actions = new WorkflowRunActionsService(prisma, holidays as any, clock as any, support, rows)
+  const taskEvents = new WorkflowTaskEventsService(prisma, clock as any, support, rows)
+  const sweeps = new WorkflowSweepsService(prisma, notifications as any, auditWriter as any, clock as any, support, rows, core)
+  // One facade over the engine and the services split out of it.
+  const engine = composeServices(core, actions, taskEvents, sweeps, support, rows)
 
   const addInstance = (over: Row = {}) => {
     const inst: Row = {
@@ -1059,7 +1072,7 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
   describe('task completion outside workflows', () => {
     it('onTaskCompleted completes a workflow step; an ordinary task starts nothing', async () => {
       const db = makeDb()
-      const adv = jest.spyOn(db.engine, 'handleStepCompleted').mockResolvedValue()
+      const adv = jest.spyOn(db.engine, 'handleStepCompleted').mockResolvedValue(undefined)
       const start = jest.spyOn(db.engine, 'createInstance')
       db.prisma.task.findFirst.mockResolvedValueOnce({ workflow_instance_step_id: 'step-x' })
       await db.engine.onTaskCompleted(ORG, 'task-a')
@@ -1493,7 +1506,7 @@ describe('WorkflowEngineService — step timing', () => {
     rows[2].status = 'active'
     db.addTask(rows[2])
     const targets = await db.engine.sendBackTargets(ORG, inst.id, rows[2].id)
-    expect(targets.map((t) => t.row_id)).toEqual([rows[0].id])
+    expect(targets.map((t: { row_id: string }) => t.row_id)).toEqual([rows[0].id])
   })
 
   it('run planning moves a computed start off a weekly off (the org-local calendar day), dues via the deadline rules', async () => {

@@ -1,15 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { descendantIds } from '../holidays/dept-tree.util';
+import { TASK_TAG_REF_SELECT } from '../common/task-masters-usable';
+import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { CompletionMode, DataScope } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClockService } from '../clock/clock.service';
 import { ScopeService } from '../access-rights/scope.service';
 import { Principal } from '../access-rights/permissions.service';
-import { TaskTagRef } from '../common/task-masters-usable';
 import { TERMINAL_TYPES } from './status-phase';
 import { TasksAnalyticsService } from './tasks-analytics.service';
 import { deadlineBucket, myOpenTasksWhere } from './badge-count.util';
 import { clampTake } from '../common/pagination';
-import { TASK_INCLUDE, MAX_TAG_FILTER_IDS, parseIdCsv, TaskListFilters, TASK_LEAF } from './task-shared';
+import {
+  TASK_INCLUDE,
+  MAX_TAG_FILTER_IDS,
+  parseIdCsv,
+  TaskListFilters,
+  TASK_LEAF,
+} from './task-shared';
 import { TaskAccessService } from './task-access.service';
 import { TaskDetailService } from './task-detail.service';
 
@@ -64,32 +72,48 @@ export class TaskQueryService {
     if (filters.priority_id) where.priority_id = filters.priority_id;
     if (filters.category_id) where.category_id = filters.category_id;
     if (filters.department_ids) {
-      const ids = filters.department_ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const ids = filters.department_ids
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
       if (ids.length) where.department_id = { in: ids };
     } else if (filters.department_id) {
       where.department_id = filters.department_id;
     }
     if (filters.created_by_user_ids) {
-      const ids = filters.created_by_user_ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const ids = filters.created_by_user_ids
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
       if (ids.length) where.created_by_user_id = { in: ids };
     } else if (filters.created_by_user_id) {
       where.created_by_user_id = filters.created_by_user_id;
     }
     if (filters.quadrant) where.quadrant = filters.quadrant as any;
     if (filters.type) where.type = filters.type as any;
-    if (filters.from_workflows === 'true') where.workflow_instance_step_id = { not: null };
-    else if (filters.from_workflows === 'false') where.workflow_instance_step_id = null;
+    if (filters.from_workflows === 'true')
+      where.workflow_instance_step_id = { not: null };
+    else if (filters.from_workflows === 'false')
+      where.workflow_instance_step_id = null;
     // An assigner filter means "handed out by": a workflow-created task isn't attributed
     // to its step's assigner (matches the by-assigner / flow analytics).
-    else if (filters.created_by_user_ids || filters.created_by_user_id) where.workflow_instance_step_id = null;
-    if (filters.timing) Object.assign(where, this.analytics.timingWhere(filters.timing as any));
+    else if (filters.created_by_user_ids || filters.created_by_user_id)
+      where.workflow_instance_step_id = null;
+    if (filters.timing)
+      Object.assign(where, this.analytics.timingWhere(filters.timing as any));
     if (filters.search) {
       where.OR = [
         { title: { contains: filters.search, mode: 'insensitive' } },
         { description: { contains: filters.search, mode: 'insensitive' } },
         // Search covers tags too (kit §27.1): a task matches when any of its tags'
         // names contains the query.
-        { tags: { some: { tag: { name: { contains: filters.search, mode: 'insensitive' } } } } },
+        {
+          tags: {
+            some: {
+              tag: { name: { contains: filters.search, mode: 'insensitive' } },
+            },
+          },
+        },
       ];
     }
     // Tag filter ("any of"). Pushed into AND — never assigned to a top-level key — so
@@ -97,7 +121,10 @@ export class TaskQueryService {
     // row scope: filtering can never reveal a task the viewer couldn't already see.
     const tagIds = parseIdCsv(filters.tag_ids, MAX_TAG_FILTER_IDS);
     if (tagIds.length) {
-      where.AND = [...(where.AND ?? []), { tags: { some: { tag_id: { in: tagIds } } } }];
+      where.AND = [
+        ...(where.AND ?? []),
+        { tags: { some: { tag_id: { in: tagIds } } } },
+      ];
     }
     if (filters.from_date || filters.to_date) {
       const range: any = {};
@@ -106,10 +133,16 @@ export class TaskQueryService {
       where[dateField] = range;
     }
     if (filters.assignee_user_ids) {
-      const ids = filters.assignee_user_ids.split(',').map((s) => s.trim()).filter(Boolean);
-      if (ids.length) where.assignees = { some: { user_id: { in: ids }, is_cc: false } };
+      const ids = filters.assignee_user_ids
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (ids.length)
+        where.assignees = { some: { user_id: { in: ids }, is_cc: false } };
     } else if (filters.assignee_user_id) {
-      where.assignees = { some: { user_id: filters.assignee_user_id, is_cc: false } };
+      where.assignees = {
+        some: { user_id: filters.assignee_user_id, is_cc: false },
+      };
     }
 
     return where;
@@ -117,10 +150,14 @@ export class TaskQueryService {
 
   /** All user ids whose home department is `deptId` or any descendant of it. */
   async deptMemberIds(orgId: string, deptId: string): Promise<string[]> {
-    const depts = await this.prisma.department.findMany({ where: { organization_id: orgId }, select: { id: true, parent_department_id: true } });
+    const depts = await this.prisma.department.findMany({
+      where: { organization_id: orgId },
+      select: { id: true, parent_department_id: true },
+    });
     const ids = [deptId, ...descendantIds(depts, deptId)];
     const profiles = await this.prisma.employeeProfile.findMany({
-      where: { organization_id: orgId, department_id: { in: ids } }, select: { user_id: true },
+      where: { organization_id: orgId, department_id: { in: ids } },
+      select: { user_id: true },
     });
     return profiles.map((p) => p.user_id);
   }
@@ -131,20 +168,36 @@ export class TaskQueryService {
    * An empty resolution yields an impossible id so the slice is empty rather than unfiltered.
    */
 
-  async resolveFilters(orgId: string, filters: TaskListFilters): Promise<TaskListFilters> {
-    if (!filters.role_id && !filters.assigner_person_dept_id && !filters.assignee_person_dept_id) return filters;
+  async resolveFilters(
+    orgId: string,
+    filters: TaskListFilters,
+  ): Promise<TaskListFilters> {
+    if (
+      !filters.role_id &&
+      !filters.assigner_person_dept_id &&
+      !filters.assignee_person_dept_id
+    )
+      return filters;
     const out: TaskListFilters = { ...filters };
-    const orNone = (ids: string[]) => (ids.length ? ids : ['__none__']).join(',');
+    const orNone = (ids: string[]) =>
+      (ids.length ? ids : ['__none__']).join(',');
 
     if (filters.role_id) {
-      const profiles = await this.prisma.employeeProfile.findMany({ where: { organization_id: orgId, role_id: filters.role_id }, select: { user_id: true } });
+      const profiles = await this.prisma.employeeProfile.findMany({
+        where: { organization_id: orgId, role_id: filters.role_id },
+        select: { user_id: true },
+      });
       out.assignee_user_ids = orNone(profiles.map((p) => p.user_id));
     }
     if (filters.assignee_person_dept_id) {
-      out.assignee_user_ids = orNone(await this.deptMemberIds(orgId, filters.assignee_person_dept_id));
+      out.assignee_user_ids = orNone(
+        await this.deptMemberIds(orgId, filters.assignee_person_dept_id),
+      );
     }
     if (filters.assigner_person_dept_id) {
-      out.created_by_user_ids = orNone(await this.deptMemberIds(orgId, filters.assigner_person_dept_id));
+      out.created_by_user_ids = orNone(
+        await this.deptMemberIds(orgId, filters.assigner_person_dept_id),
+      );
     }
     return out;
   }
@@ -156,30 +209,49 @@ export class TaskQueryService {
 
   bucketWhere(bucket: string | undefined, now: Date): any {
     if (!bucket) return {};
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayEnd = new Date(todayStart); todayEnd.setDate(todayEnd.getDate() + 1);
-    const weekEnd = new Date(todayStart); weekEnd.setDate(weekEnd.getDate() - todayStart.getDay() + 7);
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+    const weekEnd = new Date(todayStart);
+    weekEnd.setDate(weekEnd.getDate() - todayStart.getDay() + 7);
     const open = { status: { type: { notIn: TERMINAL_TYPES } } };
     switch (bucket) {
-      case 'overdue': return { deadline: { lt: now }, ...open };
-      case 'due_today': return { deadline: { gte: todayStart, lt: todayEnd }, ...open };
-      case 'due_week': return { deadline: { gte: todayStart, lt: weekEnd }, ...open };
-      case 'completed': return { status: { type: 'completed' } };
-      case 'ongoing': return { status: { type: 'in_progress' } };
-      case 'not_started': return { status: { type: 'not_started' } };
-      case 'recurring': return { type: 'recurring' as any };
-      default: return {};
+      case 'overdue':
+        return { deadline: { lt: now }, ...open };
+      case 'due_today':
+        return { deadline: { gte: todayStart, lt: todayEnd }, ...open };
+      case 'due_week':
+        return { deadline: { gte: todayStart, lt: weekEnd }, ...open };
+      case 'completed':
+        return { status: { type: 'completed' } };
+      case 'ongoing':
+        return { status: { type: 'in_progress' } };
+      case 'not_started':
+        return { status: { type: 'not_started' } };
+      case 'recurring':
+        return { type: 'recurring' as any };
+      default:
+        return {};
     }
   }
 
   taskOrderBy(sort?: string): any {
     switch (sort) {
-      case 'deadline_asc': return [{ deadline: { sort: 'asc', nulls: 'last' } }];
-      case 'deadline_desc': return [{ deadline: { sort: 'desc', nulls: 'last' } }];
-      case 'created_asc': return { created_at: 'asc' };
-      case 'updated_desc': return { updated_at: 'desc' };
+      case 'deadline_asc':
+        return [{ deadline: { sort: 'asc', nulls: 'last' } }];
+      case 'deadline_desc':
+        return [{ deadline: { sort: 'desc', nulls: 'last' } }];
+      case 'created_asc':
+        return { created_at: 'asc' };
+      case 'updated_desc':
+        return { updated_at: 'desc' };
       case 'created_desc':
-      default: return { created_at: 'desc' };
+      default:
+        return { created_at: 'desc' };
     }
   }
 
@@ -199,17 +271,36 @@ export class TaskQueryService {
     sort = 'created_desc',
     bucket?: string,
   ) {
-    const { effective } = await this.scope.resolveListScope(orgId, principal, TASK_LEAF, requestedScope);
-    const scopeWhere = await this.scope.whereForScope(orgId, principal.userId, TASK_LEAF, effective);
+    const { effective } = await this.scope.resolveListScope(
+      orgId,
+      principal,
+      TASK_LEAF,
+      requestedScope,
+    );
+    const scopeWhere = await this.scope.whereForScope(
+      orgId,
+      principal.userId,
+      TASK_LEAF,
+      effective,
+    );
     const now = await this.clock.now(orgId);
     filters = await this.resolveFilters(orgId, filters);
-    const where = { ...this.buildTaskWhere(orgId, scopeWhere, filters, 'created_at'), ...this.bucketWhere(bucket, now) };
+    const where = {
+      ...this.buildTaskWhere(orgId, scopeWhere, filters, 'created_at'),
+      ...this.bucketWhere(bucket, now),
+    };
 
     const take = clampTake(pageSize, 25, 100);
     const skip = (Math.max(page, 1) - 1) * take;
 
     const [items, total] = await Promise.all([
-      this.prisma.task.findMany({ where, include: TASK_INCLUDE, orderBy: this.taskOrderBy(sort), skip, take }),
+      this.prisma.task.findMany({
+        where,
+        include: TASK_INCLUDE,
+        orderBy: this.taskOrderBy(sort),
+        skip,
+        take,
+      }),
       this.prisma.task.count({ where }),
     ]);
 
@@ -233,7 +324,9 @@ export class TaskQueryService {
       where: {
         organization_id: orgId,
         is_deleted: false,
-        assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: userId, is_cc: false } },
+        assignees: {
+          some: { ...ACTIVE_ASSIGNEE, user_id: userId, is_cc: false },
+        },
       },
       include: TASK_INCLUDE,
       orderBy: { created_at: 'desc' },
@@ -258,7 +351,10 @@ export class TaskQueryService {
       include: TASK_INCLUDE,
       orderBy: { deadline: 'asc' },
     });
-    const enriched = (await this.taskDetail.enrichTaskList(tasks, userId)) as any[];
+    const enriched = (await this.taskDetail.enrichTaskList(
+      tasks,
+      userId,
+    )) as any[];
 
     // Per-user checklist state (all_must_complete), batched for the whole list —
     // the any_can_complete shared checklist is already fully loaded via TASK_INCLUDE.
@@ -271,11 +367,15 @@ export class TaskQueryService {
       : [];
     const satisfiedByTask = new Map<string, Set<string>>();
     for (const s of states) {
-      if (!satisfiedByTask.has(s.task_id)) satisfiedByTask.set(s.task_id, new Set());
+      if (!satisfiedByTask.has(s.task_id))
+        satisfiedByTask.set(s.task_id, new Set());
       satisfiedByTask.get(s.task_id)!.add(s.checklist_id);
     }
 
-    const buckets: Record<'overdue' | 'today' | 'tomorrow' | 'later' | 'noDate', any[]> = {
+    const buckets: Record<
+      'overdue' | 'today' | 'tomorrow' | 'later' | 'noDate',
+      any[]
+    > = {
       overdue: [],
       today: [],
       tomorrow: [],
@@ -290,9 +390,13 @@ export class TaskQueryService {
       if (checklistTotal > 0) {
         if (t.completion_mode === CompletionMode.all_must_complete) {
           const satisfied = satisfiedByTask.get(t.id) ?? new Set<string>();
-          checklistRemaining = checklist.filter((i) => !satisfied.has(i.id)).length;
+          checklistRemaining = checklist.filter(
+            (i) => !satisfied.has(i.id),
+          ).length;
         } else {
-          checklistRemaining = checklist.filter((i: any) => !i.is_completed && !i.cant_do).length;
+          checklistRemaining = checklist.filter(
+            (i: any) => !i.is_completed && !i.cant_do,
+          ).length;
         }
       }
       const shaped = {
@@ -346,7 +450,9 @@ export class TaskQueryService {
       where: {
         organization_id: orgId,
         is_deleted: false,
-        assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: userId, is_cc: true } },
+        assignees: {
+          some: { ...ACTIVE_ASSIGNEE, user_id: userId, is_cc: true },
+        },
       },
       include: TASK_INCLUDE,
       orderBy: { created_at: 'desc' },
@@ -357,7 +463,12 @@ export class TaskQueryService {
   /** Tasks I handed out. Workflow-created tasks aren't personally handed out, so they're excluded. */
   async getTasksAssignedByMe(orgId: string, userId: string) {
     const tasks = await this.prisma.task.findMany({
-      where: { organization_id: orgId, is_deleted: false, created_by_user_id: userId, workflow_instance_step_id: null },
+      where: {
+        organization_id: orgId,
+        is_deleted: false,
+        created_by_user_id: userId,
+        workflow_instance_step_id: null,
+      },
       include: TASK_INCLUDE,
       orderBy: { created_at: 'desc' },
     });
@@ -366,7 +477,12 @@ export class TaskQueryService {
 
   async getEscalatedTasks(orgId: string, userId: string) {
     const escalations = await this.prisma.taskEscalation.findMany({
-      where: { organization_id: orgId, escalate_to_user_id: userId, is_active: true, escalated_at: { not: null } },
+      where: {
+        organization_id: orgId,
+        escalate_to_user_id: userId,
+        is_active: true,
+        escalated_at: { not: null },
+      },
       select: { task_id: true },
     });
     const taskIds = escalations.map((e) => e.task_id);
@@ -388,7 +504,11 @@ export class TaskQueryService {
    */
 
   async getArchive(orgId: string, userId: string) {
-    await this.taskAccess.checkTaskPermission(orgId, userId, 'archive_view_roles');
+    await this.taskAccess.checkTaskPermission(
+      orgId,
+      userId,
+      'archive_view_roles',
+    );
     const items = await this.prisma.taskArchive.findMany({
       where: { organization_id: orgId },
       orderBy: { deleted_at: 'desc' },
@@ -400,7 +520,10 @@ export class TaskQueryService {
       select: { id: true, name: true, email: true },
     });
     const userMap = new Map(users.map((u) => [u.id, u]));
-    return items.map((i) => ({ ...i, deleted_by: userMap.get(i.deleted_by_user_id) ?? null }));
+    return items.map((i) => ({
+      ...i,
+      deleted_by: userMap.get(i.deleted_by_user_id) ?? null,
+    }));
   }
 
   // ─── Reports ─────────────────────────────────────────────────────────────────
@@ -408,7 +531,9 @@ export class TaskQueryService {
   async getCollectiveTasks(userId: string) {
     const memberships = await this.prisma.organizationMember.findMany({
       where: { user_id: userId, is_active: true },
-      include: { organization: { select: { id: true, name: true, slug: true } } },
+      include: {
+        organization: { select: { id: true, name: true, slug: true } },
+      },
     });
 
     return Promise.all(

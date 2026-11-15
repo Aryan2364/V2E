@@ -35,6 +35,7 @@ import EmployeeNode, { type EmployeeNodeData } from './EmployeeNode'
 import Tooltip from '@/components/ui/tooltip'
 import type { Department, EmployeeProfile, EmployeeStatus } from '@/lib/types'
 
+import { getInitials as initials } from '@/lib/initials'
 interface Props {
   /** Employees to actually render as nodes (after search + department filter). */
   employees: EmployeeProfile[]
@@ -100,11 +101,6 @@ function saveViewport(v: Viewport) {
   } catch {
     /* storage unavailable — non-fatal */
   }
-}
-
-function initials(name: string): string {
-  const p = name.trim().split(/\s+/)
-  return ((p[0]?.[0] ?? '') + (p[1]?.[0] ?? '')).toUpperCase() || '?'
 }
 
 function useIsDesktop() {

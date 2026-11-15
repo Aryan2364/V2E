@@ -162,7 +162,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
     () => () => {
       if (saveTimer.current) {
         clearTimeout(saveTimer.current)
-        if (latestSettings.current) tasksApi.updateAssigneeSettings(orgId, latestSettings.current).catch(() => {})
+        if (latestSettings.current) tasksApi.updateAssigneeSettings(orgId, latestSettings.current).catch(() => toast.error('Could not save visibility settings'))
       }
     },
     [orgId],

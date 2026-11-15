@@ -17,6 +17,7 @@ import { Banner, BannerDescription } from '@/components/ui/banner'
 import { BrandGlyph } from '@/components/ui/BrandMark'
 import { Skeleton } from '@/components/ui/skeleton'
 
+import { getErrorMessage } from '@/lib/errors'
 const schema = z
   .object({
     name: z.string().min(1, 'Full name is required'),
@@ -62,9 +63,9 @@ function RegisterForm() {
       // Auto-login after registration
       await login(data.email, data.password)
       router.replace('/dashboard')
-    } catch (err: any) {
+    } catch (err: unknown) {
       setServerError(
-        err?.response?.data?.message ?? 'Registration failed. Please try again.'
+        getErrorMessage(err, 'Registration failed. Please try again.')
       )
     }
   }

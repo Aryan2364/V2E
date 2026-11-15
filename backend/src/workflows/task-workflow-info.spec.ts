@@ -1,7 +1,7 @@
 import { ForbiddenException } from '@nestjs/common'
 import { taskWorkflowInfo } from './task-workflow-info'
 import { instanceLabel, shortDate } from './instance-label'
-import { TasksService } from '../tasks/tasks.service'
+import { buildTaskServices } from '../tasks/testing/task-services.testing'
 
 const ORG = 'org-1'
 const NOW = new Date('2026-11-10T06:00:00Z')
@@ -167,28 +167,22 @@ describe('taskWorkflowInfo (the task list / detail `workflow` block)', () => {
 
 describe('TasksService — workflow tasks in task lists', () => {
   const makeService = (prisma: any) =>
-    new TasksService(
-      prisma,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {
-        registerWiredList: jest.fn(),
-        listWhere: jest.fn(async () => ({})),
-        assertCanActOn: jest.fn(async () => {
-          throw new ForbiddenException('out of scope')
-        }),
-      } as any,
-      {} as any,
-      { now: jest.fn(async () => NOW) } as any,
-      {} as any,
-      { registerCounter: jest.fn(), whereForUser: jest.fn() } as any,
-      { timingWhere: jest.fn(() => ({})) } as any,
-      {} as any,
-    )
+    buildTaskServices({
+    prisma: prisma,
+    workflowEngine: {} as any,
+    holidays: {} as any,
+    projectProgress: {} as any,
+    notifications: {} as any,
+    assigneeVisibility: {} as any,
+    subjects: {} as any,
+    scope: { registerWiredList: jest.fn(), listWhere: jest.fn(async () => ({})), assertCanActOn: jest.fn(async () => { throw new ForbiddenException('out of scope') }), } as any,
+    leave: {} as any,
+    clock: { now: jest.fn(async () => NOW) } as any,
+    checklistAccess: {} as any,
+    visibility: { registerCounter: jest.fn(), whereForUser: jest.fn() } as any,
+    analytics: { timingWhere: jest.fn(() => ({})) } as any,
+    r2: {} as any,
+  }).view
 
   it('"Assigned by Me" excludes tasks a workflow created', async () => {
     const prisma: any = {

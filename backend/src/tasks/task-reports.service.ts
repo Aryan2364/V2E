@@ -1,18 +1,21 @@
-import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { DataScope } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClockService } from '../clock/clock.service';
 import { ScopeService } from '../access-rights/scope.service';
 import { Principal } from '../access-rights/permissions.service';
-import { formatLocalDateTime, safeTimeZone } from '../workflows/engine/tz';
-import { toTagRefs } from '../common/task-masters-usable';
-import { TERMINAL_TYPES, isSuccessful, isTerminal } from './status-phase';
+import { TERMINAL_TYPES, isTerminal } from './status-phase';
 import { ancestorChain } from '../holidays/dept-tree.util';
 import { TasksAnalyticsService } from './tasks-analytics.service';
-import { TASK_INCLUDE, TaskListFilters, TASK_LEAF } from './task-shared';
+import { TaskListFilters, TASK_LEAF } from './task-shared';
 import { TaskQueryService } from './task-query.service';
 import { TaskAccessService } from './task-access.service';
-import { TaskDetailService } from './task-detail.service';
 
 /** Dashboards, reports, work-flow and CSV export. */
 @Injectable()
@@ -26,7 +29,6 @@ export class TaskReportsService {
     private readonly analytics: TasksAnalyticsService,
     private readonly taskQuery: TaskQueryService,
     private readonly taskAccess: TaskAccessService,
-    private readonly taskDetail: TaskDetailService,
   ) {}
 
   async getDashboard(
@@ -34,10 +36,28 @@ export class TaskReportsService {
     principal: Principal,
     filters: TaskListFilters & { scope?: DataScope | null },
   ) {
-    const { max, effective } = await this.scope.resolveListScope(orgId, principal, TASK_LEAF, filters.scope);
-    const scopeWhere = await this.scope.whereForScope(orgId, principal.userId, TASK_LEAF, effective);
-    filters = { ...(await this.taskQuery.resolveFilters(orgId, filters)), scope: filters.scope };
-    const where = this.taskQuery.buildTaskWhere(orgId, scopeWhere, filters, 'created_at');
+    const { max, effective } = await this.scope.resolveListScope(
+      orgId,
+      principal,
+      TASK_LEAF,
+      filters.scope,
+    );
+    const scopeWhere = await this.scope.whereForScope(
+      orgId,
+      principal.userId,
+      TASK_LEAF,
+      effective,
+    );
+    filters = {
+      ...(await this.taskQuery.resolveFilters(orgId, filters)),
+      scope: filters.scope,
+    };
+    const where = this.taskQuery.buildTaskWhere(
+      orgId,
+      scopeWhere,
+      filters,
+      'created_at',
+    );
 
     // Empty / denied scope → zeroed dashboard (never leak counts).
     if (effective === null) {
@@ -45,27 +65,44 @@ export class TaskReportsService {
         applied_scope: null,
         max_scope: max,
         kpis: this.analytics.emptyKpis(),
-        by_status: [], by_priority: [], by_category: [], by_tag: [], by_department: [], by_type: [],
-        by_assignee: [], by_assigner: [], by_role: [],
-        by_timing: this.analytics.emptyTiming(), trend: [], trend_monthly: [],
+        by_status: [],
+        by_priority: [],
+        by_category: [],
+        by_tag: [],
+        by_department: [],
+        by_type: [],
+        by_assignee: [],
+        by_assigner: [],
+        by_role: [],
+        by_timing: this.analytics.emptyTiming(),
+        trend: [],
+        trend_monthly: [],
       };
     }
 
     const now = await this.clock.now(orgId);
 
-    const [kpis, dims, people, by_timing, trend, trend_monthly] = await Promise.all([
-      this.analytics.kpiFor(orgId, where, now),
-      this.analytics.dimensionBreakdowns(orgId, where),
-      this.analytics.peopleDimensions(orgId, where),
-      this.analytics.timingTotals(where),
-      this.analytics.trendSeries(where, now),
-      this.analytics.trendMonthlySeries(where, now),
-    ]);
+    const [kpis, dims, people, by_timing, trend, trend_monthly] =
+      await Promise.all([
+        this.analytics.kpiFor(orgId, where, now),
+        this.analytics.dimensionBreakdowns(orgId, where),
+        this.analytics.peopleDimensions(orgId, where),
+        this.analytics.timingTotals(where),
+        this.analytics.trendSeries(where, now),
+        this.analytics.trendMonthlySeries(where, now),
+      ]);
 
-    return { applied_scope: effective, max_scope: max, kpis, ...dims, ...people, by_timing, trend, trend_monthly };
+    return {
+      applied_scope: effective,
+      max_scope: max,
+      kpis,
+      ...dims,
+      ...people,
+      by_timing,
+      trend,
+      trend_monthly,
+    };
   }
-
-
 
   // ─── People tree (org-chart drill) ─────────────────────────────────────────────
 
@@ -82,12 +119,25 @@ export class TaskReportsService {
     requestedScope: DataScope | null | undefined,
     filters: TaskListFilters,
   ) {
-    const { effective } = await this.scope.resolveListScope(orgId, principal, TASK_LEAF, requestedScope);
-    if (effective === null) return { nodes: [], root_user_id: principal.userId };
+    const { effective } = await this.scope.resolveListScope(
+      orgId,
+      principal,
+      TASK_LEAF,
+      requestedScope,
+    );
+    if (effective === null)
+      return { nodes: [], root_user_id: principal.userId };
 
-    const visible = await this.scope.visibleUserIds(orgId, principal.userId, effective);
+    const visible = await this.scope.visibleUserIds(
+      orgId,
+      principal.userId,
+      effective,
+    );
     const profiles = await this.prisma.employeeProfile.findMany({
-      where: { organization_id: orgId, ...(visible === 'ALL' ? {} : { user_id: { in: visible } }) },
+      where: {
+        organization_id: orgId,
+        ...(visible === 'ALL' ? {} : { user_id: { in: visible } }),
+      },
       select: {
         user_id: true,
         reporting_to_user_id: true,
@@ -98,30 +148,101 @@ export class TaskReportsService {
     const userIds = profiles.map((p) => p.user_id);
     if (!userIds.length) return { nodes: [], root_user_id: principal.userId };
 
-    const scopeWhere = await this.scope.whereForScope(orgId, principal.userId, TASK_LEAF, effective);
-    const base = this.taskQuery.buildTaskWhere(orgId, scopeWhere, await this.taskQuery.resolveFilters(orgId, filters), 'created_at');
+    const scopeWhere = await this.scope.whereForScope(
+      orgId,
+      principal.userId,
+      TASK_LEAF,
+      effective,
+    );
+    const base = this.taskQuery.buildTaskWhere(
+      orgId,
+      scopeWhere,
+      await this.taskQuery.resolveFilters(orgId, filters),
+      'created_at',
+    );
     const now = await this.clock.now(orgId);
     const openTask = { status: { type: { notIn: TERMINAL_TYPES } } };
 
-    const [names, aTotal, aOverdue, aDone, asg, timingGroups] = await Promise.all([
-      this.analytics.enrichUserNames(userIds),
-      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: base }, _count: { _all: true } }),
-      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, deadline: { lt: now }, ...openTask } }, _count: { _all: true } }),
-      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, status: { type: 'completed' } } }, _count: { _all: true } }),
-      // Delegation counts people's own hand-outs, not tasks a workflow created.
-      this.prisma.task.groupBy({ by: ['created_by_user_id'], where: { AND: [base, { created_by_user_id: { in: userIds }, workflow_instance_step_id: null }] }, _count: { _all: true } }),
-      Promise.all(TasksAnalyticsService.TIMINGS.map((t) =>
-        this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, ...this.analytics.timingWhere(t) } }, _count: { _all: true } }),
-      )),
-    ]);
-    const cnt = (arr: any[], key: string) => new Map(arr.map((g) => [g[key], g._count._all]));
-    const totM = cnt(aTotal, 'user_id'), ovM = cnt(aOverdue, 'user_id'), dnM = cnt(aDone, 'user_id'), asgM = cnt(asg, 'created_by_user_id');
+    const [names, aTotal, aOverdue, aDone, asg, timingGroups] =
+      await Promise.all([
+        this.analytics.enrichUserNames(userIds),
+        this.prisma.taskAssignee.groupBy({
+          by: ['user_id'],
+          where: {
+            is_cc: false,
+            ...ACTIVE_ASSIGNEE,
+            user_id: { in: userIds },
+            task: base,
+          },
+          _count: { _all: true },
+        }),
+        this.prisma.taskAssignee.groupBy({
+          by: ['user_id'],
+          where: {
+            is_cc: false,
+            ...ACTIVE_ASSIGNEE,
+            user_id: { in: userIds },
+            task: { ...base, deadline: { lt: now }, ...openTask },
+          },
+          _count: { _all: true },
+        }),
+        this.prisma.taskAssignee.groupBy({
+          by: ['user_id'],
+          where: {
+            is_cc: false,
+            ...ACTIVE_ASSIGNEE,
+            user_id: { in: userIds },
+            task: { ...base, status: { type: 'completed' } },
+          },
+          _count: { _all: true },
+        }),
+        // Delegation counts people's own hand-outs, not tasks a workflow created.
+        this.prisma.task.groupBy({
+          by: ['created_by_user_id'],
+          where: {
+            AND: [
+              base,
+              {
+                created_by_user_id: { in: userIds },
+                workflow_instance_step_id: null,
+              },
+            ],
+          },
+          _count: { _all: true },
+        }),
+        Promise.all(
+          TasksAnalyticsService.TIMINGS.map((t) =>
+            this.prisma.taskAssignee.groupBy({
+              by: ['user_id'],
+              where: {
+                is_cc: false,
+                ...ACTIVE_ASSIGNEE,
+                user_id: { in: userIds },
+                task: { ...base, ...this.analytics.timingWhere(t) },
+              },
+              _count: { _all: true },
+            }),
+          ),
+        ),
+      ]);
+    const cnt = (arr: any[], key: string) =>
+      new Map(arr.map((g) => [g[key], g._count._all]));
+    const totM = cnt(aTotal, 'user_id'),
+      ovM = cnt(aOverdue, 'user_id'),
+      dnM = cnt(aDone, 'user_id'),
+      asgM = cnt(asg, 'created_by_user_id');
     // user_id → assignee timing sub-counts (for the People-lens MiniBars; rolled up client-side).
-    const timingM = new Map<string, ReturnType<TasksAnalyticsService['emptyTiming']>>();
+    const timingM = new Map<
+      string,
+      ReturnType<TasksAnalyticsService['emptyTiming']>
+    >();
     TasksAnalyticsService.TIMINGS.forEach((t, i) => {
       for (const g of timingGroups[i]) {
         let e = timingM.get(g.user_id);
-        if (!e) { e = this.analytics.emptyTiming(); timingM.set(g.user_id, e); }
+        if (!e) {
+          e = this.analytics.emptyTiming();
+          timingM.set(g.user_id, e);
+        }
         e[t] += g._count._all;
       }
     });
@@ -132,7 +253,11 @@ export class TaskReportsService {
       role_title: p.role?.title ?? null,
       department_name: p.department?.name ?? null,
       reporting_to_user_id: p.reporting_to_user_id,
-      assignee: { total: totM.get(p.user_id) ?? 0, overdue: ovM.get(p.user_id) ?? 0, completed: dnM.get(p.user_id) ?? 0 },
+      assignee: {
+        total: totM.get(p.user_id) ?? 0,
+        overdue: ovM.get(p.user_id) ?? 0,
+        completed: dnM.get(p.user_id) ?? 0,
+      },
       assignee_timing: timingM.get(p.user_id) ?? this.analytics.emptyTiming(),
       assigned_count: asgM.get(p.user_id) ?? 0,
     }));
@@ -147,29 +272,72 @@ export class TaskReportsService {
    * and as assigner ("what they delegated"), over tasks the viewer can see.
    */
 
-  async getEmployeeReport(orgId: string, principal: Principal, targetUserId: string, filters: TaskListFilters) {
-    const { effective } = await this.scope.resolveListScope(orgId, principal, TASK_LEAF, undefined);
-    if (effective === null) throw new ForbiddenException('You do not have access to task data');
-    const visible = await this.scope.visibleUserIds(orgId, principal.userId, effective);
+  async getEmployeeReport(
+    orgId: string,
+    principal: Principal,
+    targetUserId: string,
+    filters: TaskListFilters,
+  ) {
+    const { effective } = await this.scope.resolveListScope(
+      orgId,
+      principal,
+      TASK_LEAF,
+      undefined,
+    );
+    if (effective === null)
+      throw new ForbiddenException('You do not have access to task data');
+    const visible = await this.scope.visibleUserIds(
+      orgId,
+      principal.userId,
+      effective,
+    );
     if (visible !== 'ALL' && !visible.includes(targetUserId)) {
-      throw new ForbiddenException('This employee is outside your visibility scope');
+      throw new ForbiddenException(
+        'This employee is outside your visibility scope',
+      );
     }
 
     const [user, profile] = await Promise.all([
-      this.prisma.user.findUnique({ where: { id: targetUserId }, select: { id: true, name: true, email: true } }),
+      this.prisma.user.findUnique({
+        where: { id: targetUserId },
+        select: { id: true, name: true, email: true },
+      }),
       this.prisma.employeeProfile.findFirst({
         where: { organization_id: orgId, user_id: targetUserId },
-        select: { department: { select: { name: true } }, role: { select: { title: true } } },
+        select: {
+          department: { select: { name: true } },
+          role: { select: { title: true } },
+        },
       }),
     ]);
     if (!user) throw new NotFoundException('Employee not found');
 
-    const scopeWhere = await this.scope.whereForScope(orgId, principal.userId, TASK_LEAF, effective);
-    const base = this.taskQuery.buildTaskWhere(orgId, scopeWhere, filters, 'created_at');
+    const scopeWhere = await this.scope.whereForScope(
+      orgId,
+      principal.userId,
+      TASK_LEAF,
+      effective,
+    );
+    const base = this.taskQuery.buildTaskWhere(
+      orgId,
+      scopeWhere,
+      filters,
+      'created_at',
+    );
     const now = await this.clock.now(orgId);
-    const asAssignee = { ...base, assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: targetUserId, is_cc: false } } };
+    const asAssignee = {
+      ...base,
+      assignees: {
+        some: { ...ACTIVE_ASSIGNEE, user_id: targetUserId, is_cc: false },
+      },
+    };
     // "What they delegated": workflow-created tasks aren't attributed to the step's assigner.
-    const asAssigner = { AND: [base, { created_by_user_id: targetUserId, workflow_instance_step_id: null }] };
+    const asAssigner = {
+      AND: [
+        base,
+        { created_by_user_id: targetUserId, workflow_instance_step_id: null },
+      ],
+    };
 
     const [assigneeKpis, assignerKpis, assigneeDims] = await Promise.all([
       this.analytics.kpiFor(orgId, asAssignee, now),
@@ -178,7 +346,13 @@ export class TaskReportsService {
     ]);
 
     return {
-      employee: { id: user.id, name: user.name, email: user.email, role_title: profile?.role?.title ?? null, department_name: profile?.department?.name ?? null },
+      employee: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role_title: profile?.role?.title ?? null,
+        department_name: profile?.department?.name ?? null,
+      },
       as_assignee: assigneeKpis,
       as_assigner: assignerKpis,
       assignee_breakdowns: assigneeDims,
@@ -205,18 +379,46 @@ export class TaskReportsService {
    * multi-assignee task contributes one classified pair per assignee (workload semantics).
    */
 
-  async getWorkFlow(orgId: string, principal: Principal, filters: TaskListFilters & { scope?: DataScope | null }) {
-    const { max, effective } = await this.scope.resolveListScope(orgId, principal, TASK_LEAF, filters.scope);
+  async getWorkFlow(
+    orgId: string,
+    principal: Principal,
+    filters: TaskListFilters & { scope?: DataScope | null },
+  ) {
+    const { max, effective } = await this.scope.resolveListScope(
+      orgId,
+      principal,
+      TASK_LEAF,
+      filters.scope,
+    );
     const empty = {
-      applied_scope: null as DataScope | null, max_scope: max,
-      by_source: [] as any[], matrix: { depts: [] as any[], rows: [] as any[] },
-      incoming_by_source: [] as any[], external_by_dept: [] as any[],
-      outgoing: { by_dept: [] as any[], overdue: 0 }, delegated: { total: 0, open: 0, overdue: 0, timing: this.analytics.emptyTiming() },
+      applied_scope: null as DataScope | null,
+      max_scope: max,
+      by_source: [] as any[],
+      matrix: { depts: [] as any[], rows: [] as any[] },
+      incoming_by_source: [] as any[],
+      external_by_dept: [] as any[],
+      outgoing: { by_dept: [] as any[], overdue: 0 },
+      delegated: {
+        total: 0,
+        open: 0,
+        overdue: 0,
+        timing: this.analytics.emptyTiming(),
+      },
     };
     if (effective === null) return empty;
 
-    const scopeWhere = await this.scope.whereForScope(orgId, principal.userId, TASK_LEAF, effective);
-    const where = this.taskQuery.buildTaskWhere(orgId, scopeWhere, await this.taskQuery.resolveFilters(orgId, filters), 'created_at');
+    const scopeWhere = await this.scope.whereForScope(
+      orgId,
+      principal.userId,
+      TASK_LEAF,
+      effective,
+    );
+    const where = this.taskQuery.buildTaskWhere(
+      orgId,
+      scopeWhere,
+      await this.taskQuery.resolveFilters(orgId, filters),
+      'created_at',
+    );
 
     // Department maps: each dept → its top-level root; names for labels.
     const depts = await this.prisma.department.findMany({
@@ -224,29 +426,47 @@ export class TaskReportsService {
       select: { id: true, name: true, color: true, parent_department_id: true },
     });
     const rootOf = new Map<string, string>();
-    for (const d of depts) { const chain = ancestorChain(depts, d.id); rootOf.set(d.id, chain[0] ?? d.id); }
+    for (const d of depts) {
+      const chain = ancestorChain(depts, d.id);
+      rootOf.set(d.id, chain[0] ?? d.id);
+    }
     const deptInfo = new Map(depts.map((d) => [d.id, d]));
     const topDepts = depts.filter((d) => !d.parent_department_id);
 
     // user → department.
     const profiles = await this.prisma.employeeProfile.findMany({
-      where: { organization_id: orgId }, select: { user_id: true, department_id: true },
+      where: { organization_id: orgId },
+      select: { user_id: true, department_id: true },
     });
     const userDept = new Map(profiles.map((p) => [p.user_id, p.department_id]));
 
     // The viewer's set ("my team"/own/dept) for relative classification; 'ALL' at org.
-    const visible = await this.scope.visibleUserIds(orgId, principal.userId, effective);
-    const mySet: Set<string> | null = visible === 'ALL' ? null : new Set(visible);
-    const viewerRoot = (() => { const d = userDept.get(principal.userId); return d ? rootOf.get(d) ?? null : null; })();
+    const visible = await this.scope.visibleUserIds(
+      orgId,
+      principal.userId,
+      effective,
+    );
+    const mySet: Set<string> | null =
+      visible === 'ALL' ? null : new Set(visible);
+    const viewerRoot = (() => {
+      const d = userDept.get(principal.userId);
+      return d ? (rootOf.get(d) ?? null) : null;
+    })();
 
     // Scoped tasks with assigner + non-cc assignees + timing fields.
     const CAP = 8000;
     const tasks = await this.prisma.task.findMany({
       where,
       select: {
-        created_by_user_id: true, completion_timing: true, is_overdue: true, status_id: true,
+        created_by_user_id: true,
+        completion_timing: true,
+        is_overdue: true,
+        status_id: true,
         workflow_instance_step_id: true,
-        assignees: { where: { is_cc: false, ...ACTIVE_ASSIGNEE }, select: { user_id: true } },
+        assignees: {
+          where: { is_cc: false, ...ACTIVE_ASSIGNEE },
+          select: { user_id: true },
+        },
       },
       take: CAP,
     });
@@ -256,18 +476,50 @@ export class TaskReportsService {
 
     // ── Fold ──────────────────────────────────────────────────────────────────────
     const REL = ['immediate', 'same_dept', 'external'] as const;
-    const REL_LABEL: Record<(typeof REL)[number], string> = { immediate: 'Immediate (same dept)', same_dept: 'Same department', external: 'External (other dept)' };
-    const bySource = Object.fromEntries(REL.map((r) => [r, this.emptySourceItem(r, REL_LABEL[r])])) as Record<(typeof REL)[number], ReturnType<TasksService['emptySourceItem']>>;
+    const REL_LABEL: Record<(typeof REL)[number], string> = {
+      immediate: 'Immediate (same dept)',
+      same_dept: 'Same department',
+      external: 'External (other dept)',
+    };
+    const bySource = Object.fromEntries(
+      REL.map((r) => [r, this.emptySourceItem(r, REL_LABEL[r])]),
+    ) as Record<
+      (typeof REL)[number],
+      ReturnType<TaskReportsService['emptySourceItem']>
+    >;
     const matrix = new Map<string, Map<string, number>>();
     const INC = ['within', 'same_dept', 'external'] as const;
-    const INC_LABEL: Record<(typeof INC)[number], string> = { within: 'Within team', same_dept: 'Same department', external: 'External' };
-    const incoming = Object.fromEntries(INC.map((r) => [r, this.emptySourceItem(r, INC_LABEL[r])])) as Record<(typeof INC)[number], ReturnType<TasksService['emptySourceItem']>>;
-    const externalByDept = new Map<string, ReturnType<TasksService['emptySourceItem']>>();
-    const outgoingByDept = new Map<string, ReturnType<TasksService['emptySourceItem']>>();
+    const INC_LABEL: Record<(typeof INC)[number], string> = {
+      within: 'Within team',
+      same_dept: 'Same department',
+      external: 'External',
+    };
+    const incoming = Object.fromEntries(
+      INC.map((r) => [r, this.emptySourceItem(r, INC_LABEL[r])]),
+    ) as Record<
+      (typeof INC)[number],
+      ReturnType<TaskReportsService['emptySourceItem']>
+    >;
+    const externalByDept = new Map<
+      string,
+      ReturnType<TaskReportsService['emptySourceItem']>
+    >();
+    const outgoingByDept = new Map<
+      string,
+      ReturnType<TaskReportsService['emptySourceItem']>
+    >();
     let outgoingOverdue = 0;
-    const delegated = { total: 0, open: 0, overdue: 0, timing: this.analytics.emptyTiming() };
+    const delegated = {
+      total: 0,
+      open: 0,
+      overdue: 0,
+      timing: this.analytics.emptyTiming(),
+    };
 
-    const relOf = (aDept: string | null | undefined, bDept: string | null | undefined): (typeof REL)[number] => {
+    const relOf = (
+      aDept: string | null | undefined,
+      bDept: string | null | undefined,
+    ): (typeof REL)[number] => {
       if (!aDept || !bDept) return 'external';
       if (aDept === bDept) return 'immediate';
       return rootOf.get(aDept) === rootOf.get(bDept) ? 'same_dept' : 'external';
@@ -294,7 +546,9 @@ export class TaskReportsService {
       let pushedOutside = false;
       for (const a of t.assignees) {
         const assigneeDept = userDept.get(a.user_id);
-        const assigneeRoot = assigneeDept ? rootOf.get(assigneeDept) : undefined;
+        const assigneeRoot = assigneeDept
+          ? rootOf.get(assigneeDept)
+          : undefined;
 
         // Source breakdown (absolute, assignee-perspective).
         bySource[relOf(assignerDept, assigneeDept)].timing[timing]++;
@@ -311,17 +565,36 @@ export class TaskReportsService {
           const assigneeInSet = mySet.has(a.user_id);
           // Incoming to my set, classified by who gave it.
           if (assigneeInSet) {
-            const rel = assignerInSet ? 'within' : assignerRoot && assignerRoot === viewerRoot ? 'same_dept' : 'external';
-            incoming[rel].total++; incoming[rel].timing[timing]++;
+            const rel = assignerInSet
+              ? 'within'
+              : assignerRoot && assignerRoot === viewerRoot
+                ? 'same_dept'
+                : 'external';
+            incoming[rel].total++;
+            incoming[rel].timing[timing]++;
             if (rel === 'external' && assignerRoot) {
-              const e = externalByDept.get(assignerRoot) ?? this.emptySourceItem(assignerRoot, deptInfo.get(assignerRoot)?.name ?? 'Unknown');
-              e.total++; e.timing[timing]++; externalByDept.set(assignerRoot, e);
+              const e =
+                externalByDept.get(assignerRoot) ??
+                this.emptySourceItem(
+                  assignerRoot,
+                  deptInfo.get(assignerRoot)?.name ?? 'Unknown',
+                );
+              e.total++;
+              e.timing[timing]++;
+              externalByDept.set(assignerRoot, e);
             }
           }
           // Outgoing: my set assigned OUT to someone not in my set.
           if (assignerInSet && !assigneeInSet && assigneeRoot) {
-            const o = outgoingByDept.get(assigneeRoot) ?? this.emptySourceItem(assigneeRoot, deptInfo.get(assigneeRoot)?.name ?? 'Unknown');
-            o.total++; o.timing[timing]++; outgoingByDept.set(assigneeRoot, o);
+            const o =
+              outgoingByDept.get(assigneeRoot) ??
+              this.emptySourceItem(
+                assigneeRoot,
+                deptInfo.get(assigneeRoot)?.name ?? 'Unknown',
+              );
+            o.total++;
+            o.timing[timing]++;
+            outgoingByDept.set(assigneeRoot, o);
             pushedOutside = true;
           }
         }
@@ -334,209 +607,33 @@ export class TaskReportsService {
       max_scope: max,
       by_source: REL.map((r) => bySource[r]).filter((s) => s.total > 0),
       matrix: {
-        depts: topDepts.map((d) => ({ id: d.id, name: d.name, color: d.color })),
+        depts: topDepts.map((d) => ({
+          id: d.id,
+          name: d.name,
+          color: d.color,
+        })),
         rows: topDepts.map((from) => ({
           from: from.id,
           cells: topDepts.map((to) => matrix.get(from.id)?.get(to.id) ?? 0),
         })),
       },
-      incoming_by_source: INC.map((r) => incoming[r]).filter((s) => s.total > 0),
-      external_by_dept: [...externalByDept.values()].sort((a, b) => b.total - a.total),
-      outgoing: { by_dept: [...outgoingByDept.values()].sort((a, b) => b.total - a.total), overdue: outgoingOverdue },
+      incoming_by_source: INC.map((r) => incoming[r]).filter(
+        (s) => s.total > 0,
+      ),
+      external_by_dept: [...externalByDept.values()].sort(
+        (a, b) => b.total - a.total,
+      ),
+      outgoing: {
+        by_dept: [...outgoingByDept.values()].sort((a, b) => b.total - a.total),
+        overdue: outgoingOverdue,
+      },
       delegated,
     };
   }
 
   logTruncation(orgId: string, cap: number) {
-    this.logger.warn(`[tasks/flow] org ${orgId}: work-flow sample capped at ${cap} tasks; some cross-dept counts may be partial.`);
+    this.logger.warn(
+      `[tasks/flow] org ${orgId}: work-flow sample capped at ${cap} tasks; some cross-dept counts may be partial.`,
+    );
   }
-
-  // ─── Bulk actions ──────────────────────────────────────────────────────────────
-
-  /**
-   * Bulk status / deadline / complete over the subset of `taskIds` the actor may EDIT.
-   * The bulk tool obeys every rule the single-task actions enforce — read visibility is
-   * not edit rights, terminal states can't be hand-set or silently dragged back open,
-   * and "complete" routes through the real completion engine (proof, checklists,
-   * per-person scoreboards, notifications, the undo window). Tasks that fail a rule are
-   * skipped and reported, never force-updated.
-   */
-
-  /** Scope + filter aware CSV of the current view (capped). Returned as a JSON string field. */
-  async exportCsv(
-    orgId: string,
-    principal: Principal,
-    filters: TaskListFilters,
-    requestedScope?: DataScope | null,
-    bucket?: string,
-  ) {
-    const { effective } = await this.scope.resolveListScope(orgId, principal, TASK_LEAF, requestedScope);
-    const scopeWhere = await this.scope.whereForScope(orgId, principal.userId, TASK_LEAF, effective);
-    const now = await this.clock.now(orgId);
-    filters = await this.taskQuery.resolveFilters(orgId, filters);
-    const where = { ...this.taskQuery.buildTaskWhere(orgId, scopeWhere, filters, 'created_at'), ...this.taskQuery.bucketWhere(bucket, now) };
-    const tasks = await this.prisma.task.findMany({ where, include: TASK_INCLUDE, orderBy: this.taskQuery.taskOrderBy('created_desc'), take: 5000 });
-    const enriched = await this.taskDetail.enrichTaskList(tasks, undefined, principal);
-    const org = await this.prisma.organization.findUnique({ where: { id: orgId }, select: { timezone: true } });
-    const tz = safeTimeZone(org?.timezone);
-
-    const headers = ['Title', 'Description', 'Status', 'Priority', 'Category', 'Tags', 'Type', 'Assigned By', 'Assignees', 'Deadline', 'Created'];
-    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const lines = [headers.join(',')];
-    for (const t of enriched as any[]) {
-      lines.push([
-        t.title,
-        t.description ?? '',
-        t.status?.label ?? '',
-        t.priority?.label ?? '',
-        t.category?.name ?? '',
-        // ", " — the same delimiter the import reads back (names can't contain a comma).
-        (t.tags ?? []).map((tag: { name: string }) => tag.name).join(', '),
-        t.type,
-        // A workflow-created task isn't personally handed out by the step's assigner.
-        t.workflow ? `Workflow: ${t.workflow.label}` : t.created_by?.name ?? '',
-        (t.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user?.name).filter(Boolean).join('; '),
-        // Org-local wall clock, not UTC — "2026-10-25 00:00" reads as the date the user saw.
-        t.deadline ? formatLocalDateTime(new Date(t.deadline), tz) : '',
-        formatLocalDateTime(new Date(t.created_at), tz),
-      ].map(esc).join(','));
-    }
-    return { csv: lines.join('\n'), count: enriched.length };
-  }
-
-  async getReports(orgId: string, fromDate?: string, toDate?: string) {
-    const where: any = { organization_id: orgId, is_deleted: false };
-    if (fromDate || toDate) {
-      where.created_at = {};
-      if (fromDate) where.created_at.gte = new Date(fromDate);
-      if (toDate) where.created_at.lte = new Date(toDate);
-    }
-
-    const tasks = await this.prisma.task.findMany({
-      where,
-      include: {
-        status: true,
-        priority: true,
-        category: true,
-        // Live roster. This legacy Analytics roll-up has no notion of WHY someone left
-        // a task, so counting a cleanly-withdrawn person's task as their overdue would
-        // be worse than either option. The policy-correct graded treatment of removed
-        // people lives in the three compliance reports (see assigneeOutcome).
-        assignees: { where: { is_cc: false, ...ACTIVE_ASSIGNEE } },
-        ...TASK_TAG_REF_SELECT,
-      },
-    });
-
-    // "completed" = successful (drives completion counts); "terminal" = closed
-    // (completed OR incomplete) — a closed task is never counted as overdue.
-    const closingStatuses = await this.prisma.taskStatus.findMany({
-      where: { organization_id: orgId, type: { in: TERMINAL_TYPES } },
-      select: { id: true, type: true },
-    });
-    const completedIds = new Set(closingStatuses.filter((s) => isSuccessful(s.type)).map((s) => s.id));
-    const terminalIds = new Set(closingStatuses.map((s) => s.id));
-    const now = new Date();
-
-    const userMap = new Map<string, { user_id: string; total: number; completed: number; overdue: number }>();
-    const deptMap = new Map<string, { department_id: string; total: number; completed: number; overdue: number }>();
-    const priorityMap = new Map<string, { label: string; color: string; total: number; completed: number; overdue: number }>();
-    const categoryMap = new Map<string, { label: string; color: string; total: number; completed: number; overdue: number }>();
-    // One task counts once in EACH of its tags (tags are multi-valued, unlike category).
-    const tagMap = new Map<string, { id: string; label: string; color: string; is_active: boolean; total: number; completed: number; overdue: number }>();
-    const statusMap = new Map<string, { label: string; color: string; total: number }>();
-    let recurringTotal = 0, recurringCompleted = 0, oneTimeTotal = 0, oneTimeCompleted = 0;
-
-    for (const task of tasks) {
-      const isCompleted = completedIds.has(task.status_id);
-      const isOverdue = !!task.deadline && task.deadline < now && !terminalIds.has(task.status_id);
-
-      if (task.priority_id && task.priority) {
-        if (!priorityMap.has(task.priority_id)) {
-          priorityMap.set(task.priority_id, { label: task.priority.label, color: task.priority.color, total: 0, completed: 0, overdue: 0 });
-        }
-        const p = priorityMap.get(task.priority_id)!;
-        p.total++; if (isCompleted) p.completed++; if (isOverdue) p.overdue++;
-      }
-
-      if (task.category_id && task.category) {
-        if (!categoryMap.has(task.category_id)) {
-          categoryMap.set(task.category_id, { label: task.category.name, color: task.category.color, total: 0, completed: 0, overdue: 0 });
-        }
-        const c = categoryMap.get(task.category_id)!;
-        c.total++; if (isCompleted) c.completed++; if (isOverdue) c.overdue++;
-      }
-
-      for (const tag of toTagRefs(task.tags)) {
-        let t = tagMap.get(tag.id);
-        if (!t) {
-          t = { id: tag.id, label: tag.name, color: tag.color, is_active: tag.is_active, total: 0, completed: 0, overdue: 0 };
-          tagMap.set(tag.id, t);
-        }
-        t.total++; if (isCompleted) t.completed++; if (isOverdue) t.overdue++;
-      }
-
-      if (task.status) {
-        if (!statusMap.has(task.status_id)) {
-          statusMap.set(task.status_id, { label: task.status.label, color: task.status.color, total: 0 });
-        }
-        statusMap.get(task.status_id)!.total++;
-      }
-
-      for (const a of task.assignees) {
-        if (!userMap.has(a.user_id)) {
-          userMap.set(a.user_id, { user_id: a.user_id, total: 0, completed: 0, overdue: 0 });
-        }
-        const u = userMap.get(a.user_id)!;
-        u.total++; if (isCompleted) u.completed++; if (isOverdue) u.overdue++;
-      }
-
-      if (task.department_id) {
-        if (!deptMap.has(task.department_id)) {
-          deptMap.set(task.department_id, { department_id: task.department_id, total: 0, completed: 0, overdue: 0 });
-        }
-        const d = deptMap.get(task.department_id)!;
-        d.total++; if (isCompleted) d.completed++; if (isOverdue) d.overdue++;
-      }
-
-      if (task.type === 'recurring') {
-        recurringTotal++; if (isCompleted) recurringCompleted++;
-      } else {
-        oneTimeTotal++; if (isCompleted) oneTimeCompleted++;
-      }
-    }
-
-    const userIds = Array.from(userMap.keys());
-    const users = userIds.length > 0
-      ? await this.prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, email: true } })
-      : [];
-    const userEnrich = new Map(users.map((u) => [u.id, u]));
-
-    const deptIds = Array.from(deptMap.keys());
-    const depts = deptIds.length > 0
-      ? await this.prisma.department.findMany({ where: { id: { in: deptIds } }, select: { id: true, name: true } })
-      : [];
-    const deptEnrich = new Map(depts.map((d) => [d.id, d]));
-
-    return {
-      total_tasks: tasks.length,
-      user_performance: Array.from(userMap.entries()).map(([id, data]) => ({
-        ...data,
-        user: userEnrich.get(id) ?? null,
-      })),
-      department_performance: Array.from(deptMap.entries()).map(([id, data]) => ({
-        ...data,
-        department: deptEnrich.get(id) ?? null,
-      })),
-      priority_breakdown: Array.from(priorityMap.values()),
-      category_breakdown: Array.from(categoryMap.values()),
-      tag_breakdown: Array.from(tagMap.values()).sort((a, b) => b.total - a.total),
-      status_breakdown: Array.from(statusMap.values()),
-      frequency_breakdown: {
-        recurring: { total: recurringTotal, completed: recurringCompleted },
-        one_time: { total: oneTimeTotal, completed: oneTimeCompleted },
-      },
-    };
-  }
-
-  // ─── Eligible Assignees ───────────────────────────────────────────────────────
 }

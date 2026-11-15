@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { TASK_TAG_REF_SELECT } from '../common/task-masters-usable';
 import { CompletionMode, PermissionAction } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkflowTaskEventsService } from '../workflows/workflow-task-events.service';
@@ -6,12 +7,22 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ClockService } from '../clock/clock.service';
 import { ScopeService } from '../access-rights/scope.service';
 import { Principal } from '../access-rights/permissions.service';
-import { assertTagsUsable, loadTagRefMap, TaskTagRef, toTagRefs } from '../common/task-masters-usable';
+import {
+  assertTagsUsable,
+  loadTagRefMap,
+  TaskTagRef,
+  toTagRefs,
+} from '../common/task-masters-usable';
 import { isTerminal } from './status-phase';
 import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { MAX_TAGS_PER_TASK } from '../task-masters/task-tag.constants';
 import { swallow } from '../common/swallow';
-import { MAX_TAG_FILTER_IDS, SIMULATED_FUTURE_TASK_MESSAGE, TASK_LEAF, tagChangeEntry } from './task-shared';
+import {
+  MAX_TAG_FILTER_IDS,
+  SIMULATED_FUTURE_TASK_MESSAGE,
+  TASK_LEAF,
+  tagChangeEntry,
+} from './task-shared';
 import { TaskAccessService } from './task-access.service';
 import { TaskReconcileService } from './task-reconcile.service';
 import { TaskCompletionService } from './task-completion.service';
@@ -30,12 +41,24 @@ export class TaskBulkService {
     private readonly taskCompletion: TaskCompletionService,
   ) {}
 
+  /**
+   * Bulk status / deadline / complete over the subset of `taskIds` the actor may EDIT.
+   * The bulk tool obeys every rule the single-task actions enforce — read visibility is
+   * not edit rights, terminal states can't be hand-set or silently dragged back open,
+   * and "complete" routes through the real completion engine (proof, checklists,
+   * per-person scoreboards, notifications, the undo window). Tasks that fail a rule are
+   * skipped and reported, never force-updated.
+   */
   async bulkUpdate(
     orgId: string,
     principal: Principal,
     taskIds: string[],
     action: 'status' | 'deadline' | 'complete' | 'add_tags' | 'remove_tags',
-    payload: { status_id?: string; deadline?: string | null; tag_ids?: string[] },
+    payload: {
+      status_id?: string;
+      deadline?: string | null;
+      tag_ids?: string[];
+    },
   ) {
     const skipped: { id: string; title: string; reason: string }[] = [];
     if (!taskIds?.length) return { updated: 0, skipped };
@@ -50,13 +73,19 @@ export class TaskBulkService {
         action === 'add_tags'
           ? await assertTagsUsable(this.prisma, orgId, payload.tag_ids ?? [])
           : await this.assertTagIdsInOrg(orgId, payload.tag_ids ?? []);
-      if (!bulkTagIds.length) throw new BadRequestException('Pick at least one tag.');
+      if (!bulkTagIds.length)
+        throw new BadRequestException('Pick at least one tag.');
     }
 
     // Read visibility bounds the candidate set…
     const scopeWhere = await this.scope.listWhere(orgId, principal, TASK_LEAF);
     const candidates = await this.prisma.task.findMany({
-      where: { organization_id: orgId, is_deleted: false, id: { in: taskIds }, ...(Object.keys(scopeWhere).length ? { AND: [scopeWhere] } : {}) },
+      where: {
+        organization_id: orgId,
+        is_deleted: false,
+        id: { in: taskIds },
+        ...(Object.keys(scopeWhere).length ? { AND: [scopeWhere] } : {}),
+      },
       select: {
         id: true,
         title: true,
@@ -72,7 +101,10 @@ export class TaskBulkService {
         // Needed by the deadline branch: a workflow step follows its task's deadline.
         workflow_instance_step_id: true,
         status: { select: { type: true } },
-        assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
+        assignees: {
+          where: ACTIVE_ASSIGNEE,
+          select: { user_id: true, is_cc: true },
+        },
         // Needed by the tag branch to diff and to log names.
         ...TASK_TAG_REF_SELECT,
       },
@@ -85,20 +117,31 @@ export class TaskBulkService {
     // assignee is enough to move a status, but not to retag someone else's task.
     // (The edit-roles lookup is per actor, so it runs at most once.)
     let editRoleAllowed: boolean | undefined;
-    const canEditFields = async (t: (typeof candidates)[number]): Promise<boolean> => {
-      if (t.created_by_user_id === principal.userId || principal.isAdmin) return true;
+    const canEditFields = async (
+      t: (typeof candidates)[number],
+    ): Promise<boolean> => {
+      if (t.created_by_user_id === principal.userId || principal.isAdmin)
+        return true;
       if (editRoleAllowed === undefined) {
-        editRoleAllowed = await this.taskAccess.checkTaskPermission(orgId, principal.userId, 'task_edit_roles').then(
-          () => true,
-          () => false,
-        );
+        editRoleAllowed = await this.taskAccess
+          .checkTaskPermission(orgId, principal.userId, 'task_edit_roles')
+          .then(
+            () => true,
+            () => false,
+          );
       }
       if (!editRoleAllowed) return false;
       try {
-        await this.scope.assertCanActOn(orgId, principal, TASK_LEAF, PermissionAction.edit, [
-          t.created_by_user_id,
-          ...t.assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
-        ]);
+        await this.scope.assertCanActOn(
+          orgId,
+          principal,
+          TASK_LEAF,
+          PermissionAction.edit,
+          [
+            t.created_by_user_id,
+            ...t.assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
+          ],
+        );
         return true;
       } catch {
         return false;
@@ -112,9 +155,19 @@ export class TaskBulkService {
     const tagNow = isTagAction ? await this.clock.now(orgId) : null;
     for (const t of candidates) {
       if (isTagAction) {
-        if (tagNow && t.created_at > tagNow) skipped.push({ id: t.id, title: t.title, reason: SIMULATED_FUTURE_TASK_MESSAGE });
+        if (tagNow && t.created_at > tagNow)
+          skipped.push({
+            id: t.id,
+            title: t.title,
+            reason: SIMULATED_FUTURE_TASK_MESSAGE,
+          });
         else if (await canEditFields(t)) editable.push(t);
-        else skipped.push({ id: t.id, title: t.title, reason: 'You do not have edit access to this task.' });
+        else
+          skipped.push({
+            id: t.id,
+            title: t.title,
+            reason: 'You do not have edit access to this task.',
+          });
         continue;
       }
       const onTask =
@@ -125,33 +178,58 @@ export class TaskBulkService {
         continue;
       }
       try {
-        await this.scope.assertCanActOn(orgId, principal, TASK_LEAF, PermissionAction.edit, [
-          t.created_by_user_id,
-          ...t.assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
-        ]);
+        await this.scope.assertCanActOn(
+          orgId,
+          principal,
+          TASK_LEAF,
+          PermissionAction.edit,
+          [
+            t.created_by_user_id,
+            ...t.assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
+          ],
+        );
         editable.push(t);
       } catch {
-        skipped.push({ id: t.id, title: t.title, reason: 'You do not have edit access to this task.' });
+        skipped.push({
+          id: t.id,
+          title: t.title,
+          reason: 'You do not have edit access to this task.',
+        });
       }
     }
 
     if (action === 'status') {
-      if (!payload.status_id) throw new BadRequestException('Status is required');
+      if (!payload.status_id)
+        throw new BadRequestException('Status is required');
       const st = await this.prisma.taskStatus.findFirst({
-        where: { id: payload.status_id, organization_id: orgId, is_active: true },
+        where: {
+          id: payload.status_id,
+          organization_id: orgId,
+          is_active: true,
+        },
       });
       if (!st) throw new BadRequestException('Status not found or inactive');
       // Terminal outcomes carry business rules (proof, checklists, the undo window) —
       // they can never be hand-set, not even in bulk. Use the Complete action.
       if (isTerminal(st.type)) {
-        throw new BadRequestException('Closed statuses can’t be set by hand — use the Complete or Mark Incomplete action.');
+        throw new BadRequestException(
+          'Closed statuses can’t be set by hand — use the Complete or Mark Incomplete action.',
+        );
       }
       const ids: string[] = [];
       for (const t of editable) {
         if (isTerminal(t.status?.type)) {
-          skipped.push({ id: t.id, title: t.title, reason: 'Closed — reopen it before changing its status.' });
+          skipped.push({
+            id: t.id,
+            title: t.title,
+            reason: 'Closed — reopen it before changing its status.',
+          });
         } else if (t.completion_mode === CompletionMode.all_must_complete) {
-          skipped.push({ id: t.id, title: t.title, reason: 'Tracks per-person statuses — set them on the task itself.' });
+          skipped.push({
+            id: t.id,
+            title: t.title,
+            reason: 'Tracks per-person statuses — set them on the task itself.',
+          });
         } else {
           ids.push(t.id);
         }
@@ -159,9 +237,20 @@ export class TaskBulkService {
       if (ids.length) {
         await this.prisma.task.updateMany({
           where: { id: { in: ids } },
-          data: { status_id: payload.status_id, status_actor_user_id: principal.userId },
+          data: {
+            status_id: payload.status_id,
+            status_actor_user_id: principal.userId,
+          },
         });
-        await Promise.all(ids.map((id) => this.taskAccess.logActivity(orgId, id, principal.userId, 'status_changed', { bulk: true }).catch(swallow('tasks.bulkUpdate', null))));
+        await Promise.all(
+          ids.map((id) =>
+            this.taskAccess
+              .logActivity(orgId, id, principal.userId, 'status_changed', {
+                bulk: true,
+              })
+              .catch(swallow('tasks.bulkUpdate', null)),
+          ),
+        );
       }
       return { updated: ids.length, skipped };
     }
@@ -171,7 +260,11 @@ export class TaskBulkService {
       const ids: string[] = [];
       for (const t of editable) {
         if (isTerminal(t.status?.type)) {
-          skipped.push({ id: t.id, title: t.title, reason: 'Closed — its deadline is part of the record.' });
+          skipped.push({
+            id: t.id,
+            title: t.title,
+            reason: 'Closed — its deadline is part of the record.',
+          });
         } else {
           ids.push(t.id);
         }
@@ -235,7 +328,10 @@ export class TaskBulkService {
               .filter((id) => byId.get(id)!.original_deadline === null)
               .map((id) =>
                 this.prisma.task
-                  .update({ where: { id }, data: { original_deadline: byId.get(id)!.deadline } })
+                  .update({
+                    where: { id },
+                    data: { original_deadline: byId.get(id)!.deadline },
+                  })
                   .catch(swallow('tasks.bulkUpdate', null)),
               ),
           );
@@ -244,25 +340,43 @@ export class TaskBulkService {
         // Relative reminders were derived from the OLD dates — re-hang them, or they
         // fire after the deadline they were meant to pre-empt (or never fire).
         for (const id of ids) {
-          await this.taskReconcile.recomputeRemindersForDeadline(orgId, id, newDeadline).catch(swallow('tasks.bulkUpdate', null));
+          await this.taskReconcile
+            .recomputeRemindersForDeadline(orgId, id, newDeadline)
+            .catch(swallow('tasks.bulkUpdate', null));
           // Workflow: a step's deadline follows its task's (never throws).
           if (byId.get(id)!.workflow_instance_step_id) {
             await this.workflowEngine.syncStepFromTask(orgId, id);
           }
         }
 
-        await Promise.all(ids.map((id) => this.taskAccess.logActivity(orgId, id, principal.userId, 'edited', { bulk: true, field: 'deadline' }).catch(swallow('tasks.bulkUpdate', null))));
+        await Promise.all(
+          ids.map((id) =>
+            this.taskAccess
+              .logActivity(orgId, id, principal.userId, 'edited', {
+                bulk: true,
+                field: 'deadline',
+              })
+              .catch(swallow('tasks.bulkUpdate', null)),
+          ),
+        );
 
         // Tell the people who have to hit these dates. Same event as a single edit,
         // so an org that finds it noisy can switch it off in one place.
         const actorName = await this.notifications.userName(principal.userId);
         const fmt = (d: Date | null) =>
-          d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'no deadline';
+          d
+            ? new Date(d).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })
+            : 'no deadline';
         for (const id of ids) {
           const t = byId.get(id)!;
-          const recipients = [t.created_by_user_id, ...t.assignees.map((a) => a.user_id)].filter(
-            (uid) => uid !== principal.userId,
-          );
+          const recipients = [
+            t.created_by_user_id,
+            ...t.assignees.map((a) => a.user_id),
+          ].filter((uid) => uid !== principal.userId);
           if (!recipients.length) continue;
           await this.notifications
             .emit({
@@ -289,22 +403,47 @@ export class TaskBulkService {
       let updated = 0;
       for (const t of editable) {
         try {
-          const isOwner = t.created_by_user_id === principal.userId || principal.isAdmin;
-          if (t.completion_mode === CompletionMode.all_must_complete && isOwner) {
-            await this.taskCompletion.completeTask(orgId, principal.userId, t.id, undefined, true);
+          const isOwner =
+            t.created_by_user_id === principal.userId || principal.isAdmin;
+          if (
+            t.completion_mode === CompletionMode.all_must_complete &&
+            isOwner
+          ) {
+            await this.taskCompletion.completeTask(
+              orgId,
+              principal.userId,
+              t.id,
+              undefined,
+              true,
+            );
           } else {
-            await this.taskCompletion.completeTask(orgId, principal.userId, t.id);
+            await this.taskCompletion.completeTask(
+              orgId,
+              principal.userId,
+              t.id,
+            );
           }
           updated++;
         } catch (err) {
-          skipped.push({ id: t.id, title: t.title, reason: (err as Error).message ?? 'Could not be completed.' });
+          skipped.push({
+            id: t.id,
+            title: t.title,
+            reason: (err as Error).message ?? 'Could not be completed.',
+          });
         }
       }
       return { updated, skipped };
     }
 
     if (isTagAction) {
-      return this.bulkApplyTags(orgId, principal.userId, editable, action, bulkTagIds, skipped);
+      return this.bulkApplyTags(
+        orgId,
+        principal.userId,
+        editable,
+        action,
+        bulkTagIds,
+        skipped,
+      );
     }
 
     throw new BadRequestException('Unknown bulk action');
@@ -324,8 +463,11 @@ export class TaskBulkService {
       throw new BadRequestException(`Pick at most ${MAX_TAG_FILTER_IDS} tags.`);
     }
     if (!ids.length) return [];
-    const found = await this.prisma.taskTag.count({ where: { id: { in: ids }, organization_id: orgId } });
-    if (found !== ids.length) throw new BadRequestException('Tag not found in this organization.');
+    const found = await this.prisma.taskTag.count({
+      where: { id: { in: ids }, organization_id: orgId },
+    });
+    if (found !== ids.length)
+      throw new BadRequestException('Tag not found in this organization.');
     return ids;
   }
 
@@ -339,15 +481,30 @@ export class TaskBulkService {
   async bulkApplyTags(
     orgId: string,
     actorId: string,
-    editable: { id: string; title: string; tags: Parameters<typeof toTagRefs>[0] }[],
+    editable: {
+      id: string;
+      title: string;
+      tags: Parameters<typeof toTagRefs>[0];
+    }[],
     action: 'add_tags' | 'remove_tags',
     tagIds: string[],
     skipped: { id: string; title: string; reason: string }[],
   ) {
-    const refs = action === 'add_tags' ? await loadTagRefMap(this.prisma, orgId, tagIds) : new Map<string, TaskTagRef>();
+    const refs =
+      action === 'add_tags'
+        ? await loadTagRefMap(this.prisma, orgId, tagIds)
+        : new Map<string, TaskTagRef>();
     const chosen = new Set(tagIds);
-    const changes: { id: string; entry: NonNullable<ReturnType<TasksService['tagChangeEntry']>> }[] = [];
-    const addRows: { organization_id: string; task_id: string; tag_id: string; created_by_user_id: string }[] = [];
+    const changes: {
+      id: string;
+      entry: NonNullable<ReturnType<typeof tagChangeEntry>>;
+    }[] = [];
+    const addRows: {
+      organization_id: string;
+      task_id: string;
+      tag_id: string;
+      created_by_user_id: string;
+    }[] = [];
     const removeFrom: string[] = [];
 
     for (const t of editable) {
@@ -358,13 +515,27 @@ export class TaskBulkService {
         const toAdd = tagIds.filter((id) => !currentIds.has(id));
         if (!toAdd.length) continue;
         if (currentIds.size + toAdd.length > MAX_TAGS_PER_TASK) {
-          skipped.push({ id: t.id, title: t.title, reason: `A task can have at most ${MAX_TAGS_PER_TASK} tags.` });
+          skipped.push({
+            id: t.id,
+            title: t.title,
+            reason: `A task can have at most ${MAX_TAGS_PER_TASK} tags.`,
+          });
           continue;
         }
         for (const tagId of toAdd) {
-          addRows.push({ organization_id: orgId, task_id: t.id, tag_id: tagId, created_by_user_id: actorId });
+          addRows.push({
+            organization_id: orgId,
+            task_id: t.id,
+            tag_id: tagId,
+            created_by_user_id: actorId,
+          });
         }
-        next = [...current, ...toAdd.map((id) => refs.get(id)).filter((r): r is TaskTagRef => !!r)];
+        next = [
+          ...current,
+          ...toAdd
+            .map((id) => refs.get(id))
+            .filter((r): r is TaskTagRef => !!r),
+        ];
       } else {
         if (!current.some((c) => chosen.has(c.id))) continue;
         removeFrom.push(t.id);
@@ -375,11 +546,18 @@ export class TaskBulkService {
     }
 
     if (addRows.length) {
-      await this.prisma.taskTagLink.createMany({ data: addRows, skipDuplicates: true });
+      await this.prisma.taskTagLink.createMany({
+        data: addRows,
+        skipDuplicates: true,
+      });
     }
     if (removeFrom.length) {
       await this.prisma.taskTagLink.deleteMany({
-        where: { organization_id: orgId, task_id: { in: removeFrom }, tag_id: { in: tagIds } },
+        where: {
+          organization_id: orgId,
+          task_id: { in: removeFrom },
+          tag_id: { in: tagIds },
+        },
       });
     }
 
@@ -387,11 +565,14 @@ export class TaskBulkService {
     // single edit writes, so the activity feed renders the tag diff identically.
     await Promise.all(
       changes.map(({ id, entry }) =>
-        this.taskAccess.logActivity(orgId, id, actorId, 'edited', { bulk: true, changes: [entry] }).catch(swallow('tasks.bulkApplyTags', null)),
+        this.taskAccess
+          .logActivity(orgId, id, actorId, 'edited', {
+            bulk: true,
+            changes: [entry],
+          })
+          .catch(swallow('tasks.bulkApplyTags', null)),
       ),
     );
     return { updated: changes.length, skipped };
   }
-
-  // ─── CSV export ────────────────────────────────────────────────────────────────
 }

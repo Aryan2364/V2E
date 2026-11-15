@@ -12,20 +12,18 @@ import { Search, Users, ChevronRight, UserPlus, Upload, AlertTriangle } from 'lu
 import AddEmployeeModal from '@/components/employees/AddEmployeeModal'
 import ImportEmployeesModal from '@/components/employees/ImportEmployeesModal'
 import DepartmentMultiSelect from '@/components/employees/DepartmentMultiSelect'
-import EmployeeTreeView from '@/components/employees/EmployeeTreeView'
+import dynamic from 'next/dynamic'
+import { Skeleton } from '@/components/ui/skeleton'
+// reactflow only loads when the tree view is opened.
+const EmployeeTreeView = dynamic(() => import('@/components/employees/EmployeeTreeView'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[480px] w-full rounded-xl" />,
+})
 import ViewToggle, { type EmployeeView } from '@/components/employees/ViewToggle'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 
+import { getInitials } from '@/lib/initials'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
 
 const avatarColors = [
   'bg-primary',

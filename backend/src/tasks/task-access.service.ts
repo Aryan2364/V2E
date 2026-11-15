@@ -1,5 +1,15 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { CompletionTiming, PermissionAction, TaskActionType } from '@prisma/client';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  CompletionTiming,
+  PermissionAction,
+  TaskActionType,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AssigneeVisibilityService } from '../assignee-visibility/assignee-visibility.service';
 import { ClockService } from '../clock/clock.service';
@@ -9,7 +19,11 @@ import { Principal } from '../access-rights/permissions.service';
 import { instanceIdForRow, isRunParticipant } from '../workflows/run-access';
 import { assertMastersUsable as assertMastersUsableShared } from '../common/task-masters-usable';
 import { ACTIVE_ASSIGNEE } from './active-assignee';
-import { TASK_INCLUDE, SIMULATED_FUTURE_TASK_MESSAGE, TASK_LEAF } from './task-shared';
+import {
+  TASK_INCLUDE,
+  SIMULATED_FUTURE_TASK_MESSAGE,
+  TASK_LEAF,
+} from './task-shared';
 
 /** Permission / visibility helpers. Canonical authorization reference (see backend/AUTHORIZATION.md). */
 @Injectable()
@@ -38,22 +52,33 @@ export class TaskAccessService {
   async checkTaskPermission(
     orgId: string,
     userId: string,
-    field: 'task_creation_roles' | 'task_edit_roles' | 'task_delete_roles' | 'archive_view_roles',
+    field:
+      | 'task_creation_roles'
+      | 'task_edit_roles'
+      | 'task_delete_roles'
+      | 'archive_view_roles',
   ) {
     const [config, member] = await Promise.all([
       this.getOrgConfig(orgId),
       this.prisma.organizationMember.findUnique({
-        where: { organization_id_user_id: { organization_id: orgId, user_id: userId } },
+        where: {
+          organization_id_user_id: { organization_id: orgId, user_id: userId },
+        },
         select: { is_admin: true },
       }),
     ]);
-    if (!member) throw new ForbiddenException('Not a member of this organization');
+    if (!member)
+      throw new ForbiddenException('Not a member of this organization');
     const allowedRoles = config[field] as string[];
     // MemberRole-collapse translation: an "employee"-inclusive config stays open to
     // every member; otherwise the action is restricted to platform admins.
-    const allowed = Array.isArray(allowedRoles) && (allowedRoles.includes('employee') || member.is_admin);
+    const allowed =
+      Array.isArray(allowedRoles) &&
+      (allowedRoles.includes('employee') || member.is_admin);
     if (!allowed) {
-      throw new ForbiddenException(`Your role is not permitted to perform this action`);
+      throw new ForbiddenException(
+        `Your role is not permitted to perform this action`,
+      );
     }
   }
 
@@ -96,8 +121,21 @@ export class TaskAccessService {
       });
       if (escalation) return;
       if (ctx.workflowInstanceStepId) {
-        const instanceId = await instanceIdForRow(this.prisma, orgId, ctx.workflowInstanceStepId);
-        if (instanceId && (await isRunParticipant(this.prisma, orgId, instanceId, principal.userId))) return;
+        const instanceId = await instanceIdForRow(
+          this.prisma,
+          orgId,
+          ctx.workflowInstanceStepId,
+        );
+        if (
+          instanceId &&
+          (await isRunParticipant(
+            this.prisma,
+            orgId,
+            instanceId,
+            principal.userId,
+          ))
+        )
+          return;
       }
     }
     const coreParticipants = [
@@ -118,7 +156,11 @@ export class TaskAccessService {
    * pass their principal; internal callers pass none (already authorized upstream).
    */
 
-  async assertCanViewTask(orgId: string, principal: Principal | undefined, taskId: string): Promise<void> {
+  async assertCanViewTask(
+    orgId: string,
+    principal: Principal | undefined,
+    taskId: string,
+  ): Promise<void> {
     if (!principal) return;
     const task = await this.prisma.task.findFirst({
       where: { id: taskId, organization_id: orgId, is_deleted: false },
@@ -127,14 +169,23 @@ export class TaskAccessService {
         workflow_instance_step_id: true,
         // Live roster: being taken off a task ends the access it granted. Someone
         // removed can still reach it only if their data scope covers it.
-        assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
+        assignees: {
+          where: ACTIVE_ASSIGNEE,
+          select: { user_id: true, is_cc: true },
+        },
       },
     });
     if (!task) throw new NotFoundException(`Task ${taskId} not found`);
-    await this.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees, {
-      taskId,
-      workflowInstanceStepId: task.workflow_instance_step_id,
-    });
+    await this.assertParticipantView(
+      orgId,
+      principal,
+      task.created_by_user_id,
+      task.assignees,
+      {
+        taskId,
+        workflowInstanceStepId: task.workflow_instance_step_id,
+      },
+    );
   }
 
   async getOrgConfig(orgId: string) {
@@ -181,20 +232,34 @@ export class TaskAccessService {
         },
       });
     } catch (err) {
-      this.logger.warn(`Activity log (${action}) failed for task ${taskId}: ${(err as Error).message}`);
+      this.logger.warn(
+        `Activity log (${action}) failed for task ${taskId}: ${(err as Error).message}`,
+      );
       return null;
     }
   }
 
-  async enrichAssignees(assignees: { user_id: string; is_cc: boolean; is_completed: boolean; completed_at: Date | null; id: string }[]) {
+  async enrichAssignees(
+    assignees: {
+      user_id: string;
+      is_cc: boolean;
+      is_completed: boolean;
+      completed_at: Date | null;
+      id: string;
+    }[],
+  ) {
     const userIds = assignees.map((a) => a.user_id);
-    if (userIds.length === 0) return assignees.map((a) => ({ ...a, user: null }));
+    if (userIds.length === 0)
+      return assignees.map((a) => ({ ...a, user: null }));
     const users = await this.prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, name: true, email: true },
     });
     const userMap = new Map(users.map((u) => [u.id, u]));
-    return assignees.map((a) => ({ ...a, user: userMap.get(a.user_id) ?? null }));
+    return assignees.map((a) => ({
+      ...a,
+      user: userMap.get(a.user_id) ?? null,
+    }));
   }
 
   async getDefaultStatusId(orgId: string): Promise<string> {
@@ -214,7 +279,10 @@ export class TaskAccessService {
       where: { organization_id: orgId, is_active: true },
       orderBy: { order_index: 'asc' },
     });
-    if (!fallback) throw new BadRequestException('No task statuses configured for this organization');
+    if (!fallback)
+      throw new BadRequestException(
+        'No task statuses configured for this organization',
+      );
     return fallback.id;
   }
 
@@ -225,10 +293,15 @@ export class TaskAccessService {
       orderBy: { order_index: 'asc' },
     });
     return {
-      notStarted: all.find((s) => s.type === 'not_started') ?? all.find((s) => s.is_default) ?? all[0] ?? null,
+      notStarted:
+        all.find((s) => s.type === 'not_started') ??
+        all.find((s) => s.is_default) ??
+        all[0] ??
+        null,
       inProgress: all.find((s) => s.type === 'in_progress') ?? null,
       completed: all.find((s) => s.type === 'completed') ?? null,
-      partiallyCompleted: all.find((s) => s.type === 'partially_completed') ?? null,
+      partiallyCompleted:
+        all.find((s) => s.type === 'partially_completed') ?? null,
       incomplete: all.find((s) => s.type === 'incomplete') ?? null,
       all,
     };
@@ -236,7 +309,9 @@ export class TaskAccessService {
 
   async isOrgAdmin(orgId: string, userId: string): Promise<boolean> {
     const member = await this.prisma.organizationMember.findUnique({
-      where: { organization_id_user_id: { organization_id: orgId, user_id: userId } },
+      where: {
+        organization_id_user_id: { organization_id: orgId, user_id: userId },
+      },
       select: { is_admin: true },
     });
     return !!member?.is_admin;
@@ -250,7 +325,9 @@ export class TaskAccessService {
   async principalFor(orgId: string, userId: string): Promise<Principal> {
     const [member, profile] = await Promise.all([
       this.prisma.organizationMember.findUnique({
-        where: { organization_id_user_id: { organization_id: orgId, user_id: userId } },
+        where: {
+          organization_id_user_id: { organization_id: orgId, user_id: userId },
+        },
         select: { is_admin: true },
       }),
       this.prisma.employeeProfile.findFirst({
@@ -274,15 +351,27 @@ export class TaskAccessService {
    * skeleton key for every task in the company (AUTHORIZATION.md rule 6).
    */
 
-  async assertAssignerRights(orgId: string, actorId: string, task: any): Promise<void> {
+  async assertAssignerRights(
+    orgId: string,
+    actorId: string,
+    task: any,
+  ): Promise<void> {
     if (task.created_by_user_id === actorId) return;
     if (await this.isOrgAdmin(orgId, actorId)) return;
     await this.checkTaskPermission(orgId, actorId, 'task_edit_roles');
     const principal = await this.principalFor(orgId, actorId);
-    await this.scope.assertCanActOn(orgId, principal, TASK_LEAF, PermissionAction.edit, [
-      task.created_by_user_id,
-      ...(task.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user_id),
-    ]);
+    await this.scope.assertCanActOn(
+      orgId,
+      principal,
+      TASK_LEAF,
+      PermissionAction.edit,
+      [
+        task.created_by_user_id,
+        ...(task.assignees ?? [])
+          .filter((a: any) => !a.is_cc)
+          .map((a: any) => a.user_id),
+      ],
+    );
   }
 
   /**
@@ -293,7 +382,11 @@ export class TaskAccessService {
 
   async assertMastersUsable(
     orgId: string,
-    refs: { category_id?: string | null; priority_id?: string | null; department_id?: string | null },
+    refs: {
+      category_id?: string | null;
+      priority_id?: string | null;
+      department_id?: string | null;
+    },
   ): Promise<void> {
     // One source of truth, shared with the recurring service (see common/task-masters-usable.ts).
     return assertMastersUsableShared(this.prisma, orgId, refs);
@@ -306,7 +399,11 @@ export class TaskAccessService {
    * picker). Uses the exact same resolved pool the picker itself renders.
    */
 
-  async assertAssigneesVisible(orgId: string, assignerId: string, userIds: string[]): Promise<void> {
+  async assertAssigneesVisible(
+    orgId: string,
+    assignerId: string,
+    userIds: string[],
+  ): Promise<void> {
     const ids = [...new Set(userIds.filter(Boolean))];
     if (!ids.length) return;
     const { pool } = await this.assigneeVisibility.resolve(orgId, assignerId);
@@ -326,26 +423,39 @@ export class TaskAccessService {
    * otherwise leaves it at Not Started.
    */
 
-  async assertGoalInOrg(orgId: string, goalId: string | null | undefined): Promise<void> {
+  async assertGoalInOrg(
+    orgId: string,
+    goalId: string | null | undefined,
+  ): Promise<void> {
     if (!goalId) return;
     const goal = await this.prisma.goal.findFirst({
       where: { id: goalId, organization_id: orgId },
       select: { id: true },
     });
-    if (!goal) throw new BadRequestException('Linked goal not found in this organization');
+    if (!goal)
+      throw new BadRequestException(
+        'Linked goal not found in this organization',
+      );
   }
 
   // ─── Create Task ──────────────────────────────────────────────────────────────
 
   /** status_id → phase type, for terminal checks while folding. */
   async statusTypeMap(orgId: string): Promise<Map<string, string>> {
-    const statuses = await this.prisma.taskStatus.findMany({ where: { organization_id: orgId }, select: { id: true, type: true } });
+    const statuses = await this.prisma.taskStatus.findMany({
+      where: { organization_id: orgId },
+      select: { id: true, type: true },
+    });
     return new Map(statuses.map((s) => [s.id, s.type]));
   }
 
-  completionTiming(completedAt: Date, deadline: Date | null | undefined): CompletionTiming {
+  completionTiming(
+    completedAt: Date,
+    deadline: Date | null | undefined,
+  ): CompletionTiming {
     if (!deadline) return CompletionTiming.on_time;
-    const day = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    const day = (d: Date) =>
+      Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
     const c = day(completedAt);
     const d = day(new Date(deadline));
     if (c < d) return CompletionTiming.early;

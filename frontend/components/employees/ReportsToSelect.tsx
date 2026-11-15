@@ -8,6 +8,7 @@ import { computeNodeColors } from '@/lib/org-chart-colors'
 import { useAnchoredPanel } from '@/lib/hooks/useAnchoredPanel'
 import type { Department, EmployeeProfile, RoleLevel } from '@/lib/types'
 
+import { getInitials as initials } from '@/lib/initials'
 interface Props {
   value: string // selected user_id, '' = no manager
   onChange: (userId: string) => void
@@ -24,12 +25,6 @@ const LEVEL_RANK: Record<RoleLevel, number> = {
   junior: 3,
 }
 const rankOf = (lvl?: RoleLevel) => (lvl ? LEVEL_RANK[lvl] : 5)
-
-function initials(name?: string): string {
-  if (!name) return '?'
-  const parts = name.trim().split(/\s+/)
-  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
-}
 
 interface DeptGroup {
   dept: Department

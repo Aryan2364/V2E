@@ -1,5 +1,9 @@
 import { ACTIVE_ASSIGNEE } from './active-assignee';
-import { TASK_TAG_REF_SELECT, TaskTagRef, toTagRefs } from '../common/task-masters-usable';
+import {
+  TASK_TAG_REF_SELECT,
+  TaskTagRef,
+  toTagRefs,
+} from '../common/task-masters-usable';
 
 /** The subject leaf governing "can be assigned a task". */
 export const TASK_SUBJECT = 'tasks.subject.assignable';
@@ -47,14 +51,26 @@ export const SIMULATED_FUTURE_TASK_MESSAGE =
  * Used by `enrichTaskList` (every list / my / cc / assigned / escalated / paged /
  * export / collective read) and `getTask` (detail + every create/update/action result).
  */
-export function withTagRefs<T extends { tags?: unknown }>(task: T): Omit<T, 'tags'> & { tags: ReturnType<typeof toTagRefs> } {
-  return { ...task, tags: toTagRefs(task.tags as Parameters<typeof toTagRefs>[0]) };
+export function withTagRefs<T extends { tags?: unknown }>(
+  task: T,
+): Omit<T, 'tags'> & { tags: ReturnType<typeof toTagRefs> } {
+  return {
+    ...task,
+    tags: toTagRefs(task.tags as Parameters<typeof toTagRefs>[0]),
+  };
 }
 
 /** Parse a CSV id filter: trimmed, de-duplicated, empties dropped, capped. */
 export function parseIdCsv(raw: string | undefined, cap: number): string[] {
   if (!raw) return [];
-  return [...new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))].slice(0, cap);
+  return [
+    ...new Set(
+      raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  ].slice(0, cap);
 }
 
 /** Shared filter shape for list / paged / dashboard task queries. */
@@ -87,7 +103,6 @@ export interface TaskListFilters {
  * plus network slack) can cancel it before anyone hears of it. */
 export const COMPLETION_NOTICE_HOLD_MS = 15_000;
 
-
 /**
  * The activity-log entry for a tag change: tag NAMES (sorted, case-insensitive)
  * before and after, or `null` when the set of tags did not change.
@@ -98,8 +113,11 @@ export function tagChangeEntry(
 ): { field: 'tags'; from: string[]; to: string[] } | null {
   const fromIds = new Set(from.map((t) => t.id));
   const toIds = new Set(to.map((t) => t.id));
-  if (fromIds.size === toIds.size && [...toIds].every((id) => fromIds.has(id))) return null;
+  if (fromIds.size === toIds.size && [...toIds].every((id) => fromIds.has(id)))
+    return null;
   const names = (refs: TaskTagRef[]) =>
-    refs.map((t) => t.name).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    refs
+      .map((t) => t.name)
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   return { field: 'tags', from: names(from), to: names(to) };
 }

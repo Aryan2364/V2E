@@ -7,6 +7,8 @@ import { TaskCalendarController } from './task-calendar.controller';
 import { TaskAccessService } from './task-access.service';
 import { TaskStatusService } from './task-status.service';
 import { TaskCommandService } from './task-command.service';
+import { TaskCreateService } from './task-create.service';
+import { TaskExportService } from './task-export.service';
 import { TaskReconcileService } from './task-reconcile.service';
 import { TaskDetailService } from './task-detail.service';
 import { TaskQueryService } from './task-query.service';
@@ -49,6 +51,8 @@ import { RecurringTasksModule } from '../recurring-tasks/recurring-tasks.module'
     TaskAccessService,
     TaskStatusService,
     TaskCommandService,
+    TaskCreateService,
+    TaskExportService,
     TaskReconcileService,
     TaskDetailService,
     TaskQueryService,
@@ -69,7 +73,7 @@ import { RecurringTasksModule } from '../recurring-tasks/recurring-tasks.module'
   ],
   exports: [
     TaskAccessService,
-    TaskCommandService,
+    TaskCreateService,
     TaskDetailService,
     TasksAnalyticsService,
     TaskAttachmentsService,

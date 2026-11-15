@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { ChecklistItemState, CompletionMode } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClockService } from '../clock/clock.service';
 import { Principal } from '../access-rights/permissions.service';
 import { taskWorkflowInfo } from '../workflows/task-workflow-info';
 import { isTerminal } from './status-phase';
-import { TASK_INCLUDE } from './task-shared';
+import { TASK_INCLUDE, withTagRefs } from './task-shared';
 import { TaskAccessService } from './task-access.service';
 
 /** Single-task read (getTask) and list enrichment. */
@@ -17,7 +18,10 @@ export class TaskDetailService {
     private readonly taskAccess: TaskAccessService,
   ) {}
 
-  async computeUnreadComments(viewerId: string, taskIds: string[]): Promise<Map<string, number>> {
+  async computeUnreadComments(
+    viewerId: string,
+    taskIds: string[],
+  ): Promise<Map<string, number>> {
     const result = new Map<string, number>();
     if (!viewerId || taskIds.length === 0) return result;
     const [views, comments] = await Promise.all([
@@ -28,11 +32,17 @@ export class TaskDetailService {
       // Only other people's live comments matter for "unread". Bounded to the
       // viewer's visible task list, so pulling timestamps is cheap.
       this.prisma.taskComment.findMany({
-        where: { task_id: { in: taskIds }, is_deleted: false, user_id: { not: viewerId } },
+        where: {
+          task_id: { in: taskIds },
+          is_deleted: false,
+          user_id: { not: viewerId },
+        },
         select: { task_id: true, created_at: true },
       }),
     ]);
-    const lastViewed = new Map(views.map((v) => [v.task_id, v.last_viewed_at.getTime()]));
+    const lastViewed = new Map(
+      views.map((v) => [v.task_id, v.last_viewed_at.getTime()]),
+    );
     for (const c of comments) {
       if (!c.task_id) continue;
       const seenAt = lastViewed.get(c.task_id) ?? 0; // never opened → everything is unread
@@ -49,12 +59,20 @@ export class TaskDetailService {
    */
 
   async workflowViewer(tasks: any[], viewerId?: string, principal?: Principal) {
-    if (principal) return { userId: principal.userId, isAdmin: !!(principal.isAdmin || principal.isSuperAdmin) };
+    if (principal)
+      return {
+        userId: principal.userId,
+        isAdmin: !!(principal.isAdmin || principal.isSuperAdmin),
+      };
     if (!viewerId) return null;
-    const orgId = tasks.find((t) => t.workflow_instance_step_id)?.organization_id;
+    const orgId = tasks.find(
+      (t) => t.workflow_instance_step_id,
+    )?.organization_id;
     if (!orgId) return { userId: viewerId, isAdmin: false };
     const member = await this.prisma.organizationMember.findUnique({
-      where: { organization_id_user_id: { organization_id: orgId, user_id: viewerId } },
+      where: {
+        organization_id_user_id: { organization_id: orgId, user_id: viewerId },
+      },
       select: { is_admin: true },
     });
     return { userId: viewerId, isAdmin: !!member?.is_admin };
@@ -70,7 +88,10 @@ export class TaskDetailService {
     }
     const userIds = Array.from(allUserIds);
     const unreadMap = viewerId
-      ? await this.computeUnreadComments(viewerId, tasks.map((t) => t.id))
+      ? await this.computeUnreadComments(
+          viewerId,
+          tasks.map((t) => t.id),
+        )
       : new Map<string, number>();
     // Profiles are per-org, so key them by org+user (collective view spans orgs).
     const [users, profiles] = await Promise.all([
@@ -79,7 +100,10 @@ export class TaskDetailService {
         select: { id: true, name: true, email: true },
       }),
       this.prisma.employeeProfile.findMany({
-        where: { organization_id: { in: Array.from(allOrgIds) }, user_id: { in: userIds } },
+        where: {
+          organization_id: { in: Array.from(allOrgIds) },
+          user_id: { in: userIds },
+        },
         select: {
           organization_id: true,
           user_id: true,
@@ -89,7 +113,9 @@ export class TaskDetailService {
       }),
     ]);
     const userMap = new Map(users.map((u) => [u.id, u]));
-    const profileMap = new Map(profiles.map((p) => [`${p.organization_id}:${p.user_id}`, p]));
+    const profileMap = new Map(
+      profiles.map((p) => [`${p.organization_id}:${p.user_id}`, p]),
+    );
     // Workflow badges (the instance label), batched for the whole list.
     const workflowInfo = tasks.some((t) => t.workflow_instance_step_id)
       ? await taskWorkflowInfo(
@@ -112,7 +138,11 @@ export class TaskDetailService {
         return {
           ...a,
           user: u
-            ? { ...u, department: p?.department?.name ?? null, role_title: p?.role?.title ?? null }
+            ? {
+                ...u,
+                department: p?.department?.name ?? null,
+                role_title: p?.role?.title ?? null,
+              }
             : null,
         };
       }),
@@ -124,7 +154,10 @@ export class TaskDetailService {
    * Used by other modules (e.g. Meetings action items) to compute done-ness.
    */
 
-  async areCompleted(orgId: string, taskIds: string[]): Promise<Record<string, boolean>> {
+  async areCompleted(
+    orgId: string,
+    taskIds: string[],
+  ): Promise<Record<string, boolean>> {
     const ids = [...new Set(taskIds.filter(Boolean))];
     if (!ids.length) return {};
     const tasks = await this.prisma.task.findMany({
@@ -160,17 +193,30 @@ export class TaskDetailService {
     // Authorization (external callers only — internal post-mutation reads pass no
     // principal). Reuses the already-fetched participants to avoid a second query.
     if (principal) {
-      await this.taskAccess.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees, {
-        taskId,
-        workflowInstanceStepId: task.workflow_instance_step_id,
-      });
+      await this.taskAccess.assertParticipantView(
+        orgId,
+        principal,
+        task.created_by_user_id,
+        task.assignees,
+        {
+          taskId,
+          workflowInstanceStepId: task.workflow_instance_step_id,
+        },
+      );
 
       // Opening the task marks it read for this user — clears its unread-comment badge.
       // Use the org clock so it lines up with comment timestamps on a test org.
       const viewedAt = await this.clock.now(orgId);
       await this.prisma.taskView.upsert({
-        where: { task_id_user_id: { task_id: taskId, user_id: principal.userId } },
-        create: { organization_id: orgId, task_id: taskId, user_id: principal.userId, last_viewed_at: viewedAt },
+        where: {
+          task_id_user_id: { task_id: taskId, user_id: principal.userId },
+        },
+        create: {
+          organization_id: orgId,
+          task_id: taskId,
+          user_id: principal.userId,
+          last_viewed_at: viewedAt,
+        },
         update: { last_viewed_at: viewedAt },
       });
     }
@@ -180,7 +226,11 @@ export class TaskDetailService {
     // up by accident — but they belong on the screen: "Removed on 7 Sep by X" is the
     // record that stops a removal from quietly erasing what someone did here.
     const removedAssignees = await this.prisma.taskAssignee.findMany({
-      where: { task_id: taskId, organization_id: orgId, removed_at: { not: null } },
+      where: {
+        task_id: taskId,
+        organization_id: orgId,
+        removed_at: { not: null },
+      },
       orderBy: { removed_at: 'desc' },
     });
 
@@ -193,7 +243,8 @@ export class TaskDetailService {
       allUserIds.add(a.user_id);
       if (a.removed_by_user_id) allUserIds.add(a.removed_by_user_id);
     }
-    for (const r of (task as any).deadline_revisions ?? []) allUserIds.add(r.changed_by_user_id);
+    for (const r of (task as any).deadline_revisions ?? [])
+      allUserIds.add(r.changed_by_user_id);
     for (const c of task.comments as any[]) {
       allUserIds.add(c.user_id);
       for (const r of c.replies ?? []) allUserIds.add(r.user_id);
@@ -205,7 +256,9 @@ export class TaskDetailService {
     // (that's the point of a soft removal), but counting them here while the "n/N"
     // denominator below counts only current workers is how the badge ends up reading
     // an impossible 3/2.
-    const liveWorkerIds = task.assignees.filter((a) => !a.is_cc).map((a) => a.user_id);
+    const liveWorkerIds = task.assignees
+      .filter((a) => !a.is_cc)
+      .map((a) => a.user_id);
     const checklistIds = task.checklist.map((c: any) => c.id);
     const checklistStates =
       checklistIds.length && liveWorkerIds.length
@@ -229,22 +282,44 @@ export class TaskDetailService {
 
     // Per-person status track + overdue for the assignee scoreboard.
     const { notStarted } = await this.taskAccess.getCanonicalStatuses(orgId);
-    const trackIds = [...new Set(task.assignees.map((a) => a.status_id).filter((id): id is string => !!id))];
+    const trackIds = [
+      ...new Set(
+        task.assignees
+          .map((a) => a.status_id)
+          .filter((id): id is string => !!id),
+      ),
+    ];
     const trackStatuses = trackIds.length
-      ? await this.prisma.taskStatus.findMany({ where: { id: { in: trackIds } } })
+      ? await this.prisma.taskStatus.findMany({
+          where: { id: { in: trackIds } },
+        })
       : [];
-    const statusById = new Map<string, any>(trackStatuses.map((s) => [s.id, s]));
+    const statusById = new Map<string, any>(
+      trackStatuses.map((s) => [s.id, s]),
+    );
     const now = await this.clock.now(orgId);
     const taskIsTerminal = isTerminal((task as any).status?.type);
-    const nameOf = (id: string | null) => (id ? userMap.get(id) ?? null : null);
+    const nameOf = (id: string | null) =>
+      id ? (userMap.get(id) ?? null) : null;
 
     const enrichedAssignees = task.assignees.map((a) => {
-      const track = a.status_id ? statusById.get(a.status_id) ?? notStarted : notStarted;
+      const track = a.status_id
+        ? (statusById.get(a.status_id) ?? notStarted)
+        : notStarted;
       // Per-person overdue: the deadline has passed and this person is not yet finished.
       // "Finished" is their own completion (all_must_complete) or the whole task being closed.
-      const done = task.completion_mode === CompletionMode.all_must_complete ? a.is_completed : taskIsTerminal;
-      const is_overdue = !a.is_cc && !!task.deadline && task.deadline < now && !done;
-      return { ...a, user: userMap.get(a.user_id) ?? null, status: a.is_cc ? null : track ?? null, is_overdue };
+      const done =
+        task.completion_mode === CompletionMode.all_must_complete
+          ? a.is_completed
+          : taskIsTerminal;
+      const is_overdue =
+        !a.is_cc && !!task.deadline && task.deadline < now && !done;
+      return {
+        ...a,
+        user: userMap.get(a.user_id) ?? null,
+        status: a.is_cc ? null : (track ?? null),
+        is_overdue,
+      };
     });
 
     // Attach per-person states + aggregate counts to each checklist item. `assignee_count`
@@ -267,13 +342,20 @@ export class TaskDetailService {
     }
     const enrichedChecklist = (task.checklist as any[]).map((c) => {
       const states = statesByItem.get(c.id) ?? [];
-      const mine = principal ? states.find((s) => s.user_id === principal.userId) : undefined;
+      const mine = principal
+        ? states.find((s) => s.user_id === principal.userId)
+        : undefined;
       return {
         ...c,
-        completed_by: c.completed_by_user_id ? userMap.get(c.completed_by_user_id) ?? null : null,
+        completed_by: c.completed_by_user_id
+          ? (userMap.get(c.completed_by_user_id) ?? null)
+          : null,
         states,
-        done_count: states.filter((s) => s.state === ChecklistItemState.done).length,
-        skipped_count: states.filter((s) => s.state === ChecklistItemState.skipped).length,
+        done_count: states.filter((s) => s.state === ChecklistItemState.done)
+          .length,
+        skipped_count: states.filter(
+          (s) => s.state === ChecklistItemState.skipped,
+        ).length,
         assignee_count: workerCount,
         my_state: mine?.state ?? null,
         my_reason: mine?.reason ?? null,
@@ -282,12 +364,19 @@ export class TaskDetailService {
 
     // Proof-of-completion scoreboard: who must submit (non-CC assignees) vs who has.
     // Names only, no files — safe for everyone; the "n/N submitted" badge reads from it.
-    const proof_summary = task.proof_required ? await this.proofSummary(orgId, taskId) : null;
+    const proof_summary = task.proof_required
+      ? await this.proofSummary(orgId, taskId)
+      : null;
     const workflowInfo = task.workflow_instance_step_id
       ? await taskWorkflowInfo(
           this.prisma,
           [task],
-          principal ? { userId: principal.userId, isAdmin: !!(principal.isAdmin || principal.isSuperAdmin) } : null,
+          principal
+            ? {
+                userId: principal.userId,
+                isAdmin: !!(principal.isAdmin || principal.isSuperAdmin),
+              }
+            : null,
           (id) => this.clock.now(id),
         )
       : null;
@@ -308,10 +397,12 @@ export class TaskDetailService {
         user: userMap.get(a.user_id) ?? null,
         removed_by: nameOf(a.removed_by_user_id),
       })),
-      deadline_revisions: ((task as any).deadline_revisions ?? []).map((r: any) => ({
-        ...r,
-        changed_by: nameOf(r.changed_by_user_id),
-      })),
+      deadline_revisions: ((task as any).deadline_revisions ?? []).map(
+        (r: any) => ({
+          ...r,
+          changed_by: nameOf(r.changed_by_user_id),
+        }),
+      ),
       checklist: enrichedChecklist,
       comments: (task.comments as any[]).map((c) => {
         const cu = userMap.get(c.user_id);
@@ -322,7 +413,12 @@ export class TaskDetailService {
           user: cu ?? null,
           replies: (c.replies ?? []).map((r: any) => {
             const ru = userMap.get(r.user_id);
-            return { ...r, user_name: ru?.name ?? null, user_email: ru?.email ?? null, user: ru ?? null };
+            return {
+              ...r,
+              user_name: ru?.name ?? null,
+              user_email: ru?.email ?? null,
+              user: ru ?? null,
+            };
           }),
         };
       }),
@@ -359,7 +455,11 @@ export class TaskDetailService {
     const required_user_ids = assignees.map((a) => a.user_id);
     const requiredSet = new Set(required_user_ids);
     const submitted_user_ids = Array.from(
-      new Set(proofs.map((p) => p.uploaded_by_user_id).filter((id) => requiredSet.has(id))),
+      new Set(
+        proofs
+          .map((p) => p.uploaded_by_user_id)
+          .filter((id) => requiredSet.has(id)),
+      ),
     );
     return {
       required_user_ids,
@@ -371,5 +471,4 @@ export class TaskDetailService {
     };
   }
 
-  // ─── Activity Logs ────────────────────────────────────────────────────────────
 }

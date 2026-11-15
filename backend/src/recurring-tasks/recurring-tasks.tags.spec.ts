@@ -3,6 +3,7 @@ import { DataScope } from '@prisma/client';
 import { RecurringTasksService } from './recurring-tasks.service';
 import { RecurringTasksController } from './recurring-tasks.controller';
 import { TasksController } from '../tasks/tasks.controller';
+import { buildTasksController } from '../tasks/testing/task-services.testing';
 import { CreateRecurringDto } from './dto/create-recurring.dto';
 import { Principal } from '../access-rights/permissions.service';
 
@@ -283,7 +284,7 @@ describe('GET recurring — tag_ids query', () => {
       { recurring, ctrl: new RecurringTasksController(recurring as any, {} as any, {} as any, clock as any) },
       (() => {
         const r = makeRecurring();
-        return { recurring: r, ctrl: new TasksController({} as any, {} as any, {} as any, r as any, clock as any) };
+        return { recurring: r, ctrl: buildTasksController({ recurringService: r, clock }) };
       })(),
     ];
   };

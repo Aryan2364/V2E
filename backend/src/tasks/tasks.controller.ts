@@ -21,6 +21,8 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { OrgScopeGuard } from '../common/guards/org-scope.guard';
 import { RequireAdmin } from '../common/decorators/require-admin.decorator';
 import { TaskCommandService } from './task-command.service';
+import { TaskCreateService } from './task-create.service';
+import { TaskExportService } from './task-export.service';
 import { TaskQueryService } from './task-query.service';
 import { TaskAssigneePreviewService } from './task-assignee-preview.service';
 import { TaskReportsService } from './task-reports.service';
@@ -68,7 +70,20 @@ function toTagIdsCsv(raw?: string | string[]): string | undefined {
 @Controller('api/v1/org/:orgId/tasks')
 export class TasksController {
   constructor(
-    private readonly service: TasksService,
+    private readonly taskCommand: TaskCommandService,
+    private readonly taskCreate: TaskCreateService,
+    private readonly taskExport: TaskExportService,
+    private readonly taskQuery: TaskQueryService,
+    private readonly taskAssigneePreview: TaskAssigneePreviewService,
+    private readonly taskReports: TaskReportsService,
+    private readonly taskBulk: TaskBulkService,
+    private readonly taskDetail: TaskDetailService,
+    private readonly taskCompletion: TaskCompletionService,
+    private readonly taskStatus: TaskStatusService,
+    private readonly taskAccess: TaskAccessService,
+    private readonly taskComments: TaskCommentsService,
+    private readonly taskChecklist: TaskChecklistService,
+    private readonly taskAssignee: TaskAssigneeService,
     private readonly importService: TaskImportService,
     private readonly attachments: TaskAttachmentsService,
     private readonly recurringService: RecurringTasksService,
@@ -84,7 +99,7 @@ export class TasksController {
     @Request() req: any,
     @Body() dto: CreateTaskDto,
   ) {
-    return this.taskCommand.createTask(orgId, req.user.id, dto);
+    return this.taskCreate.createTask(orgId, req.user.id, dto);
   }
 
   @Get()
@@ -222,7 +237,7 @@ export class TasksController {
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
   ) {
-    return this.taskReports.getReports(orgId, from_date, to_date);
+    return this.taskExport.getReports(orgId, from_date, to_date);
   }
 
   @Get('dashboard')
@@ -377,7 +392,7 @@ export class TasksController {
     @Query('to_date') to_date?: string,
     @Query('from_workflows') from_workflows?: string,
   ) {
-    return this.taskReports.exportCsv(
+    return this.taskExport.exportCsv(
       orgId,
       principalFromUser(req.user),
       { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date, from_workflows },

@@ -6,6 +6,7 @@ import Tooltip from '@/components/ui/tooltip'
 import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
+import { getInitials as initials } from '@/lib/initials'
 export interface PersonOption {
   user_id: string
   name: string
@@ -36,10 +37,6 @@ function avatarColor(name: string): string {
   for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return AVATAR_COLORS[h % AVATAR_COLORS.length]
 }
-function initials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
-
 // The host is always in the meeting — a locked chip, never removable and never a
 // pickable row (backend auto-adds the organiser).
 function HostChip({ name }: { name: string }) {

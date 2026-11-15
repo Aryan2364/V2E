@@ -79,6 +79,9 @@ export default function TaskRow({
   return (
     <div
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() } }}
       className={`bg-surface border rounded-lg px-4 py-3 flex items-center gap-3 sm:gap-4 cursor-pointer hover:shadow-menu transition-all duration-150 group ${selected ? 'border-primary ring-1 ring-primary' : 'border-border-light hover:border-primary'}`}
     >
       {/* Selection checkbox */}

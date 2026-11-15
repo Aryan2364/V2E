@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
+import { getErrorMessage } from '@/lib/errors'
 // Base has NO width utility — callers add `w-full` (most fields) or a flex sizing
 // (the criteria row) so `w-full` never fights `w-28`/`flex-1` and overflows the row.
 const fieldBase =
@@ -118,8 +119,8 @@ export default function DelegationModal({
       addToast(isEdit ? 'Delegation saved' : 'Delegation added', 'success')
       onSaved(saved)
       onClose()
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not save the delegation. Try again.', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, 'Could not save the delegation. Try again.'), 'error')
     } finally {
       setSaving(false)
     }
