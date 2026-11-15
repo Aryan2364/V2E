@@ -16,7 +16,7 @@ import { resolveRemindAt, expandReminderRows, type ReminderSpec } from '../commo
 import { isTerminal, TERMINAL_TYPES } from '../tasks/status-phase';
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import { GoalsService } from '../goals/goals.service';
-import { WorkflowEngineService } from '../workflows/workflow-engine.service';
+import { WorkflowTaskEventsService } from '../workflows/workflow-task-events.service';
 
 // Rolling look-ahead for meeting rhythms: the nightly cron keeps the next 60 days
 // of occurrences materialised. (Tasks spawn day-of; rhythms need advance visibility.)
@@ -39,9 +39,9 @@ export class SchedulerService {
     @Optional() private readonly moduleRef?: ModuleRef,
   ) {}
 
-  private workflowEngine(): WorkflowEngineService | null {
+  private workflowEngine(): WorkflowTaskEventsService | null {
     try {
-      return this.moduleRef?.get(WorkflowEngineService, { strict: false }) ?? null;
+      return this.moduleRef?.get(WorkflowTaskEventsService, { strict: false }) ?? null;
     } catch {
       return null;
     }

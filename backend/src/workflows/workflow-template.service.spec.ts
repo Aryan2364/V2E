@@ -1,6 +1,16 @@
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { WorkflowTemplateService, overlapWarning } from './workflow-template.service'
+import { overlapWarning } from './workflow-definition.validation'
+import { capabilitiesFor } from './workflow-access'
+import { WorkflowAccessService } from './workflow-access.service'
+import { WorkflowTemplateViewService } from './workflow-template-view.service'
+import { WorkflowTimelineService } from './workflow-timeline.service'
+import { WorkflowDefinitionService } from './workflow-definition.service'
+import { WorkflowLifecycleService } from './workflow-lifecycle.service'
+import { WorkflowInstanceQueryService } from './workflow-instance-query.service'
+import { WorkflowInstanceCollabService } from './workflow-instance-collab.service'
+import { WorkflowInstanceActionService } from './workflow-instance-action.service'
+import { composeServices } from './testing/compose-services'
 import { WorkflowDiscussionService } from './workflow-discussion.service'
 import { planRun } from './engine/plan'
 import { Principal } from '../access-rights/permissions.service'
@@ -172,7 +182,17 @@ function build(prismaOverrides: Record<string, unknown> = {}) {
   const notifications: any = { emit: jest.fn().mockResolvedValue(1), userName: jest.fn().mockResolvedValue('Asha') }
   const r2: any = { deleteObject: jest.fn().mockResolvedValue(undefined), getSignedDownloadUrl: jest.fn().mockResolvedValue('https://signed') }
   const discussion = new WorkflowDiscussionService(prisma, clock, notifications, engine, r2, files, moduleRef)
-  const service = new WorkflowTemplateService(prisma, engine, clock, checklistAccess, files, discussion, moduleRef)
+  const access = new WorkflowAccessService(prisma, clock, moduleRef)
+  const templateView = new WorkflowTemplateViewService(prisma, checklistAccess, access)
+  const timelineService = new WorkflowTimelineService(engine, access)
+  const definition = new WorkflowDefinitionService(prisma, clock, checklistAccess, access, templateView, timelineService)
+  const lifecycle = new WorkflowLifecycleService(prisma, clock, access, templateView)
+  const instanceQuery = new WorkflowInstanceQueryService(prisma, discussion, access)
+  const collab = new WorkflowInstanceCollabService(files, discussion, access)
+  // The engine double stands in for the engine, its support service and the run actions.
+  const instanceActions = new WorkflowInstanceActionService(prisma, engine, engine, access, instanceQuery)
+  // One facade over the services the controller fans out to.
+  const service = composeServices(templateView, timelineService, definition, lifecycle, instanceQuery, collab, instanceActions)
   return { service, prisma, engine, checklistAccess, files, tasksGate, moduleRef, notifications, discussion }
 }
 
@@ -228,7 +248,7 @@ const dstep = (key: string, over: Record<string, unknown> = {}) => ({
 
 describe('WorkflowTemplateService — capabilities', () => {
   const { service } = build()
-  const caps = (t: ReturnType<typeof template>, p = me()) => service.capabilitiesFor(t as never, p)
+  const caps = (t: ReturnType<typeof template>, p = me()) => capabilitiesFor(t as never, p)
 
   it('admins and editors (the creator is always one) edit and manage people — but start only if chosen under “Manually”', () => {
     expect(caps(template({ status: 'active' }), me({ userId: 'u-creator' }))).toEqual({

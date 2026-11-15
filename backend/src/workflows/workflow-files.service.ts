@@ -3,7 +3,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { ProofVisibility } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { R2Service } from '../storage/r2.service'
-import { WorkflowEngineService } from './workflow-engine.service'
+import { WorkflowEngineSupportService } from './workflow-engine-support.service'
 import { extensionOf, validateAttachmentFile, type UploadedFile } from '../tasks/task-attachments.service'
 
 export interface FileUserRef {
@@ -71,8 +71,8 @@ export interface FileViewer {
  *   are filtered by the task proof-visibility rule. They download through the task
  *   endpoints (which gate the task itself).
  *
- * AUTHORIZATION: this service performs NO caller gating — `WorkflowTemplateService`
- * gates the run (participant) before every call. Every query here is scoped by
+ * AUTHORIZATION: this service performs NO caller gating — the workflow instance services (`WorkflowInstanceCollabService` / `WorkflowInstanceQueryService`)
+ * gate the run (participant) before every call. Every query here is scoped by
  * `organization_id` + the parent instance id.
  */
 @Injectable()
@@ -82,7 +82,7 @@ export class WorkflowFilesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly r2: R2Service,
-    private readonly engine: WorkflowEngineService,
+    private readonly engine: WorkflowEngineSupportService,
   ) {}
 
   // ── Run files ─────────────────────────────────────────────────────────────────
