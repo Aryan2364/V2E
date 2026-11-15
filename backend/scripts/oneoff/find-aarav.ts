@@ -2,7 +2,7 @@ import { Client } from 'pg';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const rawUrl =
   process.env['DATABASE_URL'] ??
