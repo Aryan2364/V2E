@@ -101,7 +101,7 @@ export class ProjectTemplatesService {
   async updateTemplate(orgId: string, templateId: string, dto: Partial<CreateProjectTemplateDto>) {
     await this.findOrFail(orgId, templateId);
     return this.prisma.projectTemplate.update({
-      where: { id: templateId },
+      where: { id: templateId, organization_id: orgId },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.description !== undefined && { description: dto.description }),
@@ -116,7 +116,7 @@ export class ProjectTemplatesService {
   async deactivateTemplate(orgId: string, templateId: string) {
     await this.findOrFail(orgId, templateId);
     await this.prisma.projectTemplate.update({
-      where: { id: templateId },
+      where: { id: templateId, organization_id: orgId },
       data: { is_active: false },
     });
     return { message: 'Template deactivated' };
@@ -146,7 +146,7 @@ export class ProjectTemplatesService {
     });
     if (!milestone) throw new NotFoundException(`Template milestone ${milestoneId} not found`);
     return this.prisma.projectTemplateMilestone.update({
-      where: { id: milestoneId },
+      where: { id: milestoneId, project_template_id: templateId, organization_id: orgId },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.description !== undefined && { description: dto.description }),
@@ -162,7 +162,7 @@ export class ProjectTemplatesService {
       select: { id: true },
     });
     if (!milestone) throw new NotFoundException(`Template milestone ${milestoneId} not found`);
-    await this.prisma.projectTemplateMilestone.delete({ where: { id: milestoneId } });
+    await this.prisma.projectTemplateMilestone.delete({ where: { id: milestoneId, project_template_id: templateId, organization_id: orgId } });
     return { message: 'Milestone deleted' };
   }
 
@@ -204,7 +204,7 @@ export class ProjectTemplatesService {
     });
     if (!task) throw new NotFoundException(`Template task ${taskId} not found`);
     return this.prisma.projectTemplateTask.update({
-      where: { id: taskId },
+      where: { id: taskId, project_template_id: templateId, organization_id: orgId },
       data: {
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.description !== undefined && { description: dto.description }),
@@ -225,7 +225,7 @@ export class ProjectTemplatesService {
       select: { id: true },
     });
     if (!task) throw new NotFoundException(`Template task ${taskId} not found`);
-    await this.prisma.projectTemplateTask.delete({ where: { id: taskId } });
+    await this.prisma.projectTemplateTask.delete({ where: { id: taskId, project_template_id: templateId, organization_id: orgId } });
     return { message: 'Task deleted' };
   }
 }

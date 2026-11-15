@@ -11,6 +11,9 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import type { AuthRequest } from '../common/types/auth-request';
+import { ReorderItemsDto } from './dto/reorder-items.dto';
+import { UpdateAssigneeVisibilityDto } from './dto/update-assignee-visibility.dto';
 import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PermissionAction } from '@prisma/client';
@@ -54,8 +57,8 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'Update assignee visibility configuration' })
   updateAssigneeVisibility(
     @Param('orgId') orgId: string,
-    @Request() req: any,
-    @Body() dto: { assignee_visibility_mode?: string; assignee_custom_rules?: Record<string, unknown>; assignee_visibility_config_roles?: string[] },
+    @Request() req: AuthRequest,
+    @Body() dto: UpdateAssigneeVisibilityDto,
   ) {
     return this.service.updateAssigneeVisibility(orgId, req.user.id, dto);
   }
@@ -77,7 +80,7 @@ export class TaskMastersController {
 
   @Get('categories')
   @ApiOperation({ summary: 'List task categories' })
-  listCategories(@Param('orgId') orgId: string, @Request() req: any) {
+  listCategories(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.service.listCategories(orgId, req.user.id);
   }
 
@@ -86,7 +89,7 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'Create a task category' })
   createCategory(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateCategoryDto,
   ) {
     return this.service.createCategory(orgId, req.user.id, dto);
@@ -120,7 +123,7 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'List task tags (usage count + creator only for tag managers)' })
   listTags(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Query('include_inactive') includeInactive?: string,
   ) {
     return this.tags.listTags(orgId, principalFromUser(req.user), includeInactive === 'true');
@@ -130,7 +133,7 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'Create a task tag — 201 new, 200 when an active tag with that name exists' })
   async createTag(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateTagDto,
     @Res({ passthrough: true }) res: Response,
   ) {
@@ -160,7 +163,7 @@ export class TaskMastersController {
   mergeTag(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: MergeTagDto,
   ) {
     // `delete` is checked in the service — the decorator holds one action only.
@@ -188,7 +191,7 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'Reorder task priorities' })
   reorderPriorities(
     @Param('orgId') orgId: string,
-    @Body() body: { items: { id: string; order_index: number }[] },
+    @Body() body: ReorderItemsDto,
   ) {
     return this.service.reorderPriorities(orgId, body.items);
   }
@@ -232,7 +235,7 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'Reorder task statuses' })
   reorderStatuses(
     @Param('orgId') orgId: string,
-    @Body() body: { items: { id: string; order_index: number }[] },
+    @Body() body: ReorderItemsDto,
   ) {
     return this.service.reorderStatuses(orgId, body.items);
   }
@@ -259,7 +262,7 @@ export class TaskMastersController {
 
   @Get('checklist-templates')
   @ApiOperation({ summary: 'List checklist templates (managers see all; others only what they may use)' })
-  async listTemplates(@Param('orgId') orgId: string, @Request() req: any) {
+  async listTemplates(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     // A restricted template's CONTENTS must not leak through the masters list: only
     // someone who may manage templates sees the full catalogue; everyone else gets
     // exactly the set they could pick in task creation (access rules applied).
@@ -274,7 +277,7 @@ export class TaskMastersController {
 
   @Get('checklist-templates/accessible')
   @ApiOperation({ summary: 'List checklist templates the current user may use when creating a task' })
-  listAccessibleTemplates(@Param('orgId') orgId: string, @Request() req: any) {
+  listAccessibleTemplates(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.checklistAccess.listAccessibleTemplates(orgId, req.user.id);
   }
 
@@ -289,7 +292,7 @@ export class TaskMastersController {
   @Post('checklist-templates/bulk-import/commit')
   @RequirePermission('tasks.config.checklist_templates.manage', PermissionAction.write)
   @ApiOperation({ summary: 'Commit a checklist import — creates inactive templates, records an undoable batch' })
-  commitImport(@Param('orgId') orgId: string, @Request() req: any, @Body() dto: BulkImportChecklistsDto) {
+  commitImport(@Param('orgId') orgId: string, @Request() req: AuthRequest, @Body() dto: BulkImportChecklistsDto) {
     return this.checklistImport.commitImport(orgId, req.user.id, dto.rows, dto.file_name);
   }
 
@@ -312,7 +315,7 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'Create a checklist template' })
   createTemplate(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateChecklistTemplateDto,
   ) {
     return this.service.createChecklistTemplate(orgId, req.user.id, dto);

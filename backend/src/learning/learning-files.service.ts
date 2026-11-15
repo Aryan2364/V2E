@@ -120,7 +120,7 @@ export class LearningFilesService {
     }
 
     const updated = await this.prisma.learningItem.update({
-      where: { id: itemId },
+      where: { id: itemId, path_id: pathId },
       data: {
         content_type: 'file',
         content_url: null,
@@ -266,7 +266,7 @@ export class LearningFilesService {
     employeeProfileId: string,
   ) {
     const assignment = await this.prisma.learningPathAssignment.findFirst({
-      where: { id: assignmentId, employee_profile_id: employeeProfileId },
+      where: { id: assignmentId, employee_profile_id: employeeProfileId, path: { organization_id: orgId } },
       select: { path_id: true },
     });
     if (!assignment) throw new NotFoundException('Assignment not found');

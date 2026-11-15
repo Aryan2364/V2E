@@ -6,6 +6,7 @@ import { SubjectEligibilityService } from '../access-rights/subject-eligibility.
 import { ScopeService } from '../access-rights/scope.service';
 import { AccessVisibilityService } from '../access-rights/access-visibility.service';
 import { Principal } from '../access-rights/permissions.service';
+import { PermissionAction } from '@prisma/client';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { UpdateProjectStatusDto } from './dto/update-project-status.dto';
@@ -135,18 +136,42 @@ export class ProjectsService {
     }
   }
 
-  private async requireMember(projectId: string, userId: string) {
-    const m = await this.prisma.projectMember.findUnique({
-      where: { project_id_user_id: { project_id: projectId, user_id: userId } },
+  /**
+   * Projects use a MEMBERSHIP model (not row-level data scope): the binding object-level
+   * gate is being on the project (a `ProjectMember` row), with the role deciding
+   * read vs. modify. The lookup is scoped by organization_id so a user who belongs to
+   * several orgs cannot reach org B's project through their membership in org A.
+   */
+  private async requireMember(orgId: string, projectId: string, userId: string) {
+    const m = await this.prisma.projectMember.findFirst({
+      where: { project_id: projectId, user_id: userId, organization_id: orgId },
     });
     if (!m) throw new ForbiddenException('You are not a member of this project');
     return m;
   }
 
-  private async requireManagerOrEditor(projectId: string, userId: string) {
-    const m = await this.requireMember(projectId, userId);
+  private async requireManagerOrEditor(orgId: string, projectId: string, userId: string) {
+    const m = await this.requireMember(orgId, projectId, userId);
     if (m.role === 'viewer') throw new ForbiddenException('Viewers cannot modify this project');
     return m;
+  }
+
+  /**
+   * Linking a task into a project exposes it (title, status, assignees) to every project
+   * member, so the actor must be able to see that task themselves: on it (creator /
+   * active assignee) or within their data scope over it. Principal is optional so
+   * internal callers skip the gate; only the HTTP controller passes one.
+   */
+  private async assertCanLinkTask(orgId: string, principal: Principal | undefined, taskId: string) {
+    if (!principal) return;
+    const t = await this.prisma.task.findFirst({
+      where: { id: taskId, organization_id: orgId, is_deleted: false },
+      select: { created_by_user_id: true, assignees: { where: { removed_at: null }, select: { user_id: true } } },
+    });
+    if (!t) throw new NotFoundException(`Task ${taskId} not found`);
+    const participants = [t.created_by_user_id, ...t.assignees.map((a) => a.user_id)];
+    if (participants.includes(principal.userId)) return;
+    await this.scope.assertCanActOn(orgId, principal, 'tasks.task.manage', PermissionAction.read, participants);
   }
 
   private log(orgId: string, projectId: string, userId: string, action: string, metadata: Record<string, unknown> = {}) {
@@ -261,7 +286,7 @@ export class ProjectsService {
   }
 
   async getProject(orgId: string, projectId: string, userId: string) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return this.findProjectOrFail(orgId, projectId);
   }
 
@@ -354,14 +379,14 @@ export class ProjectsService {
 
   async updateProject(orgId: string, projectId: string, userId: string, dto: UpdateProjectDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
     if (dto.goal_ids !== undefined) {
       const goalIds = await this.assertGoalsInOrg(orgId, dto.goal_ids ?? []);
       await this.setProjectGoals(orgId, projectId, userId, goalIds);
     }
 
     return this.prisma.project.update({
-      where: { id: projectId },
+      where: { id: projectId, organization_id: orgId },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.description !== undefined && { description: dto.description }),
@@ -375,14 +400,14 @@ export class ProjectsService {
 
   async updateStatus(orgId: string, projectId: string, userId: string, dto: UpdateProjectStatusDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
     if ((dto.status === 'on_hold' || dto.status === 'cancelled') && !dto.status_reason?.trim()) {
       throw new BadRequestException('status_reason is required when status is on_hold or cancelled');
     }
 
     const updated = await this.prisma.project.update({
-      where: { id: projectId },
+      where: { id: projectId, organization_id: orgId },
       data: { status: dto.status, status_reason: dto.status_reason ?? null },
       include: PROJECT_INCLUDE,
     });
@@ -393,10 +418,10 @@ export class ProjectsService {
 
   async updateBudget(orgId: string, projectId: string, userId: string, dto: UpdateBudgetDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
     const updated = await this.prisma.project.update({
-      where: { id: projectId },
+      where: { id: projectId, organization_id: orgId },
       data: {
         ...(dto.planned_budget !== undefined && { planned_budget: dto.planned_budget }),
         ...(dto.actual_spent !== undefined && { actual_spent: dto.actual_spent }),
@@ -411,13 +436,13 @@ export class ProjectsService {
 
   async deleteProject(orgId: string, projectId: string, userId: string, reason: string) {
     await this.findProjectOrFail(orgId, projectId);
-    const m = await this.requireMember(projectId, userId);
+    const m = await this.requireMember(orgId, projectId, userId);
     if (m.role !== 'manager') throw new ForbiddenException('Only managers can delete projects');
 
     await this.log(orgId, projectId, userId, 'deleted', { reason });
 
     await this.prisma.project.update({
-      where: { id: projectId },
+      where: { id: projectId, organization_id: orgId },
       data: {
         is_deleted: true,
         deleted_by_user_id: userId,
@@ -432,7 +457,7 @@ export class ProjectsService {
   // ─── Members ─────────────────────────────────────────────────────────────────
 
   async listMembers(orgId: string, projectId: string, userId: string) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return this.prisma.projectMember.findMany({
       where: { project_id: projectId },
       orderBy: { created_at: 'asc' },
@@ -441,7 +466,7 @@ export class ProjectsService {
 
   async addMember(orgId: string, projectId: string, userId: string, dto: AddProjectMemberDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
     // Subject eligibility (fail loud): the added user must be allowed to be a project member.
     await this.subjects.assertEligible(orgId, 'projects.subject.member', dto.user_id);
 
@@ -466,7 +491,7 @@ export class ProjectsService {
     if (dto.user_id !== userId) {
       const [adderName, project] = await Promise.all([
         this.notifications.userName(userId),
-        this.prisma.project.findUnique({ where: { id: projectId }, select: { name: true } }),
+        this.prisma.project.findUnique({ where: { id: projectId, organization_id: orgId }, select: { name: true } }),
       ]);
       await this.notifications.emit({
         orgId,
@@ -484,7 +509,7 @@ export class ProjectsService {
 
   async updateMember(orgId: string, projectId: string, userId: string, targetUserId: string, dto: UpdateProjectMemberDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
     const updated = await this.prisma.projectMember.update({
       where: { project_id_user_id: { project_id: projectId, user_id: targetUserId } },
@@ -500,7 +525,7 @@ export class ProjectsService {
 
   async removeMember(orgId: string, projectId: string, userId: string, targetUserId: string) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
     await this.prisma.projectMember.delete({
       where: { project_id_user_id: { project_id: projectId, user_id: targetUserId } },
     });
@@ -511,7 +536,7 @@ export class ProjectsService {
   // ─── Milestones ──────────────────────────────────────────────────────────────
 
   async listMilestones(orgId: string, projectId: string, userId: string) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return this.prisma.projectMilestone.findMany({
       where: { project_id: projectId },
       include: { tasks: true },
@@ -521,7 +546,7 @@ export class ProjectsService {
 
   async createMilestone(orgId: string, projectId: string, userId: string, dto: CreateMilestoneDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
     const count = await this.prisma.projectMilestone.count({ where: { project_id: projectId } });
 
     const milestone = await this.prisma.projectMilestone.create({
@@ -542,16 +567,16 @@ export class ProjectsService {
 
   async updateMilestone(orgId: string, projectId: string, userId: string, milestoneId: string, dto: UpdateMilestoneDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
     const milestone = await this.prisma.projectMilestone.findFirst({
-      where: { id: milestoneId, project_id: projectId },
+      where: { id: milestoneId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
     if (!milestone) throw new NotFoundException(`Milestone ${milestoneId} not found`);
 
     return this.prisma.projectMilestone.update({
-      where: { id: milestoneId },
+      where: { id: milestoneId, project_id: projectId, organization_id: orgId },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.description !== undefined && { description: dto.description }),
@@ -563,13 +588,13 @@ export class ProjectsService {
 
   async deleteMilestone(orgId: string, projectId: string, userId: string, milestoneId: string) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
     const milestone = await this.prisma.projectMilestone.findFirst({
-      where: { id: milestoneId, project_id: projectId },
+      where: { id: milestoneId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
     if (!milestone) throw new NotFoundException(`Milestone ${milestoneId} not found`);
-    await this.prisma.projectMilestone.delete({ where: { id: milestoneId } });
+    await this.prisma.projectMilestone.delete({ where: { id: milestoneId, project_id: projectId, organization_id: orgId } });
     await this.progressService.recalculateProjectProgress(projectId);
     return { message: 'Milestone deleted' };
   }
@@ -577,7 +602,7 @@ export class ProjectsService {
   // ─── Tasks ───────────────────────────────────────────────────────────────────
 
   async listProjectTasks(orgId: string, projectId: string, userId: string, milestoneId?: string) {
-    const member = await this.requireMember(projectId, userId);
+    const member = await this.requireMember(orgId, projectId, userId);
 
     const where: Record<string, unknown> = { project_id: projectId };
     if (milestoneId) where.milestone_id = milestoneId;
@@ -592,7 +617,7 @@ export class ProjectsService {
     let taskMap: Record<string, unknown> = {};
     if (taskIds.length > 0) {
       const tasks = await this.prisma.task.findMany({
-        where: { id: { in: taskIds }, is_deleted: false },
+        where: { id: { in: taskIds }, organization_id: orgId, is_deleted: false },
         include: { status: true, priority: true, assignees: true },
       });
 
@@ -610,15 +635,16 @@ export class ProjectsService {
     }));
   }
 
-  async linkTask(orgId: string, projectId: string, userId: string, dto: LinkProjectTaskDto) {
+  async linkTask(orgId: string, projectId: string, userId: string, dto: LinkProjectTaskDto, principal?: Principal) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
     // Validate task exists in org
     const task = await this.prisma.task.findFirst({
       where: { id: dto.task_id, organization_id: orgId, is_deleted: false },
     });
     if (!task) throw new NotFoundException(`Task ${dto.task_id} not found`);
+    await this.assertCanLinkTask(orgId, principal, task.id);
 
     // Check not already linked
     const existing = await this.prisma.projectTask.findFirst({
@@ -642,12 +668,12 @@ export class ProjectsService {
     return pt;
   }
 
-  async fulfillPendingTask(orgId: string, projectId: string, userId: string, projectTaskId: string, taskId: string) {
+  async fulfillPendingTask(orgId: string, projectId: string, userId: string, projectTaskId: string, taskId: string, principal?: Principal) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
     const pt = await this.prisma.projectTask.findFirst({
-      where: { id: projectTaskId, project_id: projectId, task_id: null },
+      where: { id: projectTaskId, project_id: projectId, organization_id: orgId, task_id: null },
     });
     if (!pt) throw new NotFoundException(`Pending project task ${projectTaskId} not found`);
 
@@ -655,9 +681,10 @@ export class ProjectsService {
       where: { id: taskId, organization_id: orgId, is_deleted: false },
     });
     if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    await this.assertCanLinkTask(orgId, principal, task.id);
 
     const updated = await this.prisma.projectTask.update({
-      where: { id: projectTaskId },
+      where: { id: projectTaskId, project_id: projectId, organization_id: orgId },
       data: { task_id: taskId },
     });
 
@@ -668,12 +695,12 @@ export class ProjectsService {
 
   async unlinkTask(orgId: string, projectId: string, userId: string, projectTaskId: string) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
-    const pt = await this.prisma.projectTask.findFirst({ where: { id: projectTaskId, project_id: projectId } });
+    const pt = await this.prisma.projectTask.findFirst({ where: { id: projectTaskId, project_id: projectId, organization_id: orgId } });
     if (!pt) throw new NotFoundException(`Project task ${projectTaskId} not found`);
 
-    await this.prisma.projectTask.delete({ where: { id: projectTaskId } });
+    await this.prisma.projectTask.delete({ where: { id: projectTaskId, project_id: projectId, organization_id: orgId } });
     await this.progressService.recalculateProjectProgress(projectId);
     await this.log(orgId, projectId, userId, 'task_removed', { task_id: pt.task_id });
     return { message: 'Task removed from project' };
@@ -681,7 +708,7 @@ export class ProjectsService {
 
   async getDependencyWarnings(orgId: string, projectId: string, userId: string, taskId: string) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     const deps = await this.prisma.projectTaskDependency.findMany({
       where: { task_id: taskId, project_id: projectId },
     });
@@ -689,13 +716,13 @@ export class ProjectsService {
 
     const depTaskIds = deps.map((d) => d.depends_on_task_id);
     const completedStatuses = await this.prisma.taskStatus.findMany({
-      where: { type: 'completed' },
+      where: { organization_id: orgId, type: 'completed' },
       select: { id: true },
     });
     const completedStatusIds = new Set(completedStatuses.map((s) => s.id));
 
     const tasks = await this.prisma.task.findMany({
-      where: { id: { in: depTaskIds }, is_deleted: false },
+      where: { id: { in: depTaskIds }, organization_id: orgId, is_deleted: false },
       include: { status: true },
     });
 
@@ -708,7 +735,7 @@ export class ProjectsService {
 
   async addDependency(orgId: string, projectId: string, userId: string, dto: AddDependencyDto) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
 
     if (dto.task_id === dto.depends_on_task_id) {
       throw new BadRequestException('A task cannot depend on itself');
@@ -729,26 +756,26 @@ export class ProjectsService {
 
   async removeDependency(orgId: string, projectId: string, userId: string, depId: string) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
     const dep = await this.prisma.projectTaskDependency.findFirst({
-      where: { id: depId, project_id: projectId },
+      where: { id: depId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
     if (!dep) throw new NotFoundException(`Dependency ${depId} not found`);
-    await this.prisma.projectTaskDependency.delete({ where: { id: depId } });
+    await this.prisma.projectTaskDependency.delete({ where: { id: depId, project_id: projectId, organization_id: orgId } });
     await this.log(orgId, projectId, userId, 'dependency_removed', { dep_id: depId });
     return { message: 'Dependency removed' };
   }
 
   async listDependencies(orgId: string, projectId: string, userId: string) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return this.prisma.projectTaskDependency.findMany({ where: { project_id: projectId } });
   }
 
   // ─── Comments ────────────────────────────────────────────────────────────────
 
   async listComments(orgId: string, projectId: string, userId: string) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return this.prisma.projectComment.findMany({
       where: { project_id: projectId, is_deleted: false },
       orderBy: { created_at: 'asc' },
@@ -756,7 +783,7 @@ export class ProjectsService {
   }
 
   async addComment(orgId: string, projectId: string, userId: string, dto: AddCommentDto) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     const comment = await this.prisma.projectComment.create({
       data: {
         organization_id: orgId,
@@ -772,9 +799,9 @@ export class ProjectsService {
   }
 
   async deleteComment(orgId: string, projectId: string, userId: string, commentId: string) {
-    const member = await this.requireMember(projectId, userId);
+    const member = await this.requireMember(orgId, projectId, userId);
     const comment = await this.prisma.projectComment.findFirst({
-      where: { id: commentId, project_id: projectId, is_deleted: false },
+      where: { id: commentId, project_id: projectId, organization_id: orgId, is_deleted: false },
       select: { id: true, user_id: true },
     });
     if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
@@ -782,7 +809,7 @@ export class ProjectsService {
       throw new ForbiddenException("Cannot delete another user's comment");
     }
     await this.prisma.projectComment.update({
-      where: { id: commentId },
+      where: { id: commentId, project_id: projectId, organization_id: orgId },
       data: { is_deleted: true, deleted_at: new Date() },
     });
     return { message: 'Comment deleted' };
@@ -791,7 +818,7 @@ export class ProjectsService {
   // ─── Documents ───────────────────────────────────────────────────────────────
 
   async listDocuments(orgId: string, projectId: string, userId: string) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return this.prisma.projectDocument.findMany({
       where: { project_id: projectId },
       orderBy: { created_at: 'desc' },
@@ -799,7 +826,7 @@ export class ProjectsService {
   }
 
   async addDocument(orgId: string, projectId: string, userId: string, dto: AddDocumentDto) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     const doc = await this.prisma.projectDocument.create({
       data: {
         organization_id: orgId,
@@ -815,20 +842,20 @@ export class ProjectsService {
   }
 
   async deleteDocument(orgId: string, projectId: string, userId: string, docId: string) {
-    await this.requireManagerOrEditor(projectId, userId);
+    await this.requireManagerOrEditor(orgId, projectId, userId);
     const doc = await this.prisma.projectDocument.findFirst({
-      where: { id: docId, project_id: projectId },
+      where: { id: docId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
     if (!doc) throw new NotFoundException(`Document ${docId} not found`);
-    await this.prisma.projectDocument.delete({ where: { id: docId } });
+    await this.prisma.projectDocument.delete({ where: { id: docId, project_id: projectId, organization_id: orgId } });
     return { message: 'Document removed' };
   }
 
   // ─── Activity ────────────────────────────────────────────────────────────────
 
   async getActivity(orgId: string, projectId: string, userId: string) {
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return this.prisma.projectActivityLog.findMany({
       where: { project_id: projectId },
       orderBy: { created_at: 'desc' },
@@ -839,7 +866,7 @@ export class ProjectsService {
 
   async getProgress(orgId: string, projectId: string, userId: string) {
     const project = await this.findProjectOrFail(orgId, projectId);
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     return {
       project_id: projectId,
       completion_percentage: project.completion_percentage,
@@ -852,7 +879,7 @@ export class ProjectsService {
 
   async forceRecalculate(orgId: string, projectId: string, userId: string) {
     await this.findProjectOrFail(orgId, projectId);
-    await this.requireMember(projectId, userId);
+    await this.requireMember(orgId, projectId, userId);
     await this.progressService.recalculateProjectProgress(projectId);
     return this.getProgress(orgId, projectId, userId);
   }

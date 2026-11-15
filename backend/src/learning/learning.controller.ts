@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Delete,
   Get,
   Param,
@@ -12,6 +13,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import type { AuthRequest } from '../common/types/auth-request';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -34,6 +36,13 @@ import { UpdateLearningItemDto } from './dto/update-learning-item.dto';
 import { AssignPathDto } from './dto/assign-path.dto';
 import { CompleteItemDto } from './dto/complete-item.dto';
 import { ReorderItemsDto } from './dto/reorder-items.dto';
+
+/** The caller's learner profile in this org — people without one have no assignments. */
+function requireProfileId(req: AuthRequest): string {
+  const id = req.user.employee_profile_id;
+  if (!id) throw new ForbiddenException('No employee profile in this organization');
+  return id;
+}
 
 @ApiTags('learning')
 @ApiBearerAuth()
@@ -67,7 +76,7 @@ export class LearningController {
   @ApiOperation({ summary: 'Create a new learning path' })
   createPath(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateLearningPathDto,
   ) {
     return this.learningService.createPath(orgId, req.user.id, dto);
@@ -90,7 +99,7 @@ export class LearningController {
   publishPath(
     @Param('orgId') orgId: string,
     @Param('pathId') pathId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     return this.learningService.publishPath(pathId, orgId, req.user.id);
   }
@@ -246,7 +255,7 @@ export class LearningController {
   assignPath(
     @Param('orgId') orgId: string,
     @Param('pathId') pathId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: AssignPathDto,
   ) {
     return this.learningService.assignPath(pathId, orgId, req.user.id, dto);
@@ -275,8 +284,8 @@ export class LearningController {
 
   @Get('my')
   @ApiOperation({ summary: 'Get my assigned learning paths' })
-  getMyAssignments(@Request() req: any) {
-    const profileId = req.user.employee_profile_id;
+  getMyAssignments(@Request() req: AuthRequest) {
+    const profileId = requireProfileId(req);
     if (!profileId) return [];
     return this.learningService.getMyAssignments(profileId);
   }
@@ -286,9 +295,9 @@ export class LearningController {
   getMyAssignment(
     @Param('orgId') orgId: string,
     @Param('assignmentId') assignmentId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
-    const profileId = req.user.employee_profile_id;
+    const profileId = requireProfileId(req);
     return this.learningService.getMyAssignment(assignmentId, profileId, orgId);
   }
 
@@ -298,10 +307,10 @@ export class LearningController {
     @Param('orgId') orgId: string,
     @Param('assignmentId') assignmentId: string,
     @Param('itemId') itemId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CompleteItemDto,
   ) {
-    const profileId = req.user.employee_profile_id;
+    const profileId = requireProfileId(req);
     return this.learningService.completeItem(assignmentId, itemId, profileId, orgId, dto);
   }
 
@@ -311,9 +320,9 @@ export class LearningController {
     @Param('orgId') orgId: string,
     @Param('assignmentId') assignmentId: string,
     @Param('itemId') itemId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
-    return this.learningService.uncompleteItem(assignmentId, itemId, req.user.employee_profile_id, orgId);
+    return this.learningService.uncompleteItem(assignmentId, itemId, requireProfileId(req), orgId);
   }
 
   @Get('my/:assignmentId/items/:itemId/view-url')
@@ -322,13 +331,13 @@ export class LearningController {
     @Param('orgId') orgId: string,
     @Param('assignmentId') assignmentId: string,
     @Param('itemId') itemId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     return this.filesService.getLearnerViewData(
       orgId,
       assignmentId,
       itemId,
-      req.user.employee_profile_id,
+      requireProfileId(req),
       req.user.id,
     );
   }
@@ -339,13 +348,13 @@ export class LearningController {
     @Param('orgId') orgId: string,
     @Param('assignmentId') assignmentId: string,
     @Param('itemId') itemId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     return this.filesService.getLearnerDownloadUrl(
       orgId,
       assignmentId,
       itemId,
-      req.user.employee_profile_id,
+      requireProfileId(req),
     );
   }
 
@@ -355,14 +364,14 @@ export class LearningController {
     @Param('orgId') orgId: string,
     @Param('assignmentId') assignmentId: string,
     @Param('itemId') itemId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Res() res: Response,
   ) {
     const { buffer, mime, fileName } = await this.filesService.getLearnerPreviewFile(
       orgId,
       assignmentId,
       itemId,
-      req.user.employee_profile_id,
+      requireProfileId(req),
     );
     sendInline(res, buffer, mime, fileName);
   }

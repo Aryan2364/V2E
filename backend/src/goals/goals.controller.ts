@@ -10,6 +10,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { AuthRequest } from '../common/types/auth-request';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PermissionAction } from '@prisma/client';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -46,7 +47,7 @@ export class GoalsController {
   @ApiOperation({ summary: 'List goals (flat) with filters' })
   list(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Query('owner_user_id') owner_user_id?: string,
     @Query('department_id') department_id?: string,
     @Query('status') status?: string,
@@ -74,14 +75,14 @@ export class GoalsController {
   @Get('my-check-ins')
   @RequirePermission(GOALS, PermissionAction.read)
   @ApiOperation({ summary: 'Goals I own that owe a check-in' })
-  myCheckIns(@Param('orgId') orgId: string, @Request() req: any) {
+  myCheckIns(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.service.myCheckIns(orgId, req.user.id);
   }
 
   @Get('my-check-ins/count')
   @RequirePermission(GOALS, PermissionAction.read)
   @ApiOperation({ summary: 'Badge count for the My check-ins nav item' })
-  myCheckInCount(@Param('orgId') orgId: string, @Request() req: any) {
+  myCheckInCount(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.service.myCheckInCount(orgId, req.user.id);
   }
 
@@ -96,7 +97,7 @@ export class GoalsController {
   @Get(':id')
   @RequirePermission(GOALS, PermissionAction.read)
   @ApiOperation({ summary: 'Goal detail (both sides of its web, check-ins, linked tasks)' })
-  getOne(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  getOne(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     // The principal is needed to respect the Projects module's own row scope
     // when listing this goal's linked projects.
     return this.service.getOne(orgId, id, principalFromUser(req.user));
@@ -124,7 +125,7 @@ export class GoalsController {
   @Get(':id/delete-impact')
   @RequirePermission(GOALS, PermissionAction.read)
   @ApiOperation({ summary: 'What deleting this goal would sever (for the confirm dialog)' })
-  deleteImpact(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  deleteImpact(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     return this.service.deleteImpact(orgId, id, principalFromUser(req.user));
   }
 
@@ -132,7 +133,7 @@ export class GoalsController {
   @Post()
   @RequirePermission(GOALS, PermissionAction.write)
   @ApiOperation({ summary: 'Create a goal' })
-  create(@Param('orgId') orgId: string, @Request() req: any, @Body() dto: CreateGoalDto) {
+  create(@Param('orgId') orgId: string, @Request() req: AuthRequest, @Body() dto: CreateGoalDto) {
     return this.service.create(orgId, req.user.id, dto);
   }
 
@@ -142,7 +143,7 @@ export class GoalsController {
   update(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: UpdateGoalDto,
   ) {
     return this.service.update(orgId, req.user.id, id, dto);
@@ -154,7 +155,7 @@ export class GoalsController {
   remove(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: DeleteGoalDto,
   ) {
     return this.service.remove(orgId, req.user.id, id, dto?.reason);
@@ -167,7 +168,7 @@ export class GoalsController {
   createCheckIn(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateGoalCheckInDto,
   ) {
     return this.service.createCheckIn(orgId, req.user.id, id, dto);
@@ -179,7 +180,7 @@ export class GoalsController {
   voidCheckIn(
     @Param('orgId') orgId: string,
     @Param('checkInId') checkInId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: VoidCheckInDto,
   ) {
     return this.service.voidCheckIn(orgId, req.user.id, checkInId, dto);
@@ -189,7 +190,7 @@ export class GoalsController {
   @Get(':id/project-candidates')
   @RequirePermission(GOALS, PermissionAction.read)
   @ApiOperation({ summary: 'Projects this user could link to the goal (already-linked excluded)' })
-  projectCandidates(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  projectCandidates(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     return this.service.projectCandidates(orgId, id, principalFromUser(req.user));
   }
 
@@ -200,7 +201,7 @@ export class GoalsController {
     @Param('orgId') orgId: string,
     @Param('id') id: string,
     @Param('projectId') projectId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     return this.service.linkProject(orgId, req.user.id, id, projectId);
   }
@@ -212,7 +213,7 @@ export class GoalsController {
     @Param('orgId') orgId: string,
     @Param('id') id: string,
     @Param('projectId') projectId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     return this.service.unlinkProject(orgId, req.user.id, id, projectId);
   }
@@ -231,7 +232,7 @@ export class GoalsController {
   createLink(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateGoalLinkDto,
   ) {
     return this.service.createLink(orgId, req.user.id, id, dto);
@@ -243,7 +244,7 @@ export class GoalsController {
   updateLink(
     @Param('orgId') orgId: string,
     @Param('linkId') linkId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: UpdateGoalLinkDto,
   ) {
     return this.service.updateLink(orgId, req.user.id, linkId, dto);
@@ -252,7 +253,7 @@ export class GoalsController {
   @Delete('links/:linkId')
   @RequirePermission(GOALS, PermissionAction.edit)
   @ApiOperation({ summary: 'Unlink two goals' })
-  removeLink(@Param('orgId') orgId: string, @Param('linkId') linkId: string, @Request() req: any) {
+  removeLink(@Param('orgId') orgId: string, @Param('linkId') linkId: string, @Request() req: AuthRequest) {
     return this.service.removeLink(orgId, req.user.id, linkId);
   }
 }

@@ -91,6 +91,7 @@ export class GoalsService {
     // marked ownable, not (say) a vendor contact.
     await this.subjects.assertEligible(orgId, 'goals.subject.ownable', dto.owner_user_id);
 
+    await this.assertDepartmentInOrg(orgId, dto.department_id);
     const dueDate = this.parseDate(dto.due_date, 'due_date');
     const now = await this.clock.now(orgId);
     const cadence = dto.review_cadence ?? 'none';
@@ -322,6 +323,7 @@ export class GoalsService {
       await this.subjects.assertEligible(orgId, 'goals.subject.ownable', dto.owner_user_id);
     }
 
+    await this.assertDepartmentInOrg(orgId, dto.department_id);
     const data: Prisma.GoalUpdateInput = {};
     if (dto.title !== undefined) data.title = dto.title.trim();
     if (dto.description !== undefined) data.description = dto.description?.trim() || null;
@@ -359,7 +361,7 @@ export class GoalsService {
     }
 
     const goal = await this.prisma.goal.update({
-      where: { id },
+      where: { id, organization_id: orgId },
       data,
       include: this.goalInclude(),
     });
@@ -399,7 +401,7 @@ export class GoalsService {
     const now = await this.clock.now(orgId);
 
     await this.prisma.goal.update({
-      where: { id },
+      where: { id, organization_id: orgId },
       data: {
         is_deleted: true,
         deleted_at: now,
@@ -598,7 +600,7 @@ export class GoalsService {
     const link = await this.findLinkOrFail(orgId, linkId);
 
     const updated = await this.prisma.goalLink.update({
-      where: { id: linkId },
+      where: { id: linkId, organization_id: orgId },
       data: { note: dto.note?.trim() || null },
     });
 
@@ -618,7 +620,7 @@ export class GoalsService {
   async removeLink(orgId: string, userId: string, linkId: string) {
     const link = await this.findLinkOrFail(orgId, linkId);
 
-    await this.prisma.goalLink.delete({ where: { id: linkId } });
+    await this.prisma.goalLink.delete({ where: { id: linkId, organization_id: orgId } });
 
     await this.audit.record({
       orgId,
@@ -817,7 +819,7 @@ export class GoalsService {
       });
 
       await tx.goal.update({
-        where: { id: goalId },
+        where: { id: goalId, organization_id: orgId },
         data: {
           // The recorded number IS the goal's number. Nothing else writes it.
           ...(recorded !== null ? { current_value: recorded } : {}),
@@ -881,7 +883,7 @@ export class GoalsService {
 
     await this.prisma.$transaction(async (tx) => {
       await tx.goalCheckIn.update({
-        where: { id: checkInId },
+        where: { id: checkInId, organization_id: orgId },
         data: {
           is_voided: true,
           voided_at: now,
@@ -897,7 +899,7 @@ export class GoalsService {
         orderBy: [{ check_in_date: 'desc' }, { created_at: 'desc' }],
       });
       await tx.goal.update({
-        where: { id: ci.goal_id },
+        where: { id: ci.goal_id, organization_id: orgId },
         data: {
           current_value: latest?.recorded_value ?? null,
           status: latest?.status ?? 'not_started',
@@ -1199,7 +1201,7 @@ export class GoalsService {
     }
 
     const rows = await this.prisma.goal.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, organization_id: orgId },
       select: { id: true, title: true },
     });
     const byId = new Map(rows.map((r) => [r.id, r.title]));
@@ -1304,6 +1306,16 @@ export class GoalsService {
   }
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
+  /** A goal's department must belong to this org (never a pasted foreign id). */
+  private async assertDepartmentInOrg(orgId: string, departmentId?: string | null) {
+    if (!departmentId) return;
+    const dept = await this.prisma.department.findFirst({
+      where: { id: departmentId, organization_id: orgId },
+      select: { id: true },
+    });
+    if (!dept) throw new NotFoundException('Department not found');
+  }
+
   private async findActiveOrFail(orgId: string, id: string) {
     const goal = await this.prisma.goal.findFirst({
       where: { id, organization_id: orgId, is_deleted: false },
