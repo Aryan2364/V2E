@@ -1,25 +1,30 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { toast } from '@/components/ui/sonner'
+import BulkImportWizard from '@/components/import/BulkImportWizard'
 import {
-  X,
-  Download,
-  UploadCloud,
-  FileText,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  History,
-  ArrowLeft,
-  Undo2,
-} from 'lucide-react'
+  SimpleResultView,
+  simpleHistoryRender,
+  type SimpleBatch,
+  type SimpleResult,
+  type SimpleRowResult,
+  type SimpleUndo,
+} from '@/components/import/simpleViews'
 import { createDepartment, listImportBatches, createImportBatch, undoImport } from '@/lib/api/departments'
 import { placeUnderParent } from '@/lib/org-chart-layout'
-import { toast } from '@/components/ui/sonner'
+import { apiErrorMessage, norm, uniq } from '@/lib/import/csv'
+import { addColumnValidation, columnLetter, listValidation, writeColumnHeader } from '@/lib/import/xlsx'
+import {
+  DEPARTMENT_COLUMNS,
+  DEPARTMENT_MISSING_COLUMNS,
+  isDepartmentReady,
+  mapDepartmentRow,
+  preflightDepartmentRows,
+  type DepartmentColumn,
+  type DepartmentImportRow,
+} from '@/lib/import/configs/departments'
+import type { ImportConfig } from '@/lib/import/types'
 import type { Department, User } from '@/lib/types'
-import Tooltip from '@/components/ui/tooltip'
-import { formatDateTime } from '@/lib/format'
 
 interface Props {
   orgId: string
@@ -29,371 +34,42 @@ interface Props {
   onImported: () => void
 }
 
-interface ImportRow {
-  name: string
-  parent: string
-  head: string
-  description: string
-}
+type DepartmentConfig = ImportConfig<
+  DepartmentColumn,
+  DepartmentImportRow,
+  never,
+  SimpleResult,
+  SimpleBatch,
+  SimpleBatch,
+  SimpleUndo
+>
 
-interface RowResult {
-  row: number
-  name: string
-  status: 'created' | 'failed'
-  error?: string
-}
-
-// Colour is intentionally NOT importable — every department is auto-assigned a
-// distinct colour by the app (users can override it in-app afterwards).
-const COLUMNS = ['name', 'parent_department', 'head', 'description'] as const
-type Column = (typeof COLUMNS)[number]
-
-const HEADER_LABEL: Record<Column, string> = {
-  name: 'name *',
-  parent_department: 'parent_department',
-  head: 'head (manager name)',
-  description: 'description',
-}
-
-const COLUMN_ALIASES: Record<string, Column> = {
-  name: 'name',
-  department: 'name',
-  parent_department: 'parent_department',
-  parent: 'parent_department',
-  parent_dept: 'parent_department',
-  head: 'head',
-  head_user: 'head',
-  dept_head: 'head',
-  manager: 'head',
-  description: 'description',
-}
-
-function normalizeHeader(h: string): string {
-  return h
-    .replace(/\*/g, '')
-    .replace(/\(.*?\)/g, '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, '_')
-}
-
-function uniq(arr: string[]): string[] {
-  return Array.from(new Set(arr.filter((v) => v && v.trim() !== '')))
-}
-
-const norm = (s: string) => s.trim().toLowerCase()
-
-// ─── CSV parser (RFC-4180-ish; handles quotes, escaped quotes, CRLF) ────────────
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let inQuotes = false
-  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1)
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i]
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') {
-          field += '"'
-          i++
-        } else inQuotes = false
-      } else field += c
-    } else if (c === '"') inQuotes = true
-    else if (c === ',') {
-      row.push(field)
-      field = ''
-    } else if (c === '\n' || c === '\r') {
-      if (c === '\r' && text[i + 1] === '\n') i++
-      row.push(field)
-      rows.push(row)
-      row = []
-      field = ''
-    } else field += c
-  }
-  if (field.length > 0 || row.length > 0) {
-    row.push(field)
-    rows.push(row)
-  }
-  return rows
-}
-
-export default function ImportDepartmentsModal({
-  orgId,
-  departments,
-  users,
-  onClose,
-  onImported,
-}: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [])
-
-  const [fileName, setFileName] = useState('')
-  const [rows, setRows] = useState<ImportRow[]>([])
-  const [parseError, setParseError] = useState('')
-  const [importing, setImporting] = useState(false)
-  const [building, setBuilding] = useState(false)
-  const [result, setResult] = useState<{ created: number; failed: number; results: RowResult[] } | null>(
-    null,
-  )
-
-  type Phase = 'upload' | 'history'
-  const [phase, setPhase] = useState<Phase>('upload')
-  const [batches, setBatches] = useState<any[]>([])
-  const [undoResult, setUndoResult] = useState<any | null>(null)
-  const [undoingId, setUndoingId] = useState<string | null>(null)
-
-  async function loadHistory() {
-    try {
-      const data = await listImportBatches(orgId)
-      setBatches(data)
-    } catch {
-      setBatches([])
-    }
-  }
-
-  async function handleUndo(batchId: string) {
-    setUndoingId(batchId)
-    setUndoResult(null)
-    try {
-      const res = await undoImport(orgId, batchId)
-      setUndoResult(res)
-      toast.success('Import undone successfully')
-      onImported()
-      loadHistory()
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Could not undo this import'
-      toast.error(msg)
-    } finally {
-      setUndoingId(null)
-    }
-  }
-
-  // ─── Template (.xlsx with dropdowns) ──────────────────────────────────────────
-  async function downloadTemplate() {
-    setBuilding(true)
-    try {
-      const mod: any = await import('exceljs')
-      const ExcelJS = mod.default ?? mod
-      const wb = new ExcelJS.Workbook()
-      const ws = wb.addWorksheet('Departments')
-      const lists = wb.addWorksheet('Lists')
-      lists.state = 'veryHidden'
-
-      const deptNames = uniq(departments.map((d) => d.name))
-      const people = uniq(users.map((u) => u.name))
-      deptNames.forEach((v, i) => (lists.getCell(i + 1, 1).value = v)) // col A
-      people.forEach((v, i) => (lists.getCell(i + 1, 2).value = v)) // col B
-
-      ws.addRow(COLUMNS.map((c) => HEADER_LABEL[c]))
-      const headerRow = ws.getRow(1)
-      headerRow.height = 22
-      headerRow.eachCell((cell: any, col: number) => {
-        const required = COLUMNS[col - 1] === 'name'
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: required ? 'FF1E40AF' : 'FF475569' },
-        }
-        cell.alignment = { vertical: 'middle', horizontal: 'left' }
-      })
-      ws.columns.forEach((c: any) => (c.width = 26))
-
-      const sampleParent = departments[0]?.name ?? 'Executive'
-      const sampleHead = users[0]?.name ?? ''
-      ws.addRow(['Engineering', sampleParent, sampleHead, 'Builds the product'])
-      ws.addRow(['Mobile Apps', 'Engineering', '', 'iOS & Android'])
-
-      const LAST = 300
-      const addListDV = (col: number, formula: string) => {
-        const letter = String.fromCharCode(64 + col)
-        for (let r = 2; r <= LAST; r++) {
-          ws.getCell(`${letter}${r}`).dataValidation = {
-            type: 'list',
-            allowBlank: true,
-            formulae: [formula],
-            showErrorMessage: false, // parents may reference other new rows, so don't hard-block
-          }
-        }
-      }
-      addListDV(2, `Lists!$A$1:$A$${Math.max(deptNames.length, 1)}`) // parent_department
-      addListDV(3, `Lists!$B$1:$B$${Math.max(people.length, 1)}`) // head
-
-      const buf = await wb.xlsx.writeBuffer()
-      const blob = new Blob([buf], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'department-import-template.xlsx'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      toast.error('Could not build the template. Please try again.')
-    } finally {
-      setBuilding(false)
-    }
-  }
-
-  // ─── Parsing ──────────────────────────────────────────────────────────────────
-  function gridToRows(grid: string[][]): { rows: ImportRow[]; error?: string } {
-    if (grid.length === 0) return { rows: [], error: 'The file is empty.' }
-    const header = grid[0].map(normalizeHeader)
-    const idx: Partial<Record<Column, number>> = {}
-    header.forEach((h, i) => {
-      const col = COLUMN_ALIASES[h]
-      if (col && idx[col] === undefined) idx[col] = i
-    })
-    if (idx.name === undefined) {
-      return {
-        rows: [],
-        error:
-          'Could not find the required "name" column. Download the template to see the expected format.',
-      }
-    }
-    const parsed: ImportRow[] = []
-    for (let r = 1; r < grid.length; r++) {
-      const cells = grid[r]
-      if (!cells || cells.every((c) => (c ?? '').trim() === '')) continue
-      const get = (c: Column) => {
-        const i = idx[c]
-        return i !== undefined ? (cells[i] ?? '').trim() : ''
-      }
-      parsed.push({
-        name: get('name'),
-        parent: get('parent_department'),
-        head: get('head'),
-        description: get('description'),
-      })
-    }
-    if (parsed.length === 0) return { rows: [], error: 'No data rows found below the header.' }
-    return { rows: parsed }
-  }
-
-  async function parseXlsx(buffer: ArrayBuffer): Promise<string[][]> {
-    const mod: any = await import('exceljs')
-    const ExcelJS = mod.default ?? mod
-    const wb = new ExcelJS.Workbook()
-    await wb.xlsx.load(buffer)
-    const ws = wb.worksheets[0]
-    if (!ws) return []
-    const cellText = (cell: any): string => {
-      const v = cell?.value
-      if (v == null) return ''
-      if (typeof v === 'object') {
-        if (Array.isArray(v.richText)) return v.richText.map((t: any) => t.text).join('')
-        if (typeof v.text === 'string') return v.text
-        if ('result' in v) return v.result == null ? '' : String(v.result)
-        return ''
-      }
-      return String(v)
-    }
-    const colCount = Math.max(ws.getRow(1).cellCount, COLUMNS.length)
-    const grid: string[][] = []
-    for (let r = 1; r <= ws.rowCount; r++) {
-      const row = ws.getRow(r)
-      const cells: string[] = []
-      for (let c = 1; c <= colCount; c++) cells.push(cellText(row.getCell(c)))
-      grid.push(cells)
-    }
-    return grid
-  }
-
-  function handleFile(file: File) {
-    setParseError('')
-    setResult(null)
-    setRows([])
-    setFileName(file.name)
-    const finish = (grid: string[][]) => {
-      const { rows: parsed, error } = gridToRows(grid)
-      if (error) {
-        setParseError(error)
-        return
-      }
-      setRows(parsed)
-    }
-    if (/\.xlsx$/i.test(file.name)) {
-      file
-        .arrayBuffer()
-        .then(parseXlsx)
-        .then(finish)
-        .catch(() => setParseError('Could not read this Excel file. Make sure it is a valid .xlsx.'))
-    } else {
-      const reader = new FileReader()
-      reader.onload = () => {
-        try {
-          finish(parseCsv(String(reader.result ?? '')))
-        } catch {
-          setParseError('Could not read this file. Make sure it is a valid CSV.')
-        }
-      }
-      reader.onerror = () => setParseError('Could not read this file.')
-      reader.readAsText(file)
-    }
-  }
-
-  // ─── Import (topological: create parents before children) ───────────────────────
-  async function handleImport() {
-    if (rows.length === 0) return
-    setImporting(true)
-
+export default function ImportDepartmentsModal({ orgId, departments, users, onClose, onImported }: Props) {
+  // Topological import: create parents before children.
+  async function commit(rows: DepartmentImportRow[], fileName: string) {
     // Resolve heads by name; track department names → id as we create them.
     const userByName = new Map(users.map((u) => [norm(u.name), u.id]))
     const nameToId = new Map(departments.map((d) => [norm(d.name), d.id]))
     // A mutable working copy so placeUnderParent offsets new siblings correctly.
     const working: Department[] = departments.map((d) => ({ ...d }))
 
-    const results: RowResult[] = []
-    // Pre-flag blank names and within-file duplicates.
-    const pending: { row: ImportRow; line: number }[] = []
-    const seenNames = new Set(nameToId.keys())
-    rows.forEach((row, i) => {
-      const line = i + 2 // header is line 1
-      if (!row.name) {
-        results.push({ row: line, name: '(blank)', status: 'failed', error: 'Name is required.' })
-        return
-      }
-      if (seenNames.has(norm(row.name))) {
-        results.push({
-          row: line,
-          name: row.name,
-          status: 'failed',
-          error: 'A department with this name already exists.',
-        })
-        return
-      }
-      seenNames.add(norm(row.name))
-      pending.push({ row, line })
-    })
+    const results: SimpleRowResult[] = []
+    // Blank names and within-file duplicates fail up front.
+    const { failures, pending } = preflightDepartmentRows(rows, nameToId.keys())
+    for (const f of failures) results.push({ row: f.row, label: f.label, status: 'failed', error: f.error })
 
     // Create in waves: a row is ready when it has no parent, or its parent already exists.
     let remaining = pending
     while (remaining.length > 0) {
-      const ready = remaining.filter(({ row }) => !row.parent || nameToId.has(norm(row.parent)))
+      const ready = remaining.filter(({ row }) => isDepartmentReady(row, nameToId))
       if (ready.length === 0) break // remaining rows have unresolved/cyclic parents
-      const next: typeof remaining = remaining.filter((p) => !ready.includes(p))
+      const next = remaining.filter((p) => !ready.includes(p))
 
       for (const { row, line } of ready) {
         const parentId = row.parent ? nameToId.get(norm(row.parent)) : undefined
         const headId = row.head ? userByName.get(norm(row.head)) : undefined
         if (row.head && !headId) {
-          results.push({
-            row: line,
-            name: row.name,
-            status: 'failed',
-            error: `No member named "${row.head}" to set as head.`,
-          })
+          results.push({ row: line, label: row.name, status: 'failed', error: `No member named "${row.head}" to set as head.` })
           continue
         }
         const { x, y } = placeUnderParent(working, parentId)
@@ -409,14 +85,13 @@ export default function ImportDepartmentsModal({
           })
           nameToId.set(norm(row.name), created.id)
           working.push({ ...(created as Department), position_x: x, position_y: y })
-          results.push({ row: line, name: row.name, status: 'created' })
-        } catch (err: any) {
-          const msg = err?.response?.data?.message ?? 'Could not create this department.'
+          results.push({ row: line, label: row.name, status: 'created' })
+        } catch (err) {
           results.push({
             row: line,
-            name: row.name,
+            label: row.name,
             status: 'failed',
-            error: Array.isArray(msg) ? msg.join(', ') : msg,
+            error: apiErrorMessage(err, 'Could not create this department.'),
           })
         }
       }
@@ -424,21 +99,16 @@ export default function ImportDepartmentsModal({
     }
     // Anything still remaining is an unresolved parent reference.
     for (const { row, line } of remaining) {
-      results.push({
-        row: line,
-        name: row.name,
-        status: 'failed',
-        error: `Parent department "${row.parent}" was not found.`,
-      })
+      results.push({ row: line, label: row.name, status: 'failed', error: `Parent department "${row.parent}" was not found.` })
     }
 
     results.sort((a, b) => a.row - b.row)
     const created = results.filter((r) => r.status === 'created').length
     const failed = results.length - created
-    
+
     const createdDeptIds = results
       .filter((r) => r.status === 'created')
-      .map((r) => nameToId.get(norm(r.name)))
+      .map((r) => nameToId.get(norm(r.label)))
       .filter((id): id is string => !!id)
 
     if (createdDeptIds.length > 0) {
@@ -455,7 +125,6 @@ export default function ImportDepartmentsModal({
       }
     }
 
-    setResult({ created, failed, results })
     if (created > 0) {
       const message = `Imported ${created} department${created !== 1 ? 's' : ''}`
       if (failed > 0) toast.warning(message)
@@ -464,285 +133,72 @@ export default function ImportDepartmentsModal({
     } else {
       toast.error('No departments were imported')
     }
-    setImporting(false)
+    return { result: { created, failed, results } }
   }
 
-  function reset() {
-    setRows([])
-    setResult(null)
-    setParseError('')
-    setFileName('')
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
+  const config: DepartmentConfig = {
+    title: 'Import Departments',
+    columns: DEPARTMENT_COLUMNS,
+    parse: {
+      headerRequired: ['name'],
+      missingColumnsError: DEPARTMENT_MISSING_COLUMNS,
+      mapRow: mapDepartmentRow,
+      dateMode: 'none',
+    },
+    template: {
+      fileName: 'department-import-template.xlsx',
+      build: (wb) => {
+        const ws = wb.addWorksheet('Departments')
+        const lists = wb.addWorksheet('Lists')
+        lists.state = 'veryHidden'
 
-  const failedRows = result?.results.filter((r) => r.status === 'failed') ?? []
+        const deptNames = uniq(departments.map((d) => d.name))
+        const people = uniq(users.map((u) => u.name))
+        deptNames.forEach((v, i) => (lists.getCell(i + 1, 1).value = v)) // col A
+        people.forEach((v, i) => (lists.getCell(i + 1, 2).value = v)) // col B
 
-  if (!mounted) return null
+        writeColumnHeader(ws, DEPARTMENT_COLUMNS, 26)
+        ws.addRow(['Engineering', departments[0]?.name ?? 'Executive', users[0]?.name ?? '', 'Builds the product'])
+        ws.addRow(['Mobile Apps', 'Engineering', '', 'iOS & Android'])
 
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
-      <div className="bg-surface w-full sm:max-w-2xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-          <div className="flex items-center gap-3">
-            {phase === 'history' && (
-              <Tooltip label="Back to upload">
-              <button
-                onClick={() => setPhase('upload')}
-                className="p-1 hover:bg-surface-control rounded-xs transition-colors text-text-muted hover:text-text-primary"
-                aria-label="Back to upload"
-              >
-                <ArrowLeft size={16} />
-              </button>
-              </Tooltip>
-            )}
-            <h2 className="text-section font-medium text-text-primary">Import Departments</h2>
-          </div>
-          <div className="flex items-center gap-2.5">
-            {phase === 'upload' && !result && (
-              <button
-                onClick={() => {
-                  setPhase('history')
-                  loadHistory()
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-meta font-medium text-text-secondary bg-surface-control hover:bg-surface-control-pressed transition-colors"
-              >
-                <History size={14} /> Import History
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-              aria-label="Close"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-4 overflow-y-auto space-y-4">
-          {phase === 'history' ? (
-            <HistoryView
-              batches={batches}
-              onUndo={handleUndo}
-              undoingId={undoingId}
-              undoResult={undoResult}
-            />
-          ) : result ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-success-bg border border-success-border">
-                  <CheckCircle2 size={16} className="text-success" />
-                  <span className="text-body font-medium text-success">{result.created} imported</span>
-                </div>
-                {result.failed > 0 && (
-                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
-                    <AlertCircle size={16} className="text-danger" />
-                    <span className="text-body font-medium text-danger">{result.failed} failed</span>
-                  </div>
-                )}
-              </div>
-
-              {failedRows.length > 0 && (
-                <div className="border border-border-light rounded-[10px] overflow-hidden">
-                  <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-                    <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">
-                      Rows that need fixing
-                    </p>
-                  </div>
-                  <div className="max-h-64 overflow-y-auto divide-y divide-surface-control">
-                    {failedRows.map((r) => (
-                      <div key={r.row} className="px-4 py-2.5">
-                        <p className="text-body font-medium text-text-primary">
-                          Row {r.row}
-                          {r.name ? ` · ${r.name}` : ''}
-                        </p>
-                        <p className="text-body text-danger mt-0.5">{r.error}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <p className="text-meta text-text-secondary">
-                Imported departments are placed under their parent on the chart. Press{' '}
-                <span className="font-medium text-text-primary">Auto-arrange</span> in the tree view to
-                tidy the whole structure.
-              </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={reset}
-                  className="px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-                >
-                  Import another file
-                </button>
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Step 1 — template */}
-              <div className="flex items-start gap-3 p-4 rounded-[10px] bg-primary-subtle border border-primary-border">
-                <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-body font-medium text-text-primary">
-                    Step 1 — Download the Excel template
-                  </p>
-                  <p className="text-meta text-text-secondary mt-0.5">
-                    Only <span className="font-medium text-primary-text">name</span> is required. The{' '}
-                    <strong>parent_department</strong> and <strong>head</strong> columns are dropdowns
-                    from your org. You can reference a parent that is{' '}
-                    <strong>also being imported</strong> — rows are created parents-first
-                    automatically.
-                  </p>
-                  <button
-                    onClick={downloadTemplate}
-                    disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-                  >
-                    {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                    {building ? 'Building…' : 'Download Excel template'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Step 2 — upload */}
-              <div>
-                <p className="text-body font-medium text-text-primary mb-2">
-                  Step 2 — Upload the filled file
-                </p>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-[10px] border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
-                >
-                  <UploadCloud size={26} className="text-text-muted" />
-                  <span className="text-body font-medium text-text-secondary">
-                    {fileName || 'Click to choose an .xlsx or .csv file'}
-                  </span>
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) handleFile(f)
-                  }}
-                />
-              </div>
-
-              {parseError && (
-                <div className="p-3 bg-danger-bg border border-danger-border rounded-[8px] text-body text-danger">
-                  {parseError}
-                </div>
-              )}
-
-              {rows.length > 0 && !parseError && (
-                <div className="p-3 bg-success-bg border border-success-border rounded-[8px] text-body text-success">
-                  Ready to import <span className="font-medium">{rows.length}</span> department
-                  {rows.length !== 1 ? 's' : ''} from{' '}
-                  <span className="font-medium">{fileName}</span>.
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        {!result && phase !== 'history' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleImport}
-              disabled={rows.length === 0 || importing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
-            >
-              {importing && <Loader2 size={15} className="animate-spin" />}
-              {importing ? 'Importing…' : `Import${rows.length > 0 ? ` ${rows.length}` : ''}`}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body,
-  )
-}
-
-function UndoSummary({ undoResult }: { undoResult: any }) {
-  return (
-    <div className="border border-border-light rounded-[10px] p-4 space-y-2">
-      <p className="text-body font-medium text-text-primary">
-        Removed {undoResult.undone} department{undoResult.undone !== 1 ? 's' : ''}.
+        // Parents may reference other new rows, so the dropdowns don't hard-block.
+        addColumnValidation(ws, columnLetter(1), 300, listValidation(`Lists!$A$1:$A$${Math.max(deptNames.length, 1)}`, false))
+        addColumnValidation(ws, columnLetter(2), 300, listValidation(`Lists!$B$1:$B$${Math.max(people.length, 1)}`, false))
+      },
+    },
+    uploadIntro: (
+      <p className="mt-0.5">
+        Only <span className="font-medium text-primary-text">name</span> is required. The <strong>parent_department</strong> and{' '}
+        <strong>head</strong> columns are dropdowns from your org. You can reference a parent that is{' '}
+        <strong>also being imported</strong> — rows are created parents-first automatically.
       </p>
-    </div>
-  )
-}
-
-function HistoryView({
-  batches,
-  onUndo,
-  undoingId,
-  undoResult,
-}: {
-  batches: any[]
-  onUndo: (batchId: string) => void
-  undoingId: string | null
-  undoResult: any | null
-}) {
-  if (batches.length === 0) {
-    return <p className="text-body text-text-muted py-8 text-center">No imports yet.</p>
+    ),
+    uploadStep2Label: 'Step 2 — Upload the filled file',
+    historyButtonLabel: 'Import History',
+    directNoun: 'department',
+    commit,
+    commitErrorMode: 'inline',
+    commitErrorFallback: 'Import failed. Please try again.',
+    renderResult: (ctx) =>
+      ctx.result && (
+        <SimpleResultView
+          result={ctx.result}
+          note={
+            <>
+              Imported departments are placed under their parent on the chart. Press{' '}
+              <span className="font-medium text-text-primary">Auto-arrange</span> in the tree view to tidy the whole structure.
+            </>
+          }
+        />
+      ),
+    history: {
+      list: () => listImportBatches(orgId),
+      undo: (id) => undoImport(orgId, id),
+      undoToast: () => ({ kind: 'success', message: 'Import undone successfully' }),
+      undoErrorFallback: 'Could not undo this import',
+      render: simpleHistoryRender('department'),
+    },
   }
-  return (
-    <div className="space-y-3">
-      {undoResult && <UndoSummary undoResult={undoResult} />}
-      <div className="border border-border-light rounded-[10px] divide-y divide-surface-control">
-        {batches.map((b) => (
-          <div key={b.id} className="px-4 py-3 flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-body font-medium text-text-primary truncate">
-                {b.file_name || 'Untitled import'}
-                {b.status !== 'committed' && (
-                  <span className="ml-2 text-meta font-medium text-text-muted uppercase">{b.status.replace('_', ' ')}</span>
-                )}
-              </p>
-              <p className="text-meta text-text-muted mt-0.5">
-                {formatDateTime(b.created_at)} · by {b.imported_by} · {b.created_count} created
-                {b.failed_count > 0 ? `, ${b.failed_count} failed` : ''} · {b.remaining} still present
-              </p>
-            </div>
-            {b.can_undo ? (
-              <button
-                onClick={() => onUndo(b.id)}
-                disabled={undoingId === b.id}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-meta font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors shrink-0"
-              >
-                {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
-                Undo
-              </button>
-            ) : (
-              <span className="text-meta text-text-muted shrink-0">
-                {b.status === 'undone' ? 'Undone' : 'Cannot Undo'}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+
+  return <BulkImportWizard config={config} onClose={onClose} onChanged={onImported} />
 }
