@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { assertActiveOrgMembers } from '../common/org-members';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClockService } from '../clock/clock.service';
 import { AssigneeVisibilityService } from '../assignee-visibility/assignee-visibility.service';
@@ -460,7 +461,7 @@ export class WorkLogsService {
       throw new ForbiddenException('You cannot view this demand');
     }
     const submissions = await this.prisma.workLogSubmission.findMany({
-      where: { demand_id: demandId },
+      where: { demand_id: demandId, organization_id: orgId },
       orderBy: { due_date: 'desc' },
     });
     const profiles = await this.visibility.getProfiles(orgId);
@@ -485,21 +486,21 @@ export class WorkLogsService {
 
   async pauseDemand(orgId: string, actor: Actor, demandId: string) {
     await this.getOwnedDemand(orgId, actor, demandId);
-    return this.prisma.workLogDemand.update({ where: { id: demandId }, data: { is_active: false } });
+    return this.prisma.workLogDemand.update({ where: { id: demandId, organization_id: orgId }, data: { is_active: false } });
   }
 
   async resumeDemand(orgId: string, actor: Actor, demandId: string) {
     await this.getOwnedDemand(orgId, actor, demandId);
     await this.prisma.workLogDemandSchedule.updateMany({
-      where: { demand_id: demandId },
+      where: { demand_id: demandId, organization_id: orgId },
       data: { is_active: true },
     });
-    return this.prisma.workLogDemand.update({ where: { id: demandId }, data: { is_active: true } });
+    return this.prisma.workLogDemand.update({ where: { id: demandId, organization_id: orgId }, data: { is_active: true } });
   }
 
   async deleteDemand(orgId: string, actor: Actor, demandId: string) {
     await this.getOwnedDemand(orgId, actor, demandId);
-    await this.prisma.workLogDemand.delete({ where: { id: demandId } }); // schedules + submissions cascade
+    await this.prisma.workLogDemand.delete({ where: { id: demandId, organization_id: orgId } }); // schedules + submissions cascade
     return { message: 'Demand deleted' };
   }
 
@@ -532,7 +533,7 @@ export class WorkLogsService {
     if (sub.writer_user_id !== actor.id) throw new ForbiddenException('This log is not assigned to you');
 
     const updated = await this.prisma.workLogSubmission.update({
-      where: { id: submissionId },
+      where: { id: submissionId, organization_id: orgId, writer_user_id: actor.id },
       data: { body: dto.body ?? null, status: 'submitted', submitted_at: new Date() },
     });
 
@@ -612,6 +613,23 @@ export class WorkLogsService {
       if (!readable.has(writerId)) throw new ForbiddenException('No access to this log');
     }
 
+    // A reply's parent must be a remark on the SAME log in this org — never a pasted
+    // foreign remark id (it would otherwise notify that remark's author).
+    let parentUserId: string | null = null;
+    if (dto.reply_to_remark_id) {
+      const parent = await this.prisma.workLogRemark.findFirst({
+        where: {
+          id: dto.reply_to_remark_id,
+          organization_id: orgId,
+          target_type: dto.target_type,
+          target_id: dto.target_id,
+        },
+        select: { user_id: true },
+      });
+      if (!parent) throw new NotFoundException('Remark to reply to not found');
+      parentUserId = parent.user_id;
+    }
+
     const remark = await this.prisma.workLogRemark.create({
       data: {
         organization_id: orgId,
@@ -628,11 +646,7 @@ export class WorkLogsService {
     // notifies whoever they're replying to.
     let recipientId: string | null = null;
     if (actor.id === writerId && dto.reply_to_remark_id) {
-      const parent = await this.prisma.workLogRemark.findUnique({
-        where: { id: dto.reply_to_remark_id },
-        select: { user_id: true },
-      });
-      recipientId = parent?.user_id ?? null;
+      recipientId = parentUserId;
     } else if (actor.id !== writerId) {
       recipientId = writerId;
     }
@@ -668,7 +682,7 @@ export class WorkLogsService {
     if (!remark) throw new NotFoundException('Remark not found');
     if (remark.user_id !== actor.id) throw new ForbiddenException("Cannot delete another user's remark");
     await this.prisma.workLogRemark.update({
-      where: { id: remarkId },
+      where: { id: remarkId, organization_id: orgId, user_id: actor.id },
       data: { is_deleted: true, deleted_at: new Date() },
     });
     return { message: 'Remark deleted' };
@@ -730,6 +744,8 @@ export class WorkLogsService {
     if (dto.reader_user_id === dto.writer_user_id) {
       throw new BadRequestException('Reader and writer must be different people');
     }
+    // Both people must be active members of THIS org (never a pasted foreign id).
+    await assertActiveOrgMembers(this.prisma, orgId, [dto.reader_user_id, dto.writer_user_id], 'work log reader/writer');
     return this.prisma.workLogReaderGrant.upsert({
       where: {
         organization_id_reader_user_id_writer_user_id: {
@@ -754,7 +770,7 @@ export class WorkLogsService {
       where: { id: grantId, organization_id: orgId },
     });
     if (!grant) throw new NotFoundException('Grant not found');
-    await this.prisma.workLogReaderGrant.delete({ where: { id: grantId } });
+    await this.prisma.workLogReaderGrant.delete({ where: { id: grantId, organization_id: orgId } });
     return { message: 'Grant removed' };
   }
 }

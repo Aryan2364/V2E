@@ -150,7 +150,7 @@ export class ProjectsController {
 
   @Post(':id/tasks/link')
   linkTask(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest, @Body() dto: LinkProjectTaskDto) {
-    return this.service.linkTask(orgId, id, req.user.id, dto);
+    return this.service.linkTask(orgId, id, req.user.id, dto, principalFromUser(req.user));
   }
 
   @Post(':id/tasks/:projectTaskId/fulfill')
@@ -161,7 +161,7 @@ export class ProjectsController {
     @Request() req: AuthRequest,
     @Body('task_id') taskId: string,
   ) {
-    return this.service.fulfillPendingTask(orgId, id, req.user.id, projectTaskId, taskId);
+    return this.service.fulfillPendingTask(orgId, id, req.user.id, projectTaskId, taskId, principalFromUser(req.user));
   }
 
   @Delete(':id/tasks/:projectTaskId')

@@ -145,7 +145,11 @@ export class LeaveService {
         },
         orderBy: { start_date: 'asc' },
       }),
-      this.prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } }),
+      // Names only for users who belong to THIS org � never resolve a foreign user id.
+      this.prisma.user.findMany({
+        where: { id: { in: ids }, organization_memberships: { some: { organization_id: orgId } } },
+        select: { id: true, name: true },
+      }),
     ]);
 
     const nameOf = new Map(users.map((u) => [u.id, u.name]));
@@ -283,6 +287,14 @@ export class LeaveService {
     if (onBehalf && !actorIsAdmin) {
       throw new ForbiddenException('Only an admin can create leave on behalf of another employee');
     }
+    if (onBehalf) {
+      // An admin of THIS org may only book leave for a member of this org.
+      const member = await this.prisma.organizationMember.findFirst({
+        where: { organization_id: orgId, user_id: targetUserId },
+        select: { id: true },
+      });
+      if (!member) throw new NotFoundException('Employee not found in this organization');
+    }
 
     // Decide approval routing. Admin-created or self_mark mode or an allowed self-declare
     // are booked immediately (and flagged self-declared); everything else is a request.
@@ -324,8 +336,13 @@ export class LeaveService {
     if (leave.state !== 'pending') {
       throw new BadRequestException('Only a pending request can be decided');
     }
+    // Approver chain (not data-scope based): an org admin, the applicant's manager, or a
+    // configured approver may decide. Nobody but an admin may decide their own request.
     const admin = await this.isAdmin(orgId, actorUserId);
     if (!admin) {
+      if (leave.user_id === actorUserId) {
+        throw new ForbiddenException('You cannot decide your own leave request');
+      }
       const profile = await this.prisma.employeeProfile.findFirst({
         where: { organization_id: orgId, user_id: leave.user_id },
         select: { reporting_to_user_id: true },
@@ -337,7 +354,7 @@ export class LeaveService {
     }
 
     const updated = await this.prisma.leave.update({
-      where: { id: leaveId },
+      where: { id: leaveId, organization_id: orgId },
       data: {
         state: dto.decision,
         decided_by_user_id: actorUserId,
@@ -373,7 +390,7 @@ export class LeaveService {
       throw new BadRequestException('Only a rejected leave can be overridden');
     }
     const updated = await this.prisma.leave.update({
-      where: { id: leaveId },
+      where: { id: leaveId, organization_id: orgId },
       data: { overridden: true },
     });
 
@@ -405,7 +422,7 @@ export class LeaveService {
     if (leave.user_id !== actorUserId && !admin) {
       throw new ForbiddenException('Only the employee or an admin can cancel this leave');
     }
-    return this.prisma.leave.update({ where: { id: leaveId }, data: { state: 'cancelled' } });
+    return this.prisma.leave.update({ where: { id: leaveId, organization_id: orgId }, data: { state: 'cancelled' } });
   }
 
   // ─── Approver resolution ──────────────────────────────────────────────────────────
