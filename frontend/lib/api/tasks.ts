@@ -585,6 +585,17 @@ export const tasksApi = {
     return unwrap<{ url: string; file_name: string }>(res)
   },
 
+  /**
+   * Downloads the file's bytes (phone share sheet). The signed URL points at storage, not
+   * our API, so it is fetched WITHOUT the app's auth header - never through apiClient.
+   */
+  fetchAttachmentFile: async (orgId: string, taskId: string, attachmentId: string): Promise<{ blob: Blob; file_name: string }> => {
+    const { url, file_name } = await tasksApi.getAttachmentDownloadUrl(orgId, taskId, attachmentId)
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`download failed: ${res.status}`)
+    return { blob: await res.blob(), file_name }
+  },
+
   /** Resolve a short-lived signed URL then trigger the browser download. */
   downloadAttachment: async (orgId: string, taskId: string, attachmentId: string): Promise<void> => {
     const { url } = await tasksApi.getAttachmentDownloadUrl(orgId, taskId, attachmentId)
