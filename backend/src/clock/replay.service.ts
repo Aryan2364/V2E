@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClockService } from './clock.service';
 import { SchedulerService } from '../scheduler/scheduler.service';
-import { WorkflowEngineService } from '../workflows/workflow-engine.service';
+import { WorkflowSweepsService } from '../workflows/workflow-sweeps.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { runExclusive } from '../common/run-exclusive';
@@ -27,7 +27,7 @@ export class ReplayService {
     private readonly prisma: PrismaService,
     private readonly clock: ClockService,
     private readonly scheduler: SchedulerService,
-    private readonly workflow: WorkflowEngineService,
+    private readonly workflow: WorkflowSweepsService,
     private readonly tickets: TicketsService,
     private readonly notifications: NotificationsService,
   ) {}

@@ -16,7 +16,7 @@ import {
   TaskActionType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { WorkflowEngineService } from '../workflows/workflow-engine.service';
+import { WorkflowTaskEventsService } from '../workflows/workflow-task-events.service';
 import { HolidaysService } from '../holidays/holidays.service';
 import { ProjectProgressService } from '../projects/project-progress.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -146,7 +146,7 @@ export class TasksService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly workflowEngine: WorkflowEngineService,
+    private readonly workflowEngine: WorkflowTaskEventsService,
     private readonly holidaysService: HolidaysService,
     private readonly projectProgressService: ProjectProgressService,
     private readonly notifications: NotificationsService,
