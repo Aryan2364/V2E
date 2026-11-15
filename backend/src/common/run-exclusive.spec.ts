@@ -27,7 +27,11 @@ describe('runExclusive (in-process guard; no DATABASE_URL)', () => {
   });
 
   it('releases the guard and swallows errors when fn throws', async () => {
-    await expect(runExclusive('job-d', async () => { throw new Error('boom'); })).resolves.toBeUndefined();
+    await expect(
+      runExclusive('job-d', async () => {
+        throw new Error('boom');
+      }),
+    ).resolves.toBeUndefined();
     const fn = jest.fn(async () => undefined);
     await runExclusive('job-d', fn);
     expect(fn).toHaveBeenCalledTimes(1);

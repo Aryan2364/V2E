@@ -15,9 +15,14 @@ const running = new Set<string>();
  * When DATABASE_URL is unset (unit tests) only the in-process guard applies.
  * Errors from `fn` are logged, never thrown, so a failing sweep cannot crash the scheduler.
  */
-export async function runExclusive(name: string, fn: () => Promise<unknown>): Promise<void> {
+export async function runExclusive(
+  name: string,
+  fn: () => Promise<unknown>,
+): Promise<void> {
   if (running.has(name)) {
-    logger.debug(`${name}: previous run still in progress in this process — skipped`);
+    logger.debug(
+      `${name}: previous run still in progress in this process — skipped`,
+    );
     return;
   }
   running.add(name);
@@ -34,7 +39,9 @@ export async function runExclusive(name: string, fn: () => Promise<unknown>): Pr
         );
         acquired = res.rows[0]?.locked === true;
       } catch (err) {
-        logger.warn(`${name}: could not take advisory lock, skipping run: ${err instanceof Error ? err.message : err}`);
+        logger.warn(
+          `${name}: could not take advisory lock, skipping run: ${err instanceof Error ? err.message : err}`,
+        );
         await closeQuietly(lockClient);
         lockClient = null;
         return;
@@ -48,11 +55,15 @@ export async function runExclusive(name: string, fn: () => Promise<unknown>): Pr
     }
     await fn();
   } catch (err) {
-    logger.error(`${name} failed: ${err instanceof Error ? (err.stack ?? err.message) : err}`);
+    logger.error(
+      `${name} failed: ${err instanceof Error ? (err.stack ?? err.message) : err}`,
+    );
   } finally {
     if (lockClient) {
       try {
-        await lockClient.query('SELECT pg_advisory_unlock(hashtext($1))', [`cron:${name}`]);
+        await lockClient.query('SELECT pg_advisory_unlock(hashtext($1))', [
+          `cron:${name}`,
+        ]);
       } catch {
         /* the lock is released when the connection closes below */
       }

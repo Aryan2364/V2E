@@ -8,11 +8,16 @@ export function getDatabaseUrl(): string {
 }
 
 /** Splits an optional sslmode param out of the URL into pg's ssl option. */
-export function pgConnectionOptions(): { connectionString: string; ssl: { rejectUnauthorized: boolean } | undefined } {
+export function pgConnectionOptions(): {
+  connectionString: string;
+  ssl: { rejectUnauthorized: boolean } | undefined;
+} {
   const rawUrl = getDatabaseUrl();
   const needsSsl = rawUrl.includes('sslmode');
   return {
-    connectionString: needsSsl ? rawUrl.replace(/[?&]sslmode=[^&]*/g, '') : rawUrl,
+    connectionString: needsSsl
+      ? rawUrl.replace(/[?&]sslmode=[^&]*/g, '')
+      : rawUrl,
     ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
   };
 }
