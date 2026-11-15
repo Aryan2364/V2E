@@ -246,7 +246,7 @@ export default function ProcessMapExplorerPage() {
         await processHierarchyApi.createConnection(orgId, mapId, {
           parent_node_id: parentId, source_node_id: anchor.id, target_node_id: created.id,
           condition_kind: condition, label: condition === 'yes' ? 'Yes' : undefined,
-        }).catch(() => {})
+        }).catch(() => toast.error('The step was added but could not be connected to the flow.'))
       }
       await refresh()
       setSelectedNodeId(created.id) // highlight + open the panel, so it's obvious it landed

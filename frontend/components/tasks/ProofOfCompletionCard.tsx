@@ -22,6 +22,7 @@ import { extensionOf, fileKindLabel, formatBytes } from '@/lib/attachments'
 import type { Task, TaskAssigneeUser, TaskAttachment, ProofVisibility } from '@/lib/types/tasks'
 
 import { getErrorMessage } from '@/lib/errors'
+import { toast } from '@/components/ui/sonner'
 function formatWhen(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
@@ -139,7 +140,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
     }
   }
 
-  const download = (a: TaskAttachment) => tasksApi.downloadProof(orgId, task.id, a.id).catch(() => {})
+  const download = (a: TaskAttachment) => tasksApi.downloadProof(orgId, task.id, a.id).catch((e) => toast.error(getErrorMessage(e, 'Could not download that file.')))
 
   async function handleDeleteProof(a: TaskAttachment) {
     setErrors([])
