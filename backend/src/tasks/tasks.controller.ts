@@ -12,6 +12,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { DeleteTaskDto, TaskReasonDto, CompleteTaskDto, SetAssigneeStatusDto, SetSharedStatusDto, ChallengeChecklistItemDto, BulkUpdateTasksDto } from './dto/task-action.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DataScope } from '@prisma/client';
@@ -379,14 +380,7 @@ export class TasksController {
   bulkUpdate(
     @Param('orgId') orgId: string,
     @Request() req: any,
-    @Body()
-    body: {
-      task_ids: string[];
-      action: 'status' | 'deadline' | 'complete' | 'add_tags' | 'remove_tags';
-      status_id?: string;
-      deadline?: string | null;
-      tag_ids?: string[];
-    },
+    @Body() body: BulkUpdateTasksDto,
   ) {
     return this.service.bulkUpdate(orgId, principalFromUser(req.user), body.task_ids ?? [], body.action, {
       status_id: body.status_id,
@@ -458,7 +452,7 @@ export class TasksController {
     @Param('orgId') orgId: string,
     @Request() req: any,
     @Param('id') id: string,
-    @Body() body: { reason: string },
+    @Body() body: DeleteTaskDto,
   ) {
     return this.service.deleteTask(orgId, req.user.id, id, body.reason);
   }
@@ -471,7 +465,7 @@ export class TasksController {
     @Param('orgId') orgId: string,
     @Request() req: any,
     @Param('id') id: string,
-    @Body() body: { close_whole_task?: boolean },
+    @Body() body: CompleteTaskDto,
   ) {
     return this.service.completeTask(orgId, req.user.id, id, undefined, !!body?.close_whole_task);
   }
@@ -494,7 +488,7 @@ export class TasksController {
     @Request() req: any,
     @Param('id') id: string,
     @Param('userId') userId: string,
-    @Body() body: { reason?: string },
+    @Body() body: TaskReasonDto,
   ) {
     const target = userId === 'me' ? req.user.id : userId;
     return this.service.reopenAssigneePart(orgId, req.user.id, id, target, body?.reason);
@@ -506,7 +500,7 @@ export class TasksController {
     @Param('orgId') orgId: string,
     @Request() req: any,
     @Param('id') id: string,
-    @Body() body: { user_id?: string; status_id: string },
+    @Body() body: SetAssigneeStatusDto,
   ) {
     return this.service.setAssigneeStatus(orgId, req.user.id, id, body.user_id ?? req.user.id, body.status_id);
   }
@@ -517,7 +511,7 @@ export class TasksController {
     @Param('orgId') orgId: string,
     @Request() req: any,
     @Param('id') id: string,
-    @Body() body: { status_id: string },
+    @Body() body: SetSharedStatusDto,
   ) {
     return this.service.setSharedStatus(orgId, req.user.id, id, body.status_id);
   }
@@ -528,7 +522,7 @@ export class TasksController {
     @Param('orgId') orgId: string,
     @Request() req: any,
     @Param('id') id: string,
-    @Body() body: { reason?: string },
+    @Body() body: TaskReasonDto,
   ) {
     return this.service.markTaskIncomplete(orgId, req.user.id, id, body?.reason);
   }
@@ -540,7 +534,7 @@ export class TasksController {
     @Request() req: any,
     @Param('id') id: string,
     @Param('userId') userId: string,
-    @Body() body: { reason?: string },
+    @Body() body: TaskReasonDto,
   ) {
     const target = userId === 'me' ? req.user.id : userId;
     return this.service.setAssigneeCannotComplete(orgId, req.user.id, id, target, body?.reason);
@@ -560,7 +554,7 @@ export class TasksController {
 
   @Post(':id/reopen')
   @ApiOperation({ summary: 'Reopen a completed task (within window)' })
-  reopen(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Body() body: { reason?: string }) {
+  reopen(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Body() body: TaskReasonDto) {
     return this.service.reopenTask(orgId, req.user.id, id, body?.reason);
   }
 
@@ -758,7 +752,7 @@ export class TasksController {
     @Request() req: any,
     @Param('id') id: string,
     @Param('itemId') itemId: string,
-    @Body() body: { reason?: string },
+    @Body() body: TaskReasonDto,
   ) {
     await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.service.skipChecklistItem(orgId, req.user.id, id, itemId, body?.reason);
@@ -785,7 +779,7 @@ export class TasksController {
     @Request() req: any,
     @Param('id') id: string,
     @Param('itemId') itemId: string,
-    @Body() body: { user_id?: string },
+    @Body() body: ChallengeChecklistItemDto,
   ) {
     await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.service.challengeChecklistItem(orgId, req.user.id, id, itemId, body?.user_id ?? '');

@@ -1,4 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import type { AuthRequest } from '../common/types/auth-request';
+import { UpdateProjectTemplateDto } from './dto/update-project-template.dto';
+import { AddTemplateMilestoneDto, UpdateTemplateMilestoneDto, AddTemplateTaskDto, UpdateTemplateTaskDto } from './dto/template-items.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -19,7 +22,7 @@ export class ProjectTemplatesController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Request() req: any, @Body() dto: CreateProjectTemplateDto) {
+  create(@Param('orgId') orgId: string, @Request() req: AuthRequest, @Body() dto: CreateProjectTemplateDto) {
     return this.service.createTemplate(orgId, req.user.id, dto);
   }
 
@@ -29,7 +32,7 @@ export class ProjectTemplatesController {
   }
 
   @Patch(':id')
-  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: Partial<CreateProjectTemplateDto>) {
+  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: UpdateProjectTemplateDto) {
     return this.service.updateTemplate(orgId, id, dto);
   }
 
@@ -41,12 +44,12 @@ export class ProjectTemplatesController {
   // ─── Milestones ──────────────────────────────────────────────────────────────
 
   @Post(':id/milestones')
-  addMilestone(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: { name: string; description?: string; order_index?: number }) {
+  addMilestone(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: AddTemplateMilestoneDto) {
     return this.service.addMilestone(orgId, id, dto);
   }
 
   @Patch(':id/milestones/:mid')
-  updateMilestone(@Param('orgId') orgId: string, @Param('id') id: string, @Param('mid') mid: string, @Body() dto: Partial<{ name: string; description: string; order_index: number }>) {
+  updateMilestone(@Param('orgId') orgId: string, @Param('id') id: string, @Param('mid') mid: string, @Body() dto: UpdateTemplateMilestoneDto) {
     return this.service.updateMilestone(orgId, id, mid, dto);
   }
 
@@ -61,11 +64,7 @@ export class ProjectTemplatesController {
   addTask(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Body() dto: {
-      title: string; description?: string; priority_id?: string; milestone_id?: string;
-      estimated_days?: number; default_assignee_user_id?: string; default_assignee_role?: string;
-      order_index?: number; checklist_items?: { title: string }[];
-    },
+    @Body() dto: AddTemplateTaskDto,
   ) {
     return this.service.addTask(orgId, id, dto);
   }
@@ -75,7 +74,7 @@ export class ProjectTemplatesController {
     @Param('orgId') orgId: string,
     @Param('id') id: string,
     @Param('tid') tid: string,
-    @Body() dto: Partial<{ title: string; description: string; priority_id: string; milestone_id: string; estimated_days: number; default_assignee_user_id: string; default_assignee_role: string; order_index: number }>,
+    @Body() dto: UpdateTemplateTaskDto,
   ) {
     return this.service.updateTask(orgId, id, tid, dto);
   }

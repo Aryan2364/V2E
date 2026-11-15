@@ -1,6 +1,7 @@
 import {
   Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards,
 } from '@nestjs/common'
+import { BulkImportOrgHolidaysDto } from './dto/bulk-import-org-holidays.dto'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { HolidayStatus, HolidayType, PermissionAction } from '@prisma/client'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
@@ -82,7 +83,7 @@ export class HolidaysController {
   @ApiOperation({ summary: 'Bulk import org holidays from CSV data' })
   bulkImportOrgHolidays(
     @Param('orgId') orgId: string,
-    @Body() dto: { holidays: Array<{ name: string; date: string; type?: string; is_recurring_yearly?: boolean; description?: string }> },
+    @Body() dto: BulkImportOrgHolidaysDto,
   ) {
     return this.service.bulkImportOrgHolidays(orgId, dto.holidays)
   }
