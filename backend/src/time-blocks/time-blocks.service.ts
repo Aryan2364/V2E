@@ -5,6 +5,7 @@ import { GcalApiService } from '../gcal/gcal-api.service';
 import { GoogleAccountService } from '../gcal/google-account.service';
 import { CreateTimeBlockDto, UpdateTimeBlockDto } from './dto/time-block.dto';
 import { swallow } from '../common/swallow';
+import { runExclusive } from '../common/run-exclusive';
 
 // A Time-Block is the user's OWN availability (a named personal event, e.g.
 // "Dentist"). It is not a meeting and is never org-enumerated: every mutation is
@@ -228,6 +229,7 @@ export class TimeBlocksService {
   // busy-view. Bounded forward window; no-op when Google isn't configured.
   @Cron('0 */15 * * * *')
   async syncAllConnectedUsers(): Promise<void> {
+    return runExclusive('TimeBlocksService.syncAllConnectedUsers', async () => {
     if (!this.api.isConfigured) return;
     const users = await this.prisma.user.findMany({
       where: { google_refresh_token: { not: null } },
@@ -242,5 +244,6 @@ export class TimeBlocksService {
     for (const u of users) {
       await this.importFromGoogle(u.id, fromIso, toIso).catch(swallow('time-blocks.syncAllConnectedUsers'));
     }
+    });
   }
 }

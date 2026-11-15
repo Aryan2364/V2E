@@ -51,6 +51,7 @@ import { MAIN_TRACK, resolveStoredTracks } from './tracks'
 import { instanceNameKey, tidyInstanceName } from './run-access'
 import { dayMonthYear, shortDate } from './instance-label'
 import { swallow } from '../common/swallow';
+import { runExclusive } from '../common/run-exclusive';
 
 type Tx = Prisma.TransactionClient
 type Effect = () => Promise<unknown>
@@ -2186,6 +2187,7 @@ export class WorkflowEngineService {
 
   @Cron('*/15 * * * *')
   async processOverdueSteps(): Promise<void> {
+    return runExclusive('WorkflowEngineService.processOverdueSteps', async () => {
     const orgs = await this.prisma.organization.findMany({ where: { is_test: false }, select: { id: true } })
     for (const org of orgs) {
       try {
@@ -2194,6 +2196,7 @@ export class WorkflowEngineService {
         this.logger.error(`Workflow late sweep failed for org ${org.id}: ${(err as Error)?.stack ?? err}`)
       }
     }
+    });
   }
 
   /** Org-scoped, now-injected — cron passes real now, ReplayService passes sim now. */
@@ -2306,6 +2309,7 @@ export class WorkflowEngineService {
    */
   @Cron('*/15 * * * *')
   async processSchedules(): Promise<void> {
+    return runExclusive('WorkflowEngineService.processSchedules', async () => {
     const orgs = await this.prisma.organization.findMany({
       where: { OR: [{ is_test: false }, { is_test: true, sim_epoch: { not: null }, sim_replayed_until: { not: null } }] },
       select: { id: true, is_test: true, sim_replayed_until: true },
@@ -2318,6 +2322,7 @@ export class WorkflowEngineService {
         this.logger.error(`Schedule sweep failed for org ${org.id}: ${(err as Error)?.stack ?? err}`)
       }
     }
+    });
   }
 
   /** Org-scoped, now-injected — cron passes real now, ReplayService passes the sim day. */
@@ -2403,6 +2408,7 @@ export class WorkflowEngineService {
    */
   @Cron('*/15 * * * *')
   async processWaitingSteps(): Promise<void> {
+    return runExclusive('WorkflowEngineService.processWaitingSteps', async () => {
     const orgs = await this.prisma.organization.findMany({
       where: { OR: [{ is_test: false }, { is_test: true, sim_epoch: { not: null }, sim_replayed_until: { not: null } }] },
       select: { id: true, is_test: true, sim_replayed_until: true },
@@ -2415,6 +2421,7 @@ export class WorkflowEngineService {
         this.logger.error(`Waiting-step sweep failed for org ${org.id}: ${(err as Error)?.stack ?? err}`)
       }
     }
+    });
   }
 
   /** Org-scoped, now-injected — cron passes real now, ReplayService passes the sim day. */

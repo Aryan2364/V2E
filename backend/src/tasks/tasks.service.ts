@@ -56,6 +56,7 @@ import { MAX_TAGS_PER_TASK } from '../task-masters/task-tag.constants';
 import { deadlineBucket, myOpenTasksWhere } from './badge-count.util';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { swallow } from '../common/swallow';
+import { runExclusive } from '../common/run-exclusive';
 
 const TASK_INCLUDE = {
   status: true,
@@ -3653,6 +3654,7 @@ export class TasksService {
   // query is a single-column lookup that is almost always empty.
   @Cron('*/10 * * * * *')
   async processPendingCompletionNotifications() {
+    return runExclusive('TasksService.processPendingCompletionNotifications', async () => {
     const now = new Date();
     const due = await this.prisma.task.findMany({
       where: { pending_completion_notification_at: { lte: now }, is_deleted: false },
@@ -3672,6 +3674,7 @@ export class TasksService {
         this.logger.error(`processPendingCompletionNotifications failed for task ${task.id}: ${err}`),
       );
     }
+    });
   }
 
   private async fireOnePendingCompletionNotification(task: {

@@ -29,6 +29,7 @@ import type { TransferTicketDto } from './dto/transfer-ticket.dto'
 import type { ReopenTicketDto } from './dto/reopen-ticket.dto'
 import type { CreateResolverGroupDto, UpdateResolverGroupDto } from './dto/resolver-group.dto'
 import { TicketTemplateAccessService } from './ticket-template-access.service'
+import { runExclusive } from '../common/run-exclusive';
 
 const TICKET_INCLUDE = {
   ticket_type: true,
@@ -1577,9 +1578,11 @@ export class TicketsService {
 
   @Cron('0 * * * *')
   async processSlaBreaches() {
+    return runExclusive('TicketsService.processSlaBreaches', async () => {
     const now = new Date()
     const orgs = await this.prisma.organization.findMany({ where: { is_test: false }, select: { id: true } })
     for (const org of orgs) await this.processSlaForOrg(org.id, now)
+    });
   }
 
   // Org-scoped, now-injected — cron passes real now, ReplayService passes sim now.
