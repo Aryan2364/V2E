@@ -24,6 +24,9 @@ export default function TicketCard({ ticket, onClick }: Props) {
   return (
     <div
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() } }}
       className="bg-surface border border-border-light rounded-card shadow-card px-6 py-3.5 flex items-center gap-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group"
     >
       {/* Ticket number */}

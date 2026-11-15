@@ -473,11 +473,17 @@ export default function NodeDrawer({
                 ) : description.trim() ? (
                   <div
                     onClick={() => { if (canEdit) setDescEditing(true) }}
+                    role={canEdit ? 'button' : undefined}
+                    tabIndex={canEdit ? 0 : undefined}
+                    onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); if (canEdit) setDescEditing(true) } }}
                     className={`${inputCls} whitespace-pre-wrap wrap-break-word min-h-[76px] ${canEdit ? 'cursor-text' : ''}`}
                   >{linkify(description)}</div>
                 ) : (
                   <div
                     onClick={() => { if (canEdit) setDescEditing(true) }}
+                    role={canEdit ? 'button' : undefined}
+                    tabIndex={canEdit ? 0 : undefined}
+                    onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); if (canEdit) setDescEditing(true) } }}
                     className={`${inputCls} min-h-[76px] text-text-muted ${canEdit ? 'cursor-text' : ''}`}
                   >{canEdit ? 'What happens in this step?' : '—'}</div>
                 )}

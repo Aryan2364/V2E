@@ -184,7 +184,7 @@ function RecurringCard({
   ]
 
   return (
-    <div onClick={onClick}
+    <div onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() } }}
       className="bg-surface border border-border-light rounded-card shadow-card p-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group flex flex-col h-[280px]">
       <div className="mb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
