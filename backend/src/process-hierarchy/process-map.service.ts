@@ -14,6 +14,7 @@ import { Principal } from '../access-rights/permissions.service';
 import { ProcessAccessService } from './process-access.service';
 import { CreateMapDto, UpdateMapDto } from './dto/map.dto';
 import { requireProcessNode } from './process-helpers';
+import { swallow } from '../common/swallow';
 
 @Injectable()
 export class ProcessMapService {
@@ -335,7 +336,7 @@ export class ProcessMapService {
     if (emptyAutoLaneIds.length) {
       this.prisma.processLane
         .deleteMany({ where: { id: { in: emptyAutoLaneIds } } })
-        .catch(() => {});
+        .catch(swallow('process-hierarchy.getFlow'));
     }
     const laneRows = laneRowsAll.filter(
       (l) => !emptyAutoLaneIds.includes(l.id),

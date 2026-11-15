@@ -34,6 +34,7 @@ import {
   CreateDecisionDto,
   UpdateDecisionDto,
 } from './dto/outputs.dto';
+import { clampTake } from '../common/pagination';
 
 export interface Actor {
   id: string;
@@ -236,7 +237,7 @@ export class MeetingsService {
     if (!page) {
       return this.prisma.meeting.findMany({ where, orderBy, include });
     }
-    const take = Math.min(Math.max(filters.pageSize ? parseInt(filters.pageSize, 10) : 25, 1), 100);
+    const take = clampTake(filters.pageSize, 25, 100);
     const skip = (Math.max(page, 1) - 1) * take;
     const [items, total] = await Promise.all([
       this.prisma.meeting.findMany({ where, orderBy, include, skip, take }),

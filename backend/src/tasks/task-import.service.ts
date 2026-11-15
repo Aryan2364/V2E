@@ -26,6 +26,7 @@ import {
   TaskUndoImportResult,
   TaskUndoKeptRow,
 } from './dto/bulk-import-task.dto';
+import { swallow } from '../common/swallow';
 
 /** Combined dropdown values read "Value · Context" with this glue (mirrors employee import). */
 export const VALUE_SEPARATOR = ' · ';
@@ -771,8 +772,8 @@ export class TaskImportService {
         for (const e of avail.results) {
           leaveByUser.set(e.user_id, e.windows.map((w) => ({ start: w.start_date, end: w.end_date })));
         }
-      } catch {
-        /* leave is advisory — never fail validation over it */
+      } catch (err) {
+        swallow('task-import.leaveLookup')(err);
       }
     }
 

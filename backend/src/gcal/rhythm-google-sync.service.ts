@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { GcalApiService, RecurringPayload } from './gcal-api.service';
 import { GoogleAccountService } from './google-account.service';
 import { buildRecurrence, type RhythmScheduleShape } from './rrule';
+import { swallow } from '../common/swallow';
 
 function pad(n: number): string { return String(n).padStart(2, '0'); }
 
@@ -132,6 +133,6 @@ export class RhythmGoogleSyncService {
   private async clearMirror(rhythmId: string): Promise<void> {
     await this.prisma.meetingRhythm
       .update({ where: { id: rhythmId }, data: { google_event_id: null, google_ical_uid: null } })
-      .catch(() => undefined);
+      .catch(swallow('rhythm-google-sync.clearMirror'));
   }
 }

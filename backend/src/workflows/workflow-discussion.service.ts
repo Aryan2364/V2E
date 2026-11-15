@@ -19,6 +19,7 @@ import { WorkflowFilesService, canSeeProof } from './workflow-files.service'
 import { isBranchRow, readSnapshot } from './engine/snapshot'
 import { isOpen } from './engine/dag'
 import { DISCUSSION_PAGE, DISCUSSION_PAGE_MAX, MENTION_MAX, MESSAGE_BODY_MAX } from './dto/discussion.dto'
+import { swallow } from '../common/swallow';
 
 /**
  * One discussion per workflow instance (instance-thread spec).
@@ -978,7 +979,7 @@ export class WorkflowDiscussionService {
         data: { deleted_at: now },
       })
     }
-    await Promise.all([...taskFiles, ...instanceFiles].map((f) => this.r2.deleteObject(f.storage_key).catch(() => undefined)))
+    await Promise.all([...taskFiles, ...instanceFiles].map((f) => this.r2.deleteObject(f.storage_key).catch(swallow('workflow-discussion.remove'))))
     if (m.task_id) await this.taskActivity(ctx.orgId, m.task_id, viewer.userId, 'comment_deleted', { comment_id: m.id })
     return { id: m.id, deleted: true }
   }

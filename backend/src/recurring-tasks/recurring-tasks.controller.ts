@@ -29,6 +29,7 @@ import { UpdateRecurringDto } from './dto/update-recurring.dto';
 import { CreateScheduleEntryDto } from './dto/create-schedule-entry.dto';
 import { parseTagIdsQuery } from '../common/tag-ids-query';
 import { MAX_ATTACHMENT_BYTES, type UploadedFile as UploadedFileType } from '../tasks/task-attachments.service';
+import { swallow } from '../common/swallow';
 
 @ApiTags('recurring-tasks')
 @ApiBearerAuth()
@@ -102,7 +103,7 @@ export class RecurringTasksController {
     const template = await this.service.createTemplate(orgId, req.user.id, dto);
     // Immediately spawn today's occurrence if the schedule fires today (org's effective clock)
     const now = await this.clock.now(orgId);
-    this.scheduler.spawnForTemplate(orgId, template!.id, false, now).catch(() => null);
+    this.scheduler.spawnForTemplate(orgId, template!.id, false, now).catch(swallow('recurring-tasks.create', null));
     return template;
   }
 
@@ -130,7 +131,7 @@ export class RecurringTasksController {
     const template = await this.service.resumeTemplate(orgId, id);
     // Immediately spawn today's occurrence if the schedule fires today (org's effective clock)
     const now = await this.clock.now(orgId);
-    this.scheduler.spawnForTemplate(orgId, id, false, now).catch(() => null);
+    this.scheduler.spawnForTemplate(orgId, id, false, now).catch(swallow('recurring-tasks.resume', null));
     return template;
   }
 

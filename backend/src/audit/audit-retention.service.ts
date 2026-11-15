@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaBaseService } from '../prisma/prisma-base.service';
 import { ClockService } from '../clock/clock.service';
+import { runExclusive } from '../common/run-exclusive';
 
 /**
  * Operational retention: nightly batched delete of audit entries older than the
@@ -24,6 +25,7 @@ export class AuditRetentionService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async prune(): Promise<void> {
+    return runExclusive('AuditRetentionService.prune', async () => {
     const orgs = await this.base.organization.findMany({ select: { id: true } });
     let totalDeleted = 0;
     for (const { id: orgId } of orgs) {
@@ -48,5 +50,6 @@ export class AuditRetentionService {
       totalDeleted += deleted;
     }
     if (totalDeleted) this.logger.log(`Audit retention pruned ${totalDeleted} entries`);
+    });
   }
 }

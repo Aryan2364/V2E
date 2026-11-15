@@ -12,6 +12,7 @@ import {
   SetEmployeeManualOverrideDto,
   UpdateAssigneeSettingsDto,
 } from './dto/assignee-visibility.dto';
+import { swallow } from '../common/swallow';
 
 // Member roles that, by default, see everyone (full-visibility list). Distinct from
 // "is an admin" — granting full visibility never confers admin powers elsewhere.
@@ -525,7 +526,7 @@ export class AssigneeVisibilityService {
           after: (data.after ?? null) as never,
         },
       })
-      .catch(() => null);
+      .catch(swallow('assignee-visibility.audit', null));
   }
 
   /** Full admin view for the masters UI. */
