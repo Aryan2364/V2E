@@ -55,6 +55,7 @@ import { TasksAnalyticsService } from './tasks-analytics.service';
 import { MAX_TAGS_PER_TASK } from '../task-masters/task-tag.constants';
 import { deadlineBucket, myOpenTasksWhere } from './badge-count.util';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { swallow } from '../common/swallow';
 
 const TASK_INCLUDE = {
   status: true,
@@ -1029,7 +1030,7 @@ export class TasksService {
               frequency_count: { increment: 1 },
               last_assigned_at: new Date(),
             },
-          }).catch(() => null), // ignore if constraint fails on race condition
+          }).catch(swallow('tasks.createTask', null)), // ignore if constraint fails on race condition
         ),
       );
     }
@@ -1639,8 +1640,7 @@ export class TasksService {
   }
 
   private logTruncation(orgId: string, cap: number) {
-    // eslint-disable-next-line no-console
-    console.warn(`[tasks/flow] org ${orgId}: work-flow sample capped at ${cap} tasks; some cross-dept counts may be partial.`);
+    this.logger.warn(`[tasks/flow] org ${orgId}: work-flow sample capped at ${cap} tasks; some cross-dept counts may be partial.`);
   }
 
   // ─── Bulk actions ──────────────────────────────────────────────────────────────
@@ -1784,7 +1784,7 @@ export class TasksService {
           where: { id: { in: ids } },
           data: { status_id: payload.status_id, status_actor_user_id: principal.userId },
         });
-        await Promise.all(ids.map((id) => this.logActivity(orgId, id, principal.userId, 'status_changed', { bulk: true }).catch(() => null)));
+        await Promise.all(ids.map((id) => this.logActivity(orgId, id, principal.userId, 'status_changed', { bulk: true }).catch(swallow('tasks.bulkUpdate', null))));
       }
       return { updated: ids.length, skipped };
     }
@@ -1844,7 +1844,7 @@ export class TasksService {
               .map((id) =>
                 this.prisma.task
                   .update({ where: { id }, data: { original_deadline: byId.get(id)!.deadline } })
-                  .catch(() => null),
+                  .catch(swallow('tasks.bulkUpdate', null)),
               ),
           );
           await this.prisma.taskDeadlineRevision.createMany({
@@ -1862,14 +1862,14 @@ export class TasksService {
         // Relative reminders were derived from the OLD dates — re-hang them, or they
         // fire after the deadline they were meant to pre-empt (or never fire).
         for (const id of ids) {
-          await this.recomputeRemindersForDeadline(orgId, id, newDeadline).catch(() => null);
+          await this.recomputeRemindersForDeadline(orgId, id, newDeadline).catch(swallow('tasks.bulkUpdate', null));
           // Workflow: a step's deadline follows its task's (never throws).
           if (byId.get(id)!.workflow_instance_step_id) {
             await this.workflowEngine.syncStepFromTask(orgId, id);
           }
         }
 
-        await Promise.all(ids.map((id) => this.logActivity(orgId, id, principal.userId, 'edited', { bulk: true, field: 'deadline' }).catch(() => null)));
+        await Promise.all(ids.map((id) => this.logActivity(orgId, id, principal.userId, 'edited', { bulk: true, field: 'deadline' }).catch(swallow('tasks.bulkUpdate', null))));
 
         // Tell the people who have to hit these dates. Same event as a single edit,
         // so an org that finds it noisy can switch it off in one place.
@@ -1893,7 +1893,7 @@ export class TasksService {
               link: `/dashboard/tasks/${id}`,
               entity: { type: 'task', id },
             })
-            .catch(() => null);
+            .catch(swallow('tasks.bulkUpdate', null));
         }
       }
       return { updated: ids.length, skipped };
@@ -2003,7 +2003,7 @@ export class TasksService {
     // single edit writes, so the activity feed renders the tag diff identically.
     await Promise.all(
       changes.map(({ id, entry }) =>
-        this.logActivity(orgId, id, actorId, 'edited', { bulk: true, changes: [entry] }).catch(() => null),
+        this.logActivity(orgId, id, actorId, 'edited', { bulk: true, changes: [entry] }).catch(swallow('tasks.bulkApplyTags', null)),
       ),
     );
     return { updated: changes.length, skipped };
@@ -3181,7 +3181,7 @@ export class TasksService {
               },
               update: { frequency_count: { increment: 1 }, last_assigned_at: new Date() },
             })
-            .catch(() => null),
+            .catch(swallow('tasks.reconcileTaskRoster', null)),
         ),
       );
     }
@@ -4047,7 +4047,7 @@ export class TasksService {
     // A workflow step task's comments are messages of its instance's ONE discussion.
     const instanceId =
       task.workflow_instance_step_id && this.discussion
-        ? await this.discussion.instanceIdForTask(orgId, taskId).catch(() => null)
+        ? await this.discussion.instanceIdForTask(orgId, taskId).catch(swallow('tasks.addComment', null))
         : null;
     // Stamp with the org's clock (respects a test org's simulated time) rather than
     // the DB's real-time default, so comments read in the timeline the user is in.
@@ -4069,7 +4069,7 @@ export class TasksService {
     // nameless response rather than failing the whole request on a transient.
     const user = await this.prisma.user
       .findUnique({ where: { id: userId }, select: { id: true, name: true, email: true } })
-      .catch(() => null);
+      .catch(swallow('tasks.addComment', null));
 
     // Workflow step task: the discussion's rules decide who hears (step people, people
     // already in the discussion, the replied-to author, send-back counterparts).
@@ -4139,7 +4139,7 @@ export class TasksService {
         data: { is_deleted: true, deleted_at: new Date() },
       });
       // Best-effort file purge — never fail the delete on a storage hiccup.
-      await Promise.all(orphaned.map((a) => this.r2.deleteObject(a.storage_key).catch(() => {})));
+      await Promise.all(orphaned.map((a) => this.r2.deleteObject(a.storage_key).catch(swallow('tasks.deleteComment'))));
     }
 
     await this.logActivity(orgId, comment.task_id, userId, 'comment_deleted', { comment_id: commentId });

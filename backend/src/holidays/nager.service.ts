@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { BadGatewayException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 
 export interface NagerHoliday {
   date: string
@@ -37,7 +37,7 @@ export class NagerService {
       return sorted
     } catch (err) {
       this.logger.error(`Failed to fetch available countries from Nager.Date: ${err}`)
-      throw new Error('Could not fetch available countries. Please try again later.')
+      throw new BadGatewayException('Could not fetch available countries. Please try again later.')
     }
   }
 
@@ -46,12 +46,13 @@ export class NagerService {
       const res = await fetch(`${this.baseUrl}/PublicHolidays/${year}/${countryCode}`, {
         signal: AbortSignal.timeout(10_000),
       })
-      if (res.status === 404) throw new Error(`Country code "${countryCode}" is not supported by Nager.Date`)
-      if (!res.ok) throw new Error(`Nager.Date returned ${res.status} for ${countryCode}/${year}`)
+      if (res.status === 404) throw new NotFoundException(`Country code "${countryCode}" is not supported by Nager.Date`)
+      if (!res.ok) throw new BadGatewayException(`Nager.Date returned ${res.status} for ${countryCode}/${year}`)
       return await res.json()
     } catch (err) {
       this.logger.error(`Failed to fetch public holidays for ${countryCode}/${year}: ${err}`)
-      throw err
+      if (err instanceof HttpException) throw err
+      throw new BadGatewayException(`Could not fetch public holidays for ${countryCode}/${year}`)
     }
   }
 }

@@ -24,6 +24,7 @@ import { CreateLaneDto } from './dto/lane.dto';
 import { CreateArtifactDto, CreateMaterialDto, LinkArtifactDto, UpdateArtifactDto } from './dto/artifact.dto';
 import { AddAccessRuleDto } from './dto/access.dto';
 import { CreateSnapshotDto } from './dto/snapshot.dto';
+import { swallow } from '../common/swallow';
 
 /** Order nodes so every node appears after its parent — used before a bulk createMany so the
  *  parent_node_id self-FK can never reference a not-yet-inserted row when the batch is split.
@@ -302,7 +303,7 @@ export class ProcessHierarchyService {
       .filter((l) => l.origin === ProcessLaneOrigin.auto && !occupiedDepts.has(l.department_id))
       .map((l) => l.id);
     if (emptyAutoLaneIds.length) {
-      this.prisma.processLane.deleteMany({ where: { id: { in: emptyAutoLaneIds } } }).catch(() => {});
+      this.prisma.processLane.deleteMany({ where: { id: { in: emptyAutoLaneIds } } }).catch(swallow('process-hierarchy.getFlow'));
     }
     const laneRows = laneRowsAll.filter((l) => !emptyAutoLaneIds.includes(l.id));
     const laneDeptIds = Array.from(new Set(laneRows.map((l) => l.department_id)));

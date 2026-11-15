@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as webpush from 'web-push';
 import { PrismaService } from '../prisma/prisma.service';
+import { swallow } from '../common/swallow';
 
 /**
  * Web Push (VAPID) delivery. Best-effort: failures are logged, never thrown.
@@ -49,7 +50,7 @@ export class PushService {
           .catch(async (err: any) => {
             if (err?.statusCode === 404 || err?.statusCode === 410) {
               // Subscription expired/unsubscribed — prune it.
-              await this.prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => null);
+              await this.prisma.pushSubscription.delete({ where: { id: s.id } }).catch(swallow('push.sendToUser', null));
             } else {
               this.logger.warn(`Push send failed for user ${userId}: ${err?.statusCode ?? err}`);
             }

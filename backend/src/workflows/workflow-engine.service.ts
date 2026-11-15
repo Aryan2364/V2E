@@ -50,6 +50,7 @@ import { formatHumanDate, localDateOf, safeTimeZone, zonedParts } from './engine
 import { MAIN_TRACK, resolveStoredTracks } from './tracks'
 import { instanceNameKey, tidyInstanceName } from './run-access'
 import { dayMonthYear, shortDate } from './instance-label'
+import { swallow } from '../common/swallow';
 
 type Tx = Prisma.TransactionClient
 type Effect = () => Promise<unknown>
@@ -2217,7 +2218,7 @@ export class WorkflowEngineService {
         this.logger.error(`Late handling failed for workflow step ${row.id}: ${(err as Error)?.stack ?? err}`)
         await this.prisma.workflowInstanceStep
           .update({ where: { id: row.id }, data: { last_error: this.errorMessage(err) } })
-          .catch(() => null)
+          .catch(swallow('workflow-engine.processOverdueStepsForOrgImpl', null))
       }
     }
   }
