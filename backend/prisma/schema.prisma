@@ -1340,6 +1340,8 @@ model Task {
   @@index([department_id])
   @@index([import_batch_id])
   @@index([pending_completion_notification_at])
+  @@index([organization_id, deadline])
+  @@index([organization_id, is_overdue])
   @@map("tasks")
 }
 
@@ -1580,6 +1582,7 @@ model TaskReminder {
 
   @@index([task_id])
   @@index([organization_id])
+  @@index([organization_id, is_sent, remind_at])
   @@map("task_reminders")
 }
 
