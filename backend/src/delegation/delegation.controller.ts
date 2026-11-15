@@ -10,6 +10,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { AuthRequest } from '../common/types/auth-request';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgScopeGuard } from '../common/guards/org-scope.guard';
@@ -35,7 +36,7 @@ export class DelegationController {
   @ApiOperation({ summary: 'List delegations (view = mine | incoming | all)' })
   list(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Query('view') view?: 'mine' | 'incoming' | 'all',
   ) {
     return this.service.list(orgId, principalFromUser(req.user), view ?? 'all');
@@ -43,13 +44,13 @@ export class DelegationController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get one delegation' })
-  getOne(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  getOne(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     return this.service.getOne(orgId, id, principalFromUser(req.user));
   }
 
   @Post()
   @ApiOperation({ summary: 'Create a delegation (spawns the delegator review task)' })
-  create(@Param('orgId') orgId: string, @Request() req: any, @Body() dto: CreateDelegationDto) {
+  create(@Param('orgId') orgId: string, @Request() req: AuthRequest, @Body() dto: CreateDelegationDto) {
     return this.service.create(orgId, principalFromUser(req.user), dto);
   }
 
@@ -58,7 +59,7 @@ export class DelegationController {
   update(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: UpdateDelegationDto,
   ) {
     return this.service.update(orgId, id, principalFromUser(req.user), dto);
@@ -66,7 +67,7 @@ export class DelegationController {
 
   @Post(':id/complete')
   @ApiOperation({ summary: 'Mark a delegation completed (delegator/admin)' })
-  complete(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  complete(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     return this.service.complete(orgId, id, principalFromUser(req.user));
   }
 
@@ -76,7 +77,7 @@ export class DelegationController {
     @Param('orgId') orgId: string,
     @Param('id') id: string,
     @Param('criterionId') criterionId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: ToggleCriterionDto,
   ) {
     return this.service.toggleCriterion(orgId, id, criterionId, principalFromUser(req.user), dto.is_met);
@@ -84,7 +85,7 @@ export class DelegationController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a delegation (delegator/admin)' })
-  remove(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  remove(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     return this.service.remove(orgId, id, principalFromUser(req.user));
   }
 }

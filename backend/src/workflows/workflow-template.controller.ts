@@ -14,6 +14,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
+import type { AuthRequest } from '../common/types/auth-request';
 import { FileInterceptor } from '@nestjs/platform-express'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
@@ -64,24 +65,24 @@ export class WorkflowTemplateController {
   // ── Meta ─────────────────────────────────────────────────────────────────────
 
   @Get('meta')
-  getMeta(@Param('orgId') orgId: string, @Req() req: any) {
+  getMeta(@Param('orgId') orgId: string, @Req() req: AuthRequest) {
     return this.service.getMeta(orgId, principalFromUser(req.user))
   }
 
   // ── My workflows ─────────────────────────────────────────────────────────────
 
   @Get('my/owned')
-  getOwnedWorkflows(@Param('orgId') orgId: string, @Req() req: any) {
+  getOwnedWorkflows(@Param('orgId') orgId: string, @Req() req: AuthRequest) {
     return this.service.getOwnedWorkflows(orgId, principalFromUser(req.user))
   }
 
   @Get('my/owned/instances')
-  getOwnedInstances(@Param('orgId') orgId: string, @Req() req: any) {
+  getOwnedInstances(@Param('orgId') orgId: string, @Req() req: AuthRequest) {
     return this.service.getOwnedInstances(orgId, principalFromUser(req.user))
   }
 
   @Get('my/assigned/instances')
-  getAssignedInstances(@Param('orgId') orgId: string, @Req() req: any) {
+  getAssignedInstances(@Param('orgId') orgId: string, @Req() req: AuthRequest) {
     return this.service.getAssignedInstances(orgId, principalFromUser(req.user))
   }
 
@@ -92,7 +93,7 @@ export class WorkflowTemplateController {
   getStepContext(
     @Param('orgId') orgId: string,
     @Param('taskId', new ParseUUIDPipe({ errorHttpStatusCode: 404 })) taskId: string,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.getStepContext(orgId, taskId, principalFromUser(req.user))
   }
@@ -103,14 +104,14 @@ export class WorkflowTemplateController {
   listTemplates(
     @Param('orgId') orgId: string,
     @Query('include_archived') includeArchived: string | undefined,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.listTemplates(orgId, includeArchived === 'true', principalFromUser(req.user))
   }
 
   /** Create a workflow from its whole definition (`mode`: 'draft' = Save draft, 'save' = Save → Live). */
   @Post('definition')
-  createDefinition(@Param('orgId') orgId: string, @Body() dto: SaveDefinitionDto, @Req() req: any) {
+  createDefinition(@Param('orgId') orgId: string, @Body() dto: SaveDefinitionDto, @Req() req: AuthRequest) {
     return this.service.createDefinition(orgId, dto, principalFromUser(req.user))
   }
 
@@ -120,12 +121,12 @@ export class WorkflowTemplateController {
    * warnings }`. Module access is enough (OrgScopeGuard) — no workflow row is read.
    */
   @Post('preview-timeline')
-  previewTimeline(@Param('orgId') orgId: string, @Body() dto: PreviewTimelineDto, @Req() req: any) {
+  previewTimeline(@Param('orgId') orgId: string, @Body() dto: PreviewTimelineDto, @Req() req: AuthRequest) {
     return this.service.previewTimeline(orgId, dto, principalFromUser(req.user))
   }
 
   @Get(':id')
-  getTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+  getTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: AuthRequest) {
     return this.service.getTemplate(orgId, id, principalFromUser(req.user))
   }
 
@@ -135,70 +136,70 @@ export class WorkflowTemplateController {
    * else saved after `expected_updated_at`.
    */
   @Put(':id/definition')
-  updateDefinition(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: SaveDefinitionDto, @Req() req: any) {
+  updateDefinition(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: SaveDefinitionDto, @Req() req: AuthRequest) {
     return this.service.updateDefinition(orgId, id, dto, principalFromUser(req.user))
   }
 
   /** Live → Paused: no new runs, schedules skip; running runs continue. */
   @Post(':id/pause')
-  pauseTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+  pauseTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: AuthRequest) {
     return this.service.pauseTemplate(orgId, id, principalFromUser(req.user))
   }
 
   /** Paused → Live. Occurrences missed while paused are not caught up. */
   @Post(':id/resume')
-  resumeTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+  resumeTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: AuthRequest) {
     return this.service.resumeTemplate(orgId, id, principalFromUser(req.user))
   }
 
   /** Archive (never a hard delete). */
   @Delete(':id')
-  archiveTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+  archiveTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: AuthRequest) {
     return this.service.archiveTemplate(orgId, id, principalFromUser(req.user))
   }
 
   /** Archived → Draft. */
   @Post(':id/restore')
-  restoreTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+  restoreTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: AuthRequest) {
     return this.service.restoreTemplate(orgId, id, principalFromUser(req.user))
   }
 
   /** Admins: hand the permanent-editor ("creator") role to another active member. */
   @Post(':id/change-creator')
   @RequireAdmin()
-  changeCreator(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: ChangeCreatorDto, @Req() req: any) {
+  changeCreator(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: ChangeCreatorDto, @Req() req: AuthRequest) {
     return this.service.changeCreator(orgId, id, dto.user_id, principalFromUser(req.user))
   }
 
   // ── Instances ────────────────────────────────────────────────────────────────
 
   @Post(':id/instances/trigger')
-  triggerInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: TriggerInstanceDto, @Req() req: any) {
+  triggerInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: TriggerInstanceDto, @Req() req: AuthRequest) {
     return this.service.triggerInstance(orgId, id, dto?.name, principalFromUser(req.user))
   }
 
   @Get(':id/instances')
-  listInstances(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+  listInstances(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: AuthRequest) {
     return this.service.listInstances(orgId, id, principalFromUser(req.user))
   }
 
   @Get(':id/instances/:iid')
-  getInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  getInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.getInstance(orgId, id, iid, principalFromUser(req.user))
   }
 
   @Get(':id/instances/:iid/tasks')
-  getInstanceTasks(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  getInstanceTasks(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.getInstanceTasks(orgId, id, iid, principalFromUser(req.user))
   }
 
   @Post(':id/instances/:iid/cancel')
-  cancelInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  cancelInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.cancelInstance(orgId, id, iid, principalFromUser(req.user))
   }
 
   @Post(':id/instances/:iid/retry')
-  retryInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  retryInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.retryInstance(orgId, id, iid, principalFromUser(req.user))
   }
 
@@ -209,7 +210,7 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Body() dto: SkipStepDto,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.skipStep(orgId, id, iid, dto?.row_id, principalFromUser(req.user))
   }
@@ -220,7 +221,7 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Param('rowId') rowId: string,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.getSendBackTargets(orgId, id, iid, rowId, principalFromUser(req.user))
   }
@@ -232,7 +233,7 @@ export class WorkflowTemplateController {
     @Param('iid') iid: string,
     @Param('rowId') rowId: string,
     @Body() dto: SendBackDto,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.sendBack(orgId, id, iid, rowId, dto, principalFromUser(req.user))
   }
@@ -244,13 +245,13 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Param('rowId') rowId: string,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.startStepNow(orgId, id, iid, rowId, principalFromUser(req.user))
   }
 
   @Get(':id/instances/:iid/events')
-  listEvents(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  listEvents(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.listEvents(orgId, id, iid, principalFromUser(req.user))
   }
 
@@ -265,14 +266,14 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Query() q: DiscussionQueryDto,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.getDiscussion(orgId, id, iid, q, principalFromUser(req.user))
   }
 
   /** Who can be @mentioned: the people who can see this instance. */
   @Get(':id/instances/:iid/discussion/people')
-  getDiscussionPeople(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  getDiscussionPeople(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.getDiscussionPeople(orgId, id, iid, principalFromUser(req.user))
   }
 
@@ -282,14 +283,14 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Body() dto: PostDiscussionMessageDto,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.postDiscussion(orgId, id, iid, dto, principalFromUser(req.user))
   }
 
   /** The caller has read the discussion up to now. */
   @Post(':id/instances/:iid/discussion/read')
-  markDiscussionRead(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  markDiscussionRead(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.markDiscussionRead(orgId, id, iid, principalFromUser(req.user))
   }
 
@@ -299,7 +300,7 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Param('fileId') fileId: string,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.downloadDiscussionFile(orgId, id, iid, fileId, principalFromUser(req.user))
   }
@@ -313,7 +314,7 @@ export class WorkflowTemplateController {
     @Param('iid') iid: string,
     @Param('messageId') messageId: string,
     @UploadedFile() file: UploadedFileType,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.uploadDiscussionFile(orgId, id, iid, messageId, file, principalFromUser(req.user))
   }
@@ -325,7 +326,7 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Param('messageId') messageId: string,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.deleteDiscussionMessage(orgId, id, iid, messageId, principalFromUser(req.user))
   }
@@ -333,7 +334,7 @@ export class WorkflowTemplateController {
   // ── Instance documents (everyone who can see it; adding: not viewers) ─────────
 
   @Get(':id/instances/:iid/documents')
-  getDocuments(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+  getDocuments(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: AuthRequest) {
     return this.service.getDocuments(orgId, id, iid, principalFromUser(req.user))
   }
 
@@ -344,7 +345,7 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @UploadedFile() file: UploadedFileType,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.uploadRunFile(orgId, id, iid, file, principalFromUser(req.user))
   }
@@ -355,7 +356,7 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Param('fileId') fileId: string,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.downloadRunFile(orgId, id, iid, fileId, principalFromUser(req.user))
   }
@@ -366,7 +367,7 @@ export class WorkflowTemplateController {
     @Param('id') id: string,
     @Param('iid') iid: string,
     @Param('fileId') fileId: string,
-    @Req() req: any,
+    @Req() req: AuthRequest,
   ) {
     return this.service.deleteRunFile(orgId, id, iid, fileId, principalFromUser(req.user))
   }
