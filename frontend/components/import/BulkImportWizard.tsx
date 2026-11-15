@@ -470,6 +470,7 @@ export default function BulkImportWizard<
               onClick={requestImport}
               disabled={preview.readyCount(validation) === 0}
               loading={importing}
+              loadingLabel="Importing…"
             >
               {preview.importLabel(preview.readyCount(validation))}
             </Button>

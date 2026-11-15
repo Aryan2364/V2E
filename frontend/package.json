@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/unit-test/register.mjs --test components/workflows/__tests__/timing.test.ts components/workflows/__tests__/tracks.test.ts components/workflows/__tests__/instanceLabel.test.ts components/workflows/__tests__/stepDraft.test.ts components/workflows/__tests__/sendBack.test.ts components/workflows/__tests__/discussion.test.ts"
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/unit-test/register.mjs --test components/workflows/__tests__/timing.test.ts components/workflows/__tests__/tracks.test.ts components/workflows/__tests__/instanceLabel.test.ts components/workflows/__tests__/stepDraft.test.ts components/workflows/__tests__/sendBack.test.ts components/workflows/__tests__/discussion.test.ts lib/import/__tests__/csv.test.ts lib/import/__tests__/configs.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",

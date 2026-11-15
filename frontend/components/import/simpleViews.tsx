@@ -62,7 +62,8 @@ export function SimpleResultView({ result, note }: { result: SimpleResult; note:
 export function simpleHistoryRender<TRow, TVal>(
   noun: string,
 ): ViewSlot<TRow, TVal, SimpleResult, SimpleBatch, SimpleBatch, SimpleUndo> {
-  return (ctx) => (
+  return function SimpleHistory(ctx) {
+    return (
     <BatchHistoryList
       batches={ctx.batches}
       undoingId={ctx.undoingId}
@@ -79,5 +80,6 @@ export function simpleHistoryRender<TRow, TVal>(
         ) : null
       }
     />
-  )
+    )
+  }
 }
