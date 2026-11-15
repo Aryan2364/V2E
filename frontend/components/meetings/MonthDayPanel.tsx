@@ -7,6 +7,7 @@ import type { Meeting } from '@/lib/types/meetings'
 import { MEETING_STATUS_META } from '@/lib/types/meetings'
 import { fmtTime } from './shared'
 
+import { getInitials as initials } from '@/lib/initials'
 // ── initials avatar helpers (meeting-flavoured; host + declined aware) ──────────
 const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary', 'bg-text-secondary']
 function avatarColor(name: string): string {
@@ -14,11 +15,6 @@ function avatarColor(name: string): string {
   for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i)
   return AVATAR_COLORS[hash % AVATAR_COLORS.length]
 }
-function initials(name: string): string {
-  const i = name.split(' ').filter(Boolean).map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-  return i || '?'
-}
-
 interface Person { id: string; name: string; isHost: boolean; declined: boolean }
 
 function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: number }) {

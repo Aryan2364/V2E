@@ -26,6 +26,7 @@ import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/Responsi
 import DatePicker from '@/components/ui/DatePicker'
 import { Label } from '@/components/ui/label'
 
+import { getInitials } from '@/lib/initials'
 type Kpi = NonNullable<Role['kpi']>[number]
 
 const kpiColumns: ResponsiveColumn<Kpi>[] = [
@@ -61,10 +62,6 @@ const kpiColumns: ResponsiveColumn<Kpi>[] = [
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-}
 
 const avatarColors = [
   'bg-primary', 'bg-text-secondary', 'bg-success',

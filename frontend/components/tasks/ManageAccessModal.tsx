@@ -10,15 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFoo
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
+import { getInitials as initials } from '@/lib/initials'
 const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
 function avatarColor(name: string): string {
   let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return AVATAR_COLORS[h % AVATAR_COLORS.length]
 }
-function initials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
-
 function Avatar({ name }: { name: string }) {
   return (
     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(name)}`}>

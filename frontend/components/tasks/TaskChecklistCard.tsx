@@ -18,6 +18,7 @@ import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
 import { TERMINAL_STATUS_PHASES, type Task, type TaskChecklistItem, type TaskChecklistItemStateEntry } from '@/lib/types/tasks'
 
+import { getInitials as initials } from '@/lib/initials'
 interface Props {
   task: Task
   orgId: string
@@ -26,12 +27,6 @@ interface Props {
   /** Assigner/admin — may override for everyone and challenge a person's item. */
   canEdit: boolean
   onChanged: (task: Task) => void
-}
-
-function initials(name?: string | null): string {
-  if (!name) return '?'
-  const parts = name.trim().split(/\s+/)
-  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
 }
 
 export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, canEdit, onChanged }: Props) {

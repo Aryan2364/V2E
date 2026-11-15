@@ -18,6 +18,7 @@ import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import Tooltip from '@/components/ui/tooltip'
 
+import { getInitials as initials } from '@/lib/initials'
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function cadence(r: MeetingRhythm): string {
@@ -90,7 +91,6 @@ function SidebarCard({ title, children }: { title: string; children: React.React
 
 const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
 function avatarColor(name: string) { let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i); return AVATAR_COLORS[h % AVATAR_COLORS.length] }
-function initials(name: string) { return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?' }
 
 export default function RhythmDetailPage() {
   const { user } = useAuth()

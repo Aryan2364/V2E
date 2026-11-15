@@ -7,13 +7,10 @@ import TicketTypeBadge from './TicketTypeBadge'
 import TicketStatusBadge from './TicketStatusBadge'
 import { formatDate } from '@/lib/format'
 
+import { getInitials } from '@/lib/initials'
 interface Props {
   ticket: Ticket
   onClick: () => void
-}
-
-function getInitials(name: string) {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 const avatarColors = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']

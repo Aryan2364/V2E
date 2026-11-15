@@ -22,16 +22,8 @@ const EmployeeTreeView = dynamic(() => import('@/components/employees/EmployeeTr
 import ViewToggle, { type EmployeeView } from '@/components/employees/ViewToggle'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 
+import { getInitials } from '@/lib/initials'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
 
 const avatarColors = [
   'bg-primary',

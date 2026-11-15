@@ -8,6 +8,7 @@ import { NODE_W } from '@/lib/employee-tree'
 import Tooltip from '@/components/ui/tooltip'
 import type { EmployeeStatus, RoleLevel } from '@/lib/types'
 
+import { getInitials as initials } from '@/lib/initials'
 export interface EmployeeNodeData {
   name: string
   roleTitle?: string
@@ -25,11 +26,6 @@ export interface EmployeeNodeData {
 const statusDot: Record<EmployeeStatus, string> = {
   active: 'bg-success',
   inactive: 'bg-danger',
-}
-
-function initials(name: string): string {
-  const p = name.trim().split(/\s+/)
-  return ((p[0]?.[0] ?? '') + (p[1]?.[0] ?? '')).toUpperCase() || '?'
 }
 
 function EmployeeNode({ data }: { data: EmployeeNodeData }) {

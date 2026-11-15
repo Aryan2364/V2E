@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
+import { getInitials } from '@/lib/initials'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const avatarColors = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
@@ -25,10 +26,6 @@ function avatarColor(name: string): string {
   let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return avatarColors[h % avatarColors.length]
 }
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
-
 // ─── User search dropdown ─────────────────────────────────────────────────────
 
 function UserSearchDropdown({
