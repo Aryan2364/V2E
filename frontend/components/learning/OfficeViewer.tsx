@@ -149,10 +149,8 @@ function csvToHtml(text: string): string {
       } else cell += ch
     } else if (ch === '"') quoted = true
     else if (ch === ',') { row.push(cell); cell = '' }
-    else if (ch === '
-' || ch === '') {
-      if (ch === '' && text[i + 1] === '
-') i++
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++
       row.push(cell); cell = ''; rows.push(row); row = []
     } else cell += ch
   }
