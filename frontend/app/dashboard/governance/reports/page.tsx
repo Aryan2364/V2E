@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Download, AlertTriangle } from 'lucide-react'
-import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import dynamic from 'next/dynamic'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/lib/auth/context'
 import { meetingsApi } from '@/lib/api/meetings'
 import { getEmployees } from '@/lib/api/employees'
@@ -14,7 +15,9 @@ import { Button } from '@/components/ui/button'
 
 // A 5-series qualitative chart palette (kit section 21): position, not hex
 // identity, is what distinguishes the slices, so this reads chart-1..5.
-const PIE = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
+const chartFallback = () => <Skeleton className="h-[220px] w-full" />
+const MeetingLoadChart = dynamic(() => import('@/components/governance/ReportCharts').then((m) => m.MeetingLoadChart), { ssr: false, loading: chartFallback })
+const LinkageChart = dynamic(() => import('@/components/governance/ReportCharts').then((m) => m.LinkageChart), { ssr: false, loading: chartFallback })
 const LINK_LABEL: Record<string, string> = { goal: 'Goal', project: 'Project', task: 'Task', ticket: 'Ticket', ad_hoc: 'Ad-hoc' }
 
 function Stat({ label, value, color = 'var(--text-primary)', flag }: { label: string; value: string | number; color?: string; flag?: boolean }) {
@@ -111,15 +114,7 @@ export default function MeetingReportsPage() {
             {loadData.length > 0 && (
               <div className="bg-surface border border-border-light rounded-[12px] p-4">
                 <p className="text-body font-medium text-text-secondary mb-2">Meeting load per person</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={loadData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <Tooltip />
-                    <Bar dataKey="meetings" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <MeetingLoadChart data={loadData} />
               </div>
             )}
           </Section>
@@ -148,14 +143,7 @@ export default function MeetingReportsPage() {
               <div className="bg-surface border border-border-light rounded-[12px] p-4">
                 <p className="text-body font-medium text-text-secondary mb-2">Meeting hours by linkage</p>
                 {linkData.length === 0 ? <p className="text-body text-text-muted">No data.</p> : (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <PieChart>
-                      <Pie data={linkData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => `${e.name} (${e.value}h)`}>
-                        {linkData.map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <LinkageChart data={linkData} />
                 )}
               </div>
               <div className="bg-surface border border-border-light rounded-[12px] p-4">
