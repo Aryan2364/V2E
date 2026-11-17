@@ -178,7 +178,7 @@
   },
   "src/audit/audit.service.ts": {
     "prettier/prettier": {
-      "count": 10
+      "count": 9
     }
   },
   "src/audit/auditable-models.ts": {
@@ -1614,7 +1614,7 @@
       "count": 92
     },
     "prettier/prettier": {
-      "count": 173
+      "count": 171
     }
   },
   "src/scheduler/scheduler.tags.spec.ts": {
@@ -1779,7 +1779,7 @@
       "count": 11
     },
     "prettier/prettier": {
-      "count": 92
+      "count": 91
     }
   },
   "src/task-masters/task-tags.service.ts": {
@@ -2557,7 +2557,7 @@
   },
   "src/workflows/engine/plan.spec.ts": {
     "prettier/prettier": {
-      "count": 323
+      "count": 321
     }
   },
   "src/workflows/engine/plan.ts": {
@@ -2595,7 +2595,7 @@
   },
   "src/workflows/engine/timing.spec.ts": {
     "prettier/prettier": {
-      "count": 259
+      "count": 254
     }
   },
   "src/workflows/engine/timing.ts": {
@@ -2603,7 +2603,7 @@
       "count": 1
     },
     "prettier/prettier": {
-      "count": 280
+      "count": 279
     }
   },
   "src/workflows/engine/tz.ts": {
