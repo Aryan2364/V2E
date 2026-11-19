@@ -82,6 +82,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       employee_profile_id: employeeProfileId,
       // The device session this token belongs to (null for pre-sessions tokens).
       sid: payload.sid ?? null,
+      // True for the short-lived token issued after sign-in when the person must still
+      // pick an organisation. It is not a session: JwtAuthGuard refuses it everywhere
+      // except endpoints marked @AllowSelectionToken().
+      isSelectionToken: payload.type === 'org_selection',
     };
   }
 }

@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { SuperAdmin } from '../common/decorators/super-admin.decorator';
+import { AllowSelectionToken } from '../common/decorators/allow-selection-token.decorator';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -96,6 +97,8 @@ export class AuthController {
     return this.authService.changePassword(userId, dto.password, sid);
   }
 
+  // Called with the organisation-selection token: this is how a person enters a firm.
+  @AllowSelectionToken()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('switch-org')
@@ -108,6 +111,8 @@ export class AuthController {
     return this.authService.switchOrg(userId, dto, sid, ua);
   }
 
+  // Lists the firms to pick from, so it must accept the organisation-selection token too.
+  @AllowSelectionToken()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('my-orgs')

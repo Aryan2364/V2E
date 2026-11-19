@@ -15,6 +15,7 @@ import { BrandGlyph } from '@/components/ui/BrandMark'
 import { DEFAULT_COUNTRY, cleanNationalNumber } from '@/lib/phone'
 import { useLayout } from '@/lib/layout'
 import { signedInHome } from '@/lib/phone-routes'
+import { identifierSchema, loginSchema, passwordSchema } from '@/lib/auth/login-schema'
 
 export default function LoginPage() {
   const { login, user } = useAuth()
@@ -39,16 +40,31 @@ export default function LoginPage() {
   const isEmailish = identifier.includes('@')
   const isPhoneish = !isEmailish && /\d/.test(identifier)
 
+  // Checked when the person leaves a field, not on every keystroke (11.3 rule 6).
+  const checkIdentifier = () => {
+    const result = identifierSchema(countryCode).safeParse(identifier)
+    setFieldErrors((p) => ({ ...p, identifier: result.success ? undefined : result.error.issues[0].message }))
+  }
+  const checkPassword = () => {
+    const result = passwordSchema.safeParse(password)
+    setFieldErrors((p) => ({ ...p, password: result.success ? undefined : result.error.issues[0].message }))
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
 
-    if (!identifier.trim() || !password) {
-      setFieldErrors({
-        identifier: identifier.trim() ? undefined : 'Enter your email address or mobile number.',
-        password: password ? undefined : 'Enter your password.',
-      })
-      document.getElementById(identifier.trim() ? 'password' : 'identifier')?.focus()
+    // Nothing reaches the login API unless the identifier is a real email or a
+    // mobile number of the right length (lib/auth/login-schema.ts).
+    const parsed = loginSchema.safeParse({ identifier, countryCode, password })
+    if (!parsed.success) {
+      const errors: { identifier?: string; password?: string } = {}
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0]
+        if ((field === 'identifier' || field === 'password') && !errors[field]) errors[field] = issue.message
+      }
+      setFieldErrors(errors)
+      document.getElementById(errors.identifier ? 'identifier' : 'password')?.focus()
       return
     }
     setFieldErrors({})
@@ -138,7 +154,11 @@ export default function LoginPage() {
               {isPhoneish && (
                 <CountryCodeSelect
                   value={countryCode}
-                  onChange={setCountryCode}
+                  onChange={(code) => {
+                    setCountryCode(code)
+                    // The old message was about the old country's digit count.
+                    setFieldErrors((p) => ({ ...p, identifier: undefined }))
+                  }}
                   disabled={isLoading}
                   wrapperClassName="w-30 shrink-0"
                 />
@@ -150,6 +170,7 @@ export default function LoginPage() {
                 placeholder="For example, you@company.com"
                 value={identifier}
                 onChange={(e) => { setIdentifier(e.target.value); setFieldErrors((p) => ({ ...p, identifier: undefined })) }}
+                onBlur={checkIdentifier}
                 aria-invalid={fieldErrors.identifier ? true : undefined}
                 disabled={isLoading}
                 autoComplete="username"
@@ -168,6 +189,7 @@ export default function LoginPage() {
               name="password"
               value={password}
               onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: undefined })) }}
+              onBlur={checkPassword}
               aria-invalid={fieldErrors.password ? true : undefined}
               disabled={isLoading}
               autoComplete="current-password"

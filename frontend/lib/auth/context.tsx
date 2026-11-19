@@ -9,7 +9,7 @@ import React, {
   type ReactNode,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import { login as apiLogin, logout as apiLogout, getMe, switchOrg as apiSwitchOrg } from '../api/auth';
+import { login as apiLogin, logout as apiLogout, getMe, getMyOrgs, switchOrg as apiSwitchOrg } from '../api/auth';
 import { refreshAccessToken } from '../api/refresh';
 import type { AuthUser, OrgChoice } from '../types';
 import { clearDrafts } from '../drafts';
@@ -23,6 +23,25 @@ function getTokenExpiryMs(token: string): number | null {
   } catch {
     return null;
   }
+}
+
+// The short-lived token issued after sign-in when the person belongs to several
+// organisations. It is stored under `access_token` so the picker's API calls carry
+// it, but it is NOT a session: it has no organisation and may only list and pick one.
+function isSelectionToken(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    const payload = token.split('.')[1];
+    const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return json.type === 'org_selection';
+  } catch {
+    return false;
+  }
+}
+
+function clearSelectionToken() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('selection_token');
 }
 
 // ─── Context Shape ─────────────────────────────────────────────────────────────
@@ -63,6 +82,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!token) {
         setIsLoading(false);
+        return;
+      }
+
+      // A refresh (or Back) while choosing an organisation leaves the temporary
+      // selection token in storage. It is not a session, so never treat the person as
+      // signed in: that opened the app with no organisation and every request failing.
+      // Rebuild the picker instead, or send them to sign in if it has expired.
+      if (isSelectionToken(token)) {
+        const exp = getTokenExpiryMs(token);
+        if (exp !== null && exp <= Date.now()) {
+          clearSelectionToken();
+        } else {
+          try {
+            const memberships = await getMyOrgs();
+            if (!cancelled) {
+              if (memberships.length === 0) {
+                clearSelectionToken();
+              } else {
+                setPendingOrgSelection(
+                  memberships.map((m) => ({
+                    id: m.organization.id,
+                    name: m.organization.name,
+                    slug: m.organization.slug,
+                    logo_url: m.organization.logo_url ?? null,
+                    is_admin: m.is_admin,
+                    joined_at: m.joined_at,
+                  })),
+                );
+              }
+            }
+          } catch {
+            clearSelectionToken();
+          }
+        }
+        if (!cancelled) setIsLoading(false);
         return;
       }
 
@@ -153,6 +207,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('selection_token', result.selection_token);
         // Store selection token as access_token so the API client can attach it
         localStorage.setItem('access_token', result.selection_token);
+        // No session exists yet. A refresh token left by an earlier sign-in must not
+        // sit beside the selection token, or a rejected request would refresh into it.
+        localStorage.removeItem('refresh_token');
       }
       setPendingOrgSelection(result.organizations);
       router.replace('/select-org');
@@ -193,7 +250,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // captured before `user` is cleared below.
     const signedOutUserId = user?.id;
     try {
-      await apiLogout();
+      // Choosing an organisation, there is no session to end on the server.
+      if (!isSelectionToken(typeof window !== 'undefined' ? localStorage.getItem('access_token') : null)) {
+        await apiLogout();
+      }
     } catch {
       // Best-effort — proceed with local cleanup regardless
     } finally {

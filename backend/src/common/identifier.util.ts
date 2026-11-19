@@ -17,6 +17,20 @@ export function normalizePhone(raw: string | null | undefined): string {
   return (raw ?? '').replace(/\D/g, '');
 }
 
+/**
+ * Is this the way a person writes a phone number? Digits, plus the separators people
+ * type or paste: spaces, dashes, dots, brackets and a "+". Nothing else.
+ *
+ * normalizePhone() drops every non-digit, so without this check "98fdsf76dsf543210"
+ * is quietly read as 9876543210 and matches a real account. Login must never accept
+ * letters inside a number; they can only be a typo or someone probing.
+ */
+const PHONE_INPUT = /^[\d\s().+-]+$/;
+export function isWellFormedPhoneInput(raw: string | null | undefined): boolean {
+  const v = (raw ?? '').trim();
+  return PHONE_INPUT.test(v) && /\d/.test(v);
+}
+
 /** A value is treated as an email if it contains '@'. */
 export function looksLikeEmail(raw: string | null | undefined): boolean {
   return !!raw && raw.includes('@');
@@ -68,6 +82,9 @@ export function classifyIdentifier(
   const trimmed = (raw ?? '').trim();
   if (looksLikeEmail(trimmed)) return { kind: 'email', value: trimmed };
   const cc = (countryCode ?? '').trim() || DEFAULT_COUNTRY_CODE;
+  // Not a well-formed number (letters, symbols, no digits): give it NO value, which
+  // every caller reads as "no such account" and skips the lookup.
+  if (!isWellFormedPhoneInput(trimmed)) return { kind: 'phone', countryCode: cc, value: '' };
   return { kind: 'phone', countryCode: cc, value: normalizeNationalNumber(trimmed, cc) };
 }
 

@@ -15,7 +15,7 @@ import { formatDate } from '@/lib/format'
 import { OctagonXIcon } from 'lucide-react'
 
 export default function SelectOrgPage() {
-  const { pendingOrgSelection, selectOrg, logout, user } = useAuth()
+  const { pendingOrgSelection, selectOrg, logout, user, isLoading } = useAuth()
   const router = useRouter()
   const { layout } = useLayout()
   const [selecting, setSelecting] = useState<string | null>(null)
@@ -35,13 +35,13 @@ export default function SelectOrgPage() {
   // clears pendingOrgSelection AND removes the selection_token — without these
   // guards this effect would race the "go to dashboard" effect and bounce
   // through the login form.
+  //
+  // On a refresh the list is rebuilt from the server (AuthProvider), so wait for that
+  // to finish: until then there is no list yet, and no list means "go to sign in".
   useEffect(() => {
-    if (user || selecting) return
-    if (!pendingOrgSelection) {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('selection_token') : null
-      if (!token) router.replace('/login')
-    }
-  }, [pendingOrgSelection, user, selecting, router])
+    if (isLoading || user || selecting) return
+    if (!pendingOrgSelection) router.replace('/login')
+  }, [isLoading, pendingOrgSelection, user, selecting, router])
 
   const orgs: OrgChoice[] = pendingOrgSelection ?? []
 
@@ -52,7 +52,7 @@ export default function SelectOrgPage() {
   // While a firm is being entered (or the session is already established and the
   // dashboard redirect is in flight), show nothing rather than a spinner
   // (section 14 rule 1) so the cards never flash back in before navigating away.
-  if (selecting || user) {
+  if (selecting || user || isLoading || !pendingOrgSelection) {
     return null
   }
 
