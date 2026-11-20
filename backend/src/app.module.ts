@@ -1,5 +1,9 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { rateLimitConfig } from './common/rate-limit/rate-limit.config';
+import { RateLimitGuard } from './common/rate-limit/rate-limit.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -45,6 +49,7 @@ import { TimeBlocksModule } from './time-blocks/time-blocks.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot(rateLimitConfig),
     ScheduleModule.forRoot(),
     AuditClsModule,
     PrismaModule,
@@ -87,5 +92,7 @@ import { TimeBlocksModule } from './time-blocks/time-blocks.module';
     DelegationModule,
     TimeBlocksModule,
   ],
+  // Rate limiting for @AuthRateLimit routes only; see common/rate-limit/rate-limit.config.ts.
+  providers: [{ provide: APP_GUARD, useClass: RateLimitGuard }],
 })
 export class AppModule {}

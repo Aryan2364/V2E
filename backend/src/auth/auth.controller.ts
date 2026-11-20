@@ -17,6 +17,14 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { SuperAdmin } from '../common/decorators/super-admin.decorator';
 import { AllowSelectionToken } from '../common/decorators/allow-selection-token.decorator';
 import { clearRefreshCookie, isCookieMode, readRefreshCookie, withRefreshCookie } from './auth-cookie';
+import { AuthRateLimit, HOUR, MINUTE } from '../common/rate-limit/rate-limit.decorator';
+
+// Brute-force limits for the auth routes (the only rate-limited routes for now).
+// perIp  = one machine against one account (IP + account): a typo-prone person is
+//          never locked out by a colleague on the same office IP.
+// perAccount = one account from anywhere (account only): cannot be dodged by
+//          rotating IPs. Looser, so someone failing on purpose can only delay the
+//          real owner for the window, not lock them out for good.
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -28,6 +36,7 @@ export class AuthController {
     private config: ConfigService,
   ) {}
 
+  @AuthRateLimit({ perIp: { limit: 10, ttl: HOUR }, perAccount: { limit: 20, ttl: HOUR } })
   @Post('register')
   async register(
     @Body() dto: RegisterDto,
@@ -40,16 +49,22 @@ export class AuthController {
 
   // ─── Self-service password reset (public, OTP by email) ───────────────────────
 
+  // Each call sends an email: keep it tight (the service also enforces 1 per minute).
+  @AuthRateLimit({ perIp: { limit: 5, ttl: 15 * MINUTE }, perAccount: { limit: 10, ttl: HOUR } })
   @Post('forgot-password')
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.passwordResetService.requestReset(dto.email);
   }
 
+  // OTP guessing. The service allows 5 wrong codes per code; this caps how fast
+  // codes can be guessed at all, including parallel requests.
+  @AuthRateLimit({ perIp: { limit: 5, ttl: 15 * MINUTE }, perAccount: { limit: 10, ttl: 15 * MINUTE } })
   @Post('reset-password/verify')
   verifyResetOtp(@Body() dto: VerifyResetOtpDto) {
     return this.passwordResetService.verifyOtp(dto.email, dto.otp);
   }
 
+  @AuthRateLimit({ perIp: { limit: 5, ttl: 15 * MINUTE }, perAccount: { limit: 10, ttl: 15 * MINUTE } })
   @Post('reset-password')
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.passwordResetService.resetPassword(dto.email, dto.reset_token, dto.password);
@@ -58,6 +73,7 @@ export class AuthController {
   // Sign-in, org switch and refresh hand the refresh token to a client that sends
   // `X-V2E-Auth: cookie` as an httpOnly cookie instead of in the response body
   // (auth-cookie.ts). Other clients get the body as before.
+  @AuthRateLimit({ perIp: { limit: 10, ttl: 15 * MINUTE }, perAccount: { limit: 30, ttl: 15 * MINUTE } })
   @Post('login')
   async login(
     @Body() dto: LoginDto,
@@ -68,6 +84,8 @@ export class AuthController {
     return withRefreshCookie(req, res, await this.authService.login(dto, ua));
   }
 
+  // The most valuable account type: strictest limits.
+  @AuthRateLimit({ perIp: { limit: 5, ttl: 15 * MINUTE }, perAccount: { limit: 10, ttl: 15 * MINUTE } })
   @Post('admin-login')
   async adminLogin(
     @Body() dto: LoginDto,
@@ -137,6 +155,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change the current user\'s password (self-service, no OTP)' })
+  // Keyed by the signed-in user (no email in the body).
+  @AuthRateLimit({ perAccount: { limit: 5, ttl: 15 * MINUTE } })
   @Patch('change-password')
   changePassword(
     @CurrentUser('id') userId: string,

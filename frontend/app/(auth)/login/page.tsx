@@ -80,10 +80,15 @@ export default function LoginPage() {
     } catch (err: unknown) {
       // Never says which field was wrong (kit 11.7).
       const status = (err as { response?: { status?: number } })?.response?.status
+      // 429: rate limited. The server's message says how long to wait; without it the
+      // person would read "password is not right" and keep trying, extending the block.
+      const serverMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
       setError(
-        status && status >= 500
-          ? 'We could not sign you in just now. Try again in a moment.'
-          : 'The email or password is not right. Check both and try again.',
+        status === 429
+          ? serverMessage ?? 'Too many attempts. Please wait a few minutes and try again.'
+          : status && status >= 500
+            ? 'We could not sign you in just now. Try again in a moment.'
+            : 'The email or password is not right. Check both and try again.',
       )
     } finally {
       setIsLoading(false)

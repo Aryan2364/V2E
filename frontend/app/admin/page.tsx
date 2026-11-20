@@ -59,10 +59,14 @@ export default function AdminLoginPage() {
     } catch (err: unknown) {
       // Never says which field was wrong (kit 11.7).
       const status = (err as { response?: { status?: number } })?.response?.status
+      // 429: rate limited; show the server's wait time instead of "password is not right".
+      const serverMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
       setError(
-        status && status >= 500
-          ? 'We could not sign you in just now. Try again in a moment.'
-          : 'The email or password is not right. Check both and try again.',
+        status === 429
+          ? serverMessage ?? 'Too many attempts. Please wait a few minutes and try again.'
+          : status && status >= 500
+            ? 'We could not sign you in just now. Try again in a moment.'
+            : 'The email or password is not right. Check both and try again.',
       )
       setLoading(false)
     }

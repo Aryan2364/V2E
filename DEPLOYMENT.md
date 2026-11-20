@@ -148,11 +148,26 @@ Full details: [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md).
 
 ---
 
+## Rate limiting
+
+The backend rate-limits the **auth routes only** (`backend/src/common/rate-limit/`): sign-in,
+admin sign-in, register, password reset and change password. There is no API-wide limit yet.
+
+- **Nothing to configure in the proxy.** Every limit is counted per account (email / phone),
+  so colleagues behind one office IP never block each other.
+- The backend does not read `X-Forwarded-For` yet, so the "per IP" part of each limit sees the
+  proxy's address. In practice every limit acts per account, which is still safe.
+- Counts are kept in memory. That is right for one backend container; if the backend is ever
+  scaled to several, move the storage to Redis.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
 | Signed out after ~15 minutes on one environment only | The refresh-token cookie isn't being stored or sent: the site is served over HTTP while the cookie is `Secure` (set `AUTH_COOKIE_SECURE=false` for an HTTP-only environment), or a proxy strips `Set-Cookie`. See "Sign-in cookie" above. |
+| "Too many attempts" when signing in | The account hit its limit (e.g. 10 wrong passwords in 15 minutes). It clears on its own when the wait shown has passed, or when the backend restarts. See "Rate limiting" above. |
 | Actions build fails on push | Open the failed job in the Actions tab; the red step shows why (usually a compile/build error). |
 | `docker compose pull` → `denied` / `unauthorized` | Redo Part B (token needs `read:packages`; `docker login ghcr.io` again). |
 | Backend restarts over and over | `logs` it. Usually `DATABASE_URL` wrong or RDS security group not allowing EC2 (Part C.3). |
