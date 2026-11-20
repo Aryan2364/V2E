@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tokens = result as import('../types').AuthTokens;
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', tokens.access_token);
-      localStorage.setItem('refresh_token', tokens.refresh_token);
+      localStorage.removeItem('refresh_token'); // the refresh token is an httpOnly cookie now; a stale legacy copy would override it
     }
 
     setUser(tokens.user);
@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tokens = await apiSwitchOrg(organizationId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', tokens.access_token);
-      localStorage.setItem('refresh_token', tokens.refresh_token);
+      localStorage.removeItem('refresh_token'); // the refresh token is an httpOnly cookie now; a stale legacy copy would override it
       localStorage.removeItem('selection_token');
     }
     setPendingOrgSelection(null);
@@ -240,7 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tokens = await apiSwitchOrg(organizationId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', tokens.access_token);
-      localStorage.setItem('refresh_token', tokens.refresh_token);
+      localStorage.removeItem('refresh_token'); // the refresh token is an httpOnly cookie now; a stale legacy copy would override it
     }
     setUser(tokens.user);
   }, []);

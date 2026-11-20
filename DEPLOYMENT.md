@@ -123,10 +123,36 @@ generate the nginx config.
 
 ---
 
+## Sign-in cookie (refresh token)
+
+The web app keeps the refresh token in an **httpOnly cookie** (`v2e_refresh`), not in
+browser storage. Things to know when deploying:
+
+- **Deploy the backend first, then the frontend.** An older frontend keeps working against
+  the new backend; the new frontend needs the new backend to set the cookie.
+- **It needs HTTPS in production.** The cookie is `Secure` whenever the container runs with
+  `NODE_ENV=production` (the Dockerfile sets it). Over plain HTTP the browser would drop it and
+  people would be signed out after 15 minutes. If an environment really is HTTP-only, set
+  `AUTH_COOKIE_SECURE=false` in its env file.
+- **Same origin.** The browser must reach `/api` on the same host as the page (the Next proxy,
+  or nginx routing `/api` to the backend). Make sure nginx passes `Set-Cookie` and `Cookie`
+  through (it does by default) and does not add a `Domain` to cookies.
+- **Nobody is signed out by the upgrade.** Each existing session moves into the cookie on its
+  next token refresh. Rolling back the frontend returns to the old behaviour, and anyone already
+  moved signs in once more.
+- **Check after deploying:** sign in, then DevTools → Application. Cookies should show
+  `v2e_refresh` as **HttpOnly** and **Secure**; Local Storage should have `access_token` and
+  **no** `refresh_token`.
+
+Full details: [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md).
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
+| Signed out after ~15 minutes on one environment only | The refresh-token cookie isn't being stored or sent: the site is served over HTTP while the cookie is `Secure` (set `AUTH_COOKIE_SECURE=false` for an HTTP-only environment), or a proxy strips `Set-Cookie`. See "Sign-in cookie" above. |
 | Actions build fails on push | Open the failed job in the Actions tab; the red step shows why (usually a compile/build error). |
 | `docker compose pull` → `denied` / `unauthorized` | Redo Part B (token needs `read:packages`; `docker login ghcr.io` again). |
 | Backend restarts over and over | `logs` it. Usually `DATABASE_URL` wrong or RDS security group not allowing EC2 (Part C.3). |

@@ -64,14 +64,6 @@ export async function changePassword(password: string): Promise<void> {
   await apiClient.patch('/api/v1/auth/change-password', { password });
 }
 
-export async function refreshToken(token: string): Promise<{ access_token: string; refresh_token?: string }> {
-  const { data } = await apiClient.post<ApiResponse<{ access_token: string; refresh_token?: string }>>(
-    '/api/v1/auth/refresh',
-    { refresh_token: token }
-  );
-  return data.data;
-}
-
 export async function logout(): Promise<void> {
   await apiClient.post('/api/v1/auth/logout');
 }

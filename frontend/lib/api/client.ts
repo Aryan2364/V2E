@@ -7,7 +7,15 @@ const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    // Opt in to the httpOnly refresh-token cookie: with this header the server sets
+    // the cookie and keeps the refresh token out of every response body, so no script
+    // on the page can read it. It is also the CSRF guard for the cookie refresh, as a
+    // cross-site page cannot send a custom header. See backend/src/auth/auth-cookie.ts.
+    'X-V2E-Auth': 'cookie',
   },
+  // Send the cookie. Same-origin requests do already; this keeps it working if the
+  // API ever moves to another origin.
+  withCredentials: true,
 });
 
 // ─── Request Interceptor — attach Bearer token ──────────────────────────────

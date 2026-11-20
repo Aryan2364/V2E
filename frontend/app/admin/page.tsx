@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
         ? await apiAdminLogin(identifier.trim(), password)
         : await apiAdminLogin(cleanNationalNumber(identifier, countryCode), password, countryCode)
       localStorage.setItem('access_token', tokens.access_token)
-      localStorage.setItem('refresh_token', tokens.refresh_token)
+      localStorage.removeItem('refresh_token') // the refresh token is an httpOnly cookie now; a stale legacy copy would override it
       window.location.href = '/super-admin/organizations'
     } catch (err: unknown) {
       // Never says which field was wrong (kit 11.7).
