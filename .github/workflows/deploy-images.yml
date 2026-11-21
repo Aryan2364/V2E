@@ -6,6 +6,10 @@
 # Images produced:
 #   ghcr.io/aryan2364/v2e-backend:latest   (+ a tag for the exact commit)
 #   ghcr.io/aryan2364/v2e-frontend:latest  (+ a tag for the exact commit)
+#   ghcr.io/aryan2364/v2e-frontend-staging:latest  (+ a tag for the exact commit)
+#
+# Then deploys that exact commit to STAGING over SSH (deploy-staging job).
+# Production is still deployed by hand with ./deploy.sh.
 #
 # GHCR login uses the automatic GITHUB_TOKEN — no secret to configure here.
 name: Build & push images
@@ -48,8 +52,16 @@ jobs:
         include:
           - name: backend
             context: ./backend
+            ws_url: ""
           - name: frontend
             context: ./frontend
+            ws_url: https://v2e.rgbindia.com
+          # Same code as "frontend", but NEXT_PUBLIC_WS_URL is compiled into the
+          # browser bundle, so staging needs its own image. The backend image is
+          # shared: it reads everything environment-specific at runtime.
+          - name: frontend-staging
+            context: ./frontend
+            ws_url: https://v2estaging.rgbindia.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,8 +92,73 @@ jobs:
           #    routes-manifest.json at build time, so it MUST be a build arg (a
           #    runtime env is ignored). Points at the backend over the compose net.
           build-args: |
-            NEXT_PUBLIC_WS_URL=https://v2e.rgbindia.com
+            NEXT_PUBLIC_WS_URL=${{ matrix.ws_url }}
             BACKEND_URL=http://backend:3001
           # Speed up repeat builds by caching layers in GitHub Actions.
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  # Every green push to main goes straight to https://v2estaging.rgbindia.com.
+  # Production is NOT touched: it still changes only when someone runs
+  # ./deploy.sh on the server.
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://v2estaging.rgbindia.com
+    # Never run two staging deploys at once; a newer push waits for the older one.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    env:
+      BUILD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+      SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+      # Folder on the server holding .env.staging; the compose file is copied in.
+      APP_DIR: ${{ secrets.STAGING_APP_DIR }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BUILD_SHA }}
+
+      - name: Set up SSH
+        env:
+          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+        run: |
+          for v in SSH_HOST SSH_USER APP_DIR SSH_KEY SSH_KNOWN_HOSTS; do
+            if [ -z "${!v}" ]; then echo "::error::Missing secret for $v (see DEPLOYMENT.md, Staging)"; exit 1; fi
+          done
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/staging_key && chmod 600 ~/.ssh/staging_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host staging\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/staging_key\n  StrictHostKeyChecking yes\n' \
+            "$SSH_HOST" "$SSH_USER" > ~/.ssh/config
+
+      - name: Copy compose file to the server
+        run: scp docker-compose.staging-deploy.yml "staging:$APP_DIR/docker-compose.staging-deploy.yml"
+
+      - name: Pull and restart staging
+        run: |
+          ssh staging "cd '$APP_DIR' && export IMAGE_TAG='$BUILD_SHA' && \
+            docker compose -f docker-compose.staging-deploy.yml pull && \
+            docker compose -f docker-compose.staging-deploy.yml up -d --remove-orphans"
+
+      - name: Wait for staging to be healthy
+        run: |
+          # The backend runs migrations before it starts, so allow a few minutes.
+          ssh staging "cd '$APP_DIR' && for i in \$(seq 1 40); do
+              b=\$(docker inspect -f '{{.State.Health.Status}}' \$(docker compose -f docker-compose.staging-deploy.yml ps -q backend));
+              f=\$(docker inspect -f '{{.State.Health.Status}}' \$(docker compose -f docker-compose.staging-deploy.yml ps -q frontend) 2>/dev/null || echo none);
+              echo \"backend=\$b frontend=\$f\";
+              [ \"\$b\" = healthy ] && [ \"\$f\" = healthy ] && exit 0;
+              [ \"\$b\" = unhealthy ] && break;
+              sleep 10;
+            done;
+            echo '--- backend logs ---'; docker compose -f docker-compose.staging-deploy.yml logs --tail 80 backend; exit 1"
+
+      - name: Clean up old images
+        if: success()
+        run: ssh staging "docker image prune -f"
