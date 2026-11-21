@@ -3,9 +3,10 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClockService } from './clock.service';
 import { SchedulerService } from '../scheduler/scheduler.service';
-import { WorkflowEngineService } from '../workflows/workflow-engine.service';
+import { WorkflowSweepsService } from '../workflows/workflow-sweeps.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { runExclusive } from '../common/run-exclusive';
 
 const MAX_REPLAY_DAYS = 730; // safety cap (~2 years) per catch-up
 
@@ -26,7 +27,7 @@ export class ReplayService {
     private readonly prisma: PrismaService,
     private readonly clock: ClockService,
     private readonly scheduler: SchedulerService,
-    private readonly workflow: WorkflowEngineService,
+    private readonly workflow: WorkflowSweepsService,
     private readonly tickets: TicketsService,
     private readonly notifications: NotificationsService,
   ) {}
@@ -34,6 +35,7 @@ export class ReplayService {
   /** Every 5 minutes, advance every actively-simulated test org. */
   @Cron(CronExpression.EVERY_5_MINUTES)
   async tickAllTestOrgs() {
+    return runExclusive('ReplayService.tickAllTestOrgs', async () => {
     const orgs = await this.prisma.organization.findMany({
       where: { is_test: true, sim_epoch: { not: null } },
       select: { id: true },
@@ -43,6 +45,7 @@ export class ReplayService {
         this.logger.error(`Replay tick failed for org ${org.id}: ${err}`),
       );
     }
+    });
   }
 
   /** Replay all time-sensitive engines for one org up to its current simulated time. */

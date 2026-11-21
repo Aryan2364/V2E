@@ -15,6 +15,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { PageHeader } from '@/components/shell/page-header'
 import type { OrganizationGroup, Organization } from '@/lib/types'
 
+import { getErrorMessage } from '@/lib/api/errors'
 interface GroupUser {
   user_id: string
   name: string
@@ -63,8 +64,8 @@ export default function GroupDetailPage() {
       const updated = await getGroup(groupId)
       setGroup(updated)
       setAddOrgId('')
-    } catch (err: any) {
-      setActionError(err?.response?.data?.message ?? 'Failed to add organization.')
+    } catch (err: unknown) {
+      setActionError(getErrorMessage(err, { fallback: 'Failed to add organization.' }))
     } finally {
       setIsAdding(false)
     }
@@ -77,8 +78,8 @@ export default function GroupDetailPage() {
     try {
       await removeOrgFromGroup(groupId, orgId)
       setGroup((prev) => prev ? { ...prev, organizations: prev.organizations?.filter((o) => o.id !== orgId) } : prev)
-    } catch (err: any) {
-      setActionError(err?.response?.data?.message ?? 'Failed to remove organization.')
+    } catch (err: unknown) {
+      setActionError(getErrorMessage(err, { fallback: 'Failed to remove organization.' }))
     } finally {
       setRemovingId(null)
     }

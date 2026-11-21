@@ -1,5 +1,6 @@
 import { Controller, Post, Body, UseGuards, Get, Param, Patch, Delete, Put, Query, Res, Req, Headers, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { CreateAdminDto, ToggleAdminDto, UpdateAdminDto } from './dto/admin.dto';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -272,7 +273,7 @@ export class AuthController {
   @SuperAdmin()
   @ApiBearerAuth()
   @Post('admins')
-  createAdmin(@Body() dto: { name: string; email: string; password: string }) {
+  createAdmin(@Body() dto: CreateAdminDto) {
     return this.authService.createAdmin(dto);
   }
 
@@ -283,7 +284,7 @@ export class AuthController {
   toggleAdmin(
     @Param('id') id: string,
     @CurrentUser('id') requesterId: string,
-    @Body() dto: { is_active: boolean },
+    @Body() dto: ToggleAdminDto,
   ) {
     return this.authService.toggleAdmin(id, requesterId, dto.is_active);
   }
@@ -294,7 +295,7 @@ export class AuthController {
   @Put('admins/:id')
   updateAdmin(
     @Param('id') id: string,
-    @Body() dto: { name?: string; email: string; password?: string }
+    @Body() dto: UpdateAdminDto
   ) {
     return this.authService.updateAdmin(id, dto);
   }

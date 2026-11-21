@@ -8,6 +8,8 @@ import { TERMINAL_TYPES } from '../tasks/status-phase';
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import { deadlineBucket, myOpenTasksWhere } from '../tasks/badge-count.util';
 import { ClockService } from '../clock/clock.service';
+import { runExclusive } from '../common/run-exclusive';
+import { clampTake } from '../common/pagination';
 
 export interface EmitParams {
   orgId: string;
@@ -314,7 +316,7 @@ export class NotificationsService {
   // ─── List / read APIs ────────────────────────────────────────────────────────
 
   async list(orgId: string, userId: string, cursor?: string, limit = 20) {
-    const take = Math.min(Math.max(limit, 1), 50);
+    const take = clampTake(limit, 20, 50);
     const [items, unread] = await Promise.all([
       this.prisma.notification.findMany({
         where: { organization_id: orgId, user_id: userId },
@@ -404,6 +406,7 @@ export class NotificationsService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async processOverdueNotifications() {
+    return runExclusive('NotificationsService.processOverdueNotifications', async () => {
     const now = new Date();
     const orgs = await this.prisma.organization.findMany({
       where: { is_test: false },
@@ -414,6 +417,7 @@ export class NotificationsService {
         this.logger.error(`Overdue notifications failed for org ${org.id}: ${err}`),
       );
     }
+    });
   }
 
   async processOverdueNotificationsForOrg(orgId: string, now: Date): Promise<void> {

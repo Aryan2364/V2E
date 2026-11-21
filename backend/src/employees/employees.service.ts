@@ -15,6 +15,7 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { LearningService } from '../learning/learning.service';
 import { AssigneeVisibilityService } from '../assignee-visibility/assignee-visibility.service';
+import { swallow } from '../common/swallow';
 
 const USER_SELECT = {
   id: true,
@@ -326,8 +327,8 @@ export class EmployeesService {
           await this.mail.sendAddedToFirm({ to: email, name, firmName });
         }
       }
-    } catch {
-      /* MailService logs failures; swallow so the employee is still created. */
+    } catch (err) {
+      swallow('employees.sendWelcomeEmail')(err);
     }
 
     return profile;

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
+import { getErrorMessage } from '@/lib/api/errors'
 const inputClass =
   'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-label font-medium text-text-secondary mb-1'
@@ -73,8 +74,8 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
       addToast('Task added', 'success')
       onCreated()
       onClose()
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not add the task. Try again.', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, { fallback: 'Could not add the task. Try again.' }), 'error')
     } finally {
       setSaving(false)
     }

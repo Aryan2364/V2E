@@ -5,6 +5,7 @@ import { Upload, Link2, FileText, Loader2 } from 'lucide-react'
 import { ACCEPT_ATTR, validateFile } from '@/lib/attachments'
 import type { ContentType } from '@/lib/types/learning'
 
+import { getErrorMessage } from '@/lib/api/errors'
 /**
  * The four ways to add a material, as one inline toolbar (not a separate page).
  * "Upload file" creates a file item then uploads the picked file; the others
@@ -41,8 +42,8 @@ export default function AddMaterialBar({
     setBusy(type)
     try {
       await onAdd(type, accepted)
-    } catch (e: any) {
-      setErr(e?.response?.data?.message ?? e?.message ?? 'Something went wrong. Please try again.')
+    } catch (e: unknown) {
+      setErr(getErrorMessage(e, { fallback: 'Something went wrong. Please try again.' }))
     } finally {
       setBusy(null)
     }

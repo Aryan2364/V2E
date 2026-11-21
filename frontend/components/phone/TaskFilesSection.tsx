@@ -248,10 +248,7 @@ async function openNonImageFile(orgId: string, taskId: string, a: TaskAttachment
 
   if (canShareFiles) {
     try {
-      const { url, file_name } = await tasksApi.getAttachmentDownloadUrl(orgId, taskId, a.id)
-      const res = await fetch(url)
-      if (!res.ok) throw new Error(`download failed: ${res.status}`)
-      const blob = await res.blob()
+      const { blob, file_name } = await tasksApi.fetchAttachmentFile(orgId, taskId, a.id)
       const file = new File([blob], file_name || a.file_name, { type: blob.type || type })
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: file.name })

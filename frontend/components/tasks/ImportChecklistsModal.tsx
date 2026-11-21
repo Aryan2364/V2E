@@ -1,32 +1,29 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
+import { AlertCircle, AlertTriangle, CheckCircle2, ListChecks } from 'lucide-react'
+import { toast } from '@/components/ui/sonner'
+import { Button } from '@/components/ui/button'
 import Tooltip from '@/components/ui/tooltip'
-import {
-  Download,
-  UploadCloud,
-  FileText,
-  CheckCircle2,
-  AlertCircle,
-  AlertTriangle,
-  Loader2,
-  ArrowLeft,
-  History,
-  Undo2,
-  ListChecks,
-} from 'lucide-react'
+import BulkImportWizard from '@/components/import/BulkImportWizard'
+import { SummaryChip, UndoButton } from '@/components/import/ImportParts'
 import { tasksApi } from '@/lib/api/tasks'
+import { formatDateTime } from '@/lib/format'
+import { writeColumnHeader } from '@/lib/import/xlsx'
+import {
+  CHECKLIST_COLUMNS,
+  CHECKLIST_MISSING_COLUMNS,
+  mapChecklistRow,
+  type ChecklistColumn,
+} from '@/lib/import/configs/checklists'
+import type { ImportConfig } from '@/lib/import/types'
 import type {
   BulkImportChecklistRow,
-  ChecklistImportValidationResult,
-  ChecklistImportResult,
   ChecklistImportBatchSummary,
+  ChecklistImportResult,
+  ChecklistImportValidationResult,
   ChecklistUndoImportResult,
 } from '@/lib/types/tasks'
-import { toast } from 'sonner'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { formatDateTime } from '@/lib/format'
 
 interface Props {
   orgId: string
@@ -34,545 +31,291 @@ interface Props {
   onImported: () => void
 }
 
-// Machine column keys, in template order.
-const COLUMNS = ['checklist_name', 'item'] as const
-type Column = (typeof COLUMNS)[number]
-
-const HEADER_LABEL: Record<Column, string> = {
-  checklist_name: 'Checklist Name *',
-  item: 'Item *',
-}
-
-const COLUMN_ALIASES: Record<string, Column> = {
-  checklist_name: 'checklist_name',
-  checklist: 'checklist_name',
-  name: 'checklist_name',
-  template: 'checklist_name',
-  template_name: 'checklist_name',
-  item: 'item',
-  items: 'item',
-  task: 'item',
-  step: 'item',
-  checklist_item: 'item',
-  line: 'item',
-}
-
-function normalizeHeader(h: string): string {
-  return h.replace(/\*/g, '').replace(/\(.*?\)/g, '').trim().toLowerCase().replace(/[\s-]+/g, '_')
-}
-
-/** Minimal RFC-4180 CSV parser: handles quoted fields, escaped quotes, CRLF. */
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let inQuotes = false
-  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1)
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i]
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++ } else inQuotes = false
-      } else field += c
-    } else if (c === '"') inQuotes = true
-    else if (c === ',') { row.push(field); field = '' }
-    else if (c === '\n' || c === '\r') {
-      if (c === '\r' && text[i + 1] === '\n') i++
-      row.push(field); rows.push(row); row = []; field = ''
-    } else field += c
-  }
-  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row) }
-  return rows
-}
-
-function SummaryChip({ color, label }: { color: 'green' | 'red' | 'amber' | 'blue'; label: string }) {
-  const styles = {
-    green: 'bg-success-bg text-success',
-    red: 'bg-danger-bg text-danger',
-    amber: 'bg-warning-bg text-warning',
-    blue: 'bg-primary-subtle text-primary-text',
-  }[color]
-  return <span className={`text-meta font-medium rounded-full px-2.5 py-1 ${styles}`}>{label}</span>
-}
+type ChecklistConfig = ImportConfig<
+  ChecklistColumn,
+  BulkImportChecklistRow,
+  ChecklistImportValidationResult,
+  ChecklistImportResult,
+  ChecklistImportBatchSummary,
+  ChecklistImportBatchSummary,
+  ChecklistUndoImportResult
+>
 
 export default function ImportChecklistsModal({ orgId, onClose, onImported }: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Body-scroll-lock, Escape and the backdrop are now the kit Dialog's own behaviour.
-
-  type Phase = 'upload' | 'preview' | 'result' | 'history'
-  const [phase, setPhase] = useState<Phase>('upload')
-  const [fileName, setFileName] = useState('')
-  const [parsedRows, setParsedRows] = useState<BulkImportChecklistRow[]>([])
-  const [validation, setValidation] = useState<ChecklistImportValidationResult | null>(null)
-  const [commitResult, setCommitResult] = useState<ChecklistImportResult | null>(null)
-  const [parseError, setParseError] = useState('')
-  const [building, setBuilding] = useState(false)
-  const [validating, setValidating] = useState(false)
-  const [importing, setImporting] = useState(false)
   const [onlyProblems, setOnlyProblems] = useState(false)
 
-  const [batches, setBatches] = useState<ChecklistImportBatchSummary[]>([])
-  const [undoResult, setUndoResult] = useState<ChecklistUndoImportResult | null>(null)
-  const [undoingId, setUndoingId] = useState<string | null>(null)
+  const config: ChecklistConfig = {
+    title: 'Import Checklists',
+    phaseTitles: { result: 'Import complete' },
+    columns: CHECKLIST_COLUMNS,
+    parse: {
+      headerRequired: ['checklist_name', 'item'],
+      missingColumnsError: CHECKLIST_MISSING_COLUMNS,
+      mapRow: mapChecklistRow,
+      sheetName: 'Checklists',
+      dateMode: 'utc',
+    },
+    template: {
+      fileName: 'checklist-import-template.xlsx',
+      build: (wb) => {
+        const ws = wb.addWorksheet('Checklists')
+        writeColumnHeader(ws, CHECKLIST_COLUMNS)
+        ws.columns = [{ width: 34 }, { width: 52 }]
 
-  // ─── Template download ──────────────────────────────────────────────────────
-  async function downloadTemplate() {
-    setBuilding(true)
-    try {
-      const mod: any = await import('exceljs')
-      const ExcelJS = mod.default ?? mod
-      const wb = new ExcelJS.Workbook()
-      const ws = wb.addWorksheet('Checklists')
+        // Example: two checklists, one row per item (same name groups items).
+        ws.addRow(['Client Onboarding', 'Collect KYC documents'])
+        ws.addRow(['Client Onboarding', 'Create account'])
+        ws.addRow(['Client Onboarding', 'Send welcome email'])
+        ws.addRow(['Vendor Setup', 'Verify GST number'])
+        ws.addRow(['Vendor Setup', 'Sign NDA'])
 
-      ws.addRow(COLUMNS.map((c) => HEADER_LABEL[c]))
-      const headerRow = ws.getRow(1)
-      headerRow.height = 22
-      headerRow.eachCell((cell: any) => {
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } }
-        cell.alignment = { vertical: 'middle', horizontal: 'left' }
-      })
-      ws.columns = [{ width: 34 }, { width: 52 }]
+        // A short instructions sheet.
+        const wsInfo = wb.addWorksheet('How to use')
+        wsInfo.columns = [{ width: 90 }]
+        const lines = [
+          'How to fill this file',
+          '',
+          '1. Put one checklist ITEM per row.',
+          '2. Rows that share the same "Checklist Name" become ONE checklist template.',
+          '3. You can add as many checklists as you like in this one file.',
+          '4. Both columns are required. Blank rows are ignored.',
+          '5. Imported checklists arrive INACTIVE — set "Who can use this checklist", then activate each.',
+        ]
+        lines.forEach((t, i) => {
+          wsInfo.addRow([t])
+          if (i === 0) wsInfo.getRow(1).font = { bold: true, size: 13 }
+        })
+      },
+    },
+    uploadIntro: (
+      <p className="mt-0.5">
+        Put <strong>one item per row</strong>. Rows that share the same <strong>Checklist Name</strong> become one checklist —
+        so a single file can hold <strong>many checklists</strong>. Imported checklists arrive <strong>inactive</strong> so you
+        can set who can use each one, then activate it.
+      </p>
+    ),
+    uploadStep2Label: 'Step 2 — Upload the filled file to review',
+    historyButtonLabel: 'History',
 
-      // Example: two checklists, one row per item (same name groups items).
-      ws.addRow(['Client Onboarding', 'Collect KYC documents'])
-      ws.addRow(['Client Onboarding', 'Create account'])
-      ws.addRow(['Client Onboarding', 'Send welcome email'])
-      ws.addRow(['Vendor Setup', 'Verify GST number'])
-      ws.addRow(['Vendor Setup', 'Sign NDA'])
+    validate: (rows) => tasksApi.validateChecklistImport(orgId, rows),
+    preview: {
+      fullPage: false,
+      backArrow: true,
+      readyCount: (v) => v.templates,
+      importLabel: (n) => `Import ${n} checklist${n !== 1 ? 's' : ''}`,
+      render: (ctx) => {
+        const v = ctx.validation
+        if (!v) return null
+        const groups = v.groups.filter((g) => g.items.length > 0)
+        const visibleRows = onlyProblems ? v.rows.filter((r) => r.status !== 'ready' || r.issues.length > 0) : v.rows
+        return (
+          <>
+            <div className="flex items-center gap-2 flex-wrap">
+              <SummaryChip color="blue" label={`${v.templates} checklist${v.templates !== 1 ? 's' : ''}`} />
+              <SummaryChip color="green" label={`${v.ready} item${v.ready !== 1 ? 's' : ''} ready`} />
+              {v.errors > 0 && <SummaryChip color="red" label={`${v.errors} error${v.errors !== 1 ? 's' : ''}`} />}
+              {v.warnings > 0 && <SummaryChip color="amber" label={`${v.warnings} warning${v.warnings !== 1 ? 's' : ''}`} />}
+              <span className="ml-auto text-meta text-text-muted truncate max-w-[40%]">from {ctx.fileName}</span>
+            </div>
 
-      // A short instructions sheet.
-      const wsInfo = wb.addWorksheet('How to use')
-      wsInfo.columns = [{ width: 90 }]
-      const lines = [
-        'How to fill this file',
-        '',
-        '1. Put one checklist ITEM per row.',
-        '2. Rows that share the same "Checklist Name" become ONE checklist template.',
-        '3. You can add as many checklists as you like in this one file.',
-        '4. Both columns are required. Blank rows are ignored.',
-        '5. Imported checklists arrive INACTIVE — set "Who can use this checklist", then activate each.',
-      ]
-      lines.forEach((t, i) => {
-        wsInfo.addRow([t])
-        if (i === 0) wsInfo.getRow(1).font = { bold: true, size: 13 }
-      })
+            {/* Grouped checklists preview */}
+            <div className="space-y-2">
+              <p className="text-meta font-medium uppercase tracking-wide text-text-muted">Checklists to create</p>
+              {groups.length === 0 && (
+                <p className="text-body text-text-muted">No valid checklists found. Fix the errors below and re-upload.</p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {groups.map((g, i) => (
+                  <div key={i} className="border border-border-light rounded-lg p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-body font-medium text-text-primary truncate">{g.name}</span>
+                      <span className="shrink-0 text-meta font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text">
+                        {g.items.length} item{g.items.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {g.already_exists && (
+                      <span className="inline-block mt-1 text-meta font-medium text-warning">
+                        A checklist with this name already exists
+                      </span>
+                    )}
+                    <ul className="mt-1.5 space-y-0.5">
+                      {g.items.slice(0, 4).map((it, j) => (
+                        <li key={j} className="text-meta text-text-secondary truncate">
+                          • {it}
+                        </li>
+                      ))}
+                      {g.items.length > 4 && <li className="text-meta text-text-muted">+{g.items.length - 4} more</li>}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-      const buf = await wb.xlsx.writeBuffer()
-      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'checklist-import-template.xlsx'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      toast.error('Could not build the template. Please try again.')
-    } finally {
-      setBuilding(false)
-    }
-  }
+            {/* Problem rows */}
+            {(v.errors > 0 || v.warnings > 0) && (
+              <div>
+                <label className="flex items-center gap-2 text-body text-text-secondary mb-2">
+                  <input
+                    type="checkbox"
+                    checked={onlyProblems}
+                    onChange={(e) => setOnlyProblems(e.target.checked)}
+                    className="rounded-xs border-border"
+                  />
+                  Show only rows with problems
+                </label>
+                <div className="border border-border-light rounded-lg overflow-hidden">
+                  <div className="max-h-[34vh] overflow-y-auto">
+                    <table className="w-full text-body">
+                      <thead className="bg-surface-sunken sticky top-0">
+                        <tr className="text-left text-meta text-text-muted">
+                          <th className="px-3 py-2 font-medium w-12">Row</th>
+                          <th className="px-3 py-2 font-medium">Checklist</th>
+                          <th className="px-3 py-2 font-medium">Item</th>
+                          <th className="px-3 py-2 font-medium">Issues</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visibleRows.map((r) => (
+                          <tr key={r.row} className="border-t border-border-light align-top">
+                            <td className="px-3 py-2 text-text-muted">{r.row}</td>
+                            <td className="px-3 py-2 text-text-primary truncate max-w-[140px]">
+                              {r.checklist_name || <span className="text-danger">—</span>}
+                            </td>
+                            <td className="px-3 py-2 text-text-secondary truncate max-w-[160px]">
+                              {r.item || <span className="text-danger">—</span>}
+                            </td>
+                            <td className="px-3 py-2">
+                              {r.issues.length === 0 ? (
+                                <span className="inline-flex items-center gap-1 text-success text-meta">
+                                  <CheckCircle2 size={13} /> OK
+                                </span>
+                              ) : (
+                                <ul className="space-y-0.5">
+                                  {r.issues.map((iss, k) => (
+                                    <li
+                                      key={k}
+                                      className={`inline-flex items-center gap-1 text-meta ${iss.severity === 'error' ? 'text-danger' : 'text-warning'}`}
+                                    >
+                                      {iss.severity === 'error' ? <AlertCircle size={12} /> : <AlertTriangle size={12} />}{' '}
+                                      {iss.message}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
 
-  // ─── Parsing ────────────────────────────────────────────────────────────────
-  function gridToRows(grid: string[][]): { rows: BulkImportChecklistRow[]; error?: string } {
-    if (grid.length === 0) return { rows: [], error: 'The file is empty.' }
-    const header = grid[0].map(normalizeHeader)
-    const idx: Partial<Record<Column, number>> = {}
-    header.forEach((h, i) => {
-      const col = COLUMN_ALIASES[h]
-      if (col && idx[col] === undefined) idx[col] = i
-    })
-    if (idx.checklist_name === undefined || idx.item === undefined) {
-      return { rows: [], error: 'Could not find the required "Checklist Name" and "Item" columns. Download the template to see the expected format.' }
-    }
-    const parsed: BulkImportChecklistRow[] = []
-    for (let r = 1; r < grid.length; r++) {
-      const cells = grid[r]
-      if (!cells || cells.every((c) => (c ?? '').trim() === '')) continue
-      const get = (c: Column) => {
-        const i = idx[c]
-        return i !== undefined ? (cells[i] ?? '').trim() : ''
-      }
-      parsed.push({ checklist_name: get('checklist_name'), item: get('item') })
-    }
-    if (parsed.length === 0) return { rows: [], error: 'No data rows found below the header.' }
-    return { rows: parsed }
-  }
+            <div className="flex items-center gap-2 pt-1">
+              <Button onClick={ctx.importNow} disabled={v.templates === 0} loading={ctx.importing} loadingLabel="Importing…">
+                <ListChecks size={15} /> {`Import ${v.templates} checklist${v.templates !== 1 ? 's' : ''}`}
+              </Button>
+              <Button variant="secondary" onClick={ctx.chooseAnotherFile}>
+                Choose another file
+              </Button>
+            </div>
+          </>
+        )
+      },
+    },
 
-  async function parseXlsx(buffer: ArrayBuffer): Promise<string[][]> {
-    const mod: any = await import('exceljs')
-    const ExcelJS = mod.default ?? mod
-    const wb = new ExcelJS.Workbook()
-    await wb.xlsx.load(buffer)
-    const ws = wb.getWorksheet('Checklists') ?? wb.worksheets[0]
-    if (!ws) return []
-    const cellText = (cell: any): string => {
-      const v = cell?.value
-      if (v == null) return ''
-      if (v instanceof Date) return v.toISOString().slice(0, 10)
-      if (typeof v === 'object') {
-        if (Array.isArray(v.richText)) return v.richText.map((t: any) => t.text).join('')
-        if (typeof v.text === 'string') return v.text
-        if ('result' in v) return v.result == null ? '' : String(v.result)
-        return ''
-      }
-      return String(v)
-    }
-    const headerRow = ws.getRow(1)
-    const colCount = Math.max(headerRow.cellCount, COLUMNS.length)
-    const grid: string[][] = []
-    for (let r = 1; r <= ws.rowCount; r++) {
-      const row = ws.getRow(r)
-      const cells: string[] = []
-      for (let c = 1; c <= colCount; c++) cells.push(cellText(row.getCell(c)))
-      grid.push(cells)
-    }
-    return grid
-  }
-
-  async function runValidation(rows: BulkImportChecklistRow[]) {
-    setValidating(true)
-    try {
-      const res = await tasksApi.validateChecklistImport(orgId, rows)
-      setValidation(res)
-      setPhase('preview')
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Could not validate the file. Please try again.'
-      setParseError(Array.isArray(msg) ? msg.join(', ') : msg)
-    } finally {
-      setValidating(false)
-    }
-  }
-
-  function handleFile(file: File) {
-    setParseError('')
-    setValidation(null)
-    setCommitResult(null)
-    setParsedRows([])
-    setFileName(file.name)
-    const finish = (grid: string[][]) => {
-      const { rows: parsed, error } = gridToRows(grid)
-      if (error) { setParseError(error); return }
-      setParsedRows(parsed)
-      runValidation(parsed)
-    }
-    if (/\.xlsx$/i.test(file.name)) {
-      file.arrayBuffer().then(parseXlsx).then(finish).catch(() => setParseError('Could not read this Excel file. Make sure it is a valid .xlsx.'))
-    } else {
-      const reader = new FileReader()
-      reader.onload = () => {
-        try { finish(parseCsv(String(reader.result ?? ''))) } catch { setParseError('Could not read this file. Make sure it is a valid CSV.') }
-      }
-      reader.onerror = () => setParseError('Could not read this file.')
-      reader.readAsText(file)
-    }
-  }
-
-  // ─── Commit ─────────────────────────────────────────────────────────────────
-  async function handleImport() {
-    setImporting(true)
-    try {
-      const res = await tasksApi.commitChecklistImport(orgId, parsedRows, fileName)
-      setCommitResult(res)
-      setPhase('result')
+    commit: async (rows, fileName) => {
+      const res = await tasksApi.commitChecklistImport(orgId, rows, fileName)
       if (res.created > 0) {
         toast[res.failed > 0 ? 'warning' : 'success'](`Imported ${res.created} checklist${res.created !== 1 ? 's' : ''}`)
         onImported()
       } else {
         toast.error('No checklists were imported')
       }
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Import failed. Please try again.'
-      setParseError(Array.isArray(msg) ? msg.join(', ') : msg)
-    } finally {
-      setImporting(false)
-    }
-  }
+      return { result: res }
+    },
+    commitErrorMode: 'inline',
+    commitErrorFallback: 'Import failed. Please try again.',
 
-  // ─── History + undo ───────────────────────────────────────────────────────────
-  async function openHistory() {
-    setPhase('history')
-    setUndoResult(null)
-    try { setBatches(await tasksApi.listChecklistImportBatches(orgId)) } catch { setBatches([]) }
-  }
-
-  async function handleUndo(batchId: string) {
-    setUndoingId(batchId)
-    try {
-      const res = await tasksApi.undoChecklistImport(orgId, batchId)
-      setUndoResult(res)
-      toast[res.kept.length > 0 ? 'warning' : 'success'](res.undone > 0 ? `Removed ${res.undone} imported checklist${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed')
-      onImported()
-      setBatches(await tasksApi.listChecklistImportBatches(orgId))
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Undo failed.'
-      toast.error(Array.isArray(msg) ? msg.join(', ') : msg)
-    } finally {
-      setUndoingId(null)
-    }
-  }
-
-  function resetToUpload() {
-    setPhase('upload')
-    setParsedRows([])
-    setValidation(null)
-    setCommitResult(null)
-    setParseError('')
-    setFileName('')
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  const visibleRows = useMemo(() => {
-    if (!validation) return []
-    return onlyProblems ? validation.rows.filter((r) => r.status !== 'ready' || r.issues.length > 0) : validation.rows
-  }, [validation, onlyProblems])
-
-  return (
-    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
-      <DialogContent size="lg" className="max-w-3xl max-h-[92vh] p-0">
-        {/* Header */}
-        <DialogHeader>
-          <div className="flex items-center gap-3 min-w-0">
-            {(phase === 'preview' || phase === 'history') && (
-              <Button
-                variant="on-brand"
-                size="icon"
-                onClick={phase === 'history' ? resetToUpload : () => setPhase('upload')}
-                aria-label="Back"
-              >
-                <ArrowLeft size={18} />
-              </Button>
-            )}
-            <DialogTitle>
-              {phase === 'preview' ? 'Review before importing' : phase === 'history' ? 'Import history' : phase === 'result' ? 'Import complete' : 'Import Checklists'}
-            </DialogTitle>
+    renderResult: (ctx) => {
+      const r = ctx.result
+      if (!r) return null
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <SummaryChip color="green" label={`${r.created} created`} />
+            {r.failed > 0 && <SummaryChip color="red" label={`${r.failed} failed`} />}
           </div>
-          {phase === 'upload' && (
-            <Button variant="on-brand" size="sm" onClick={openHistory}>
-              <History size={15} /> History
-            </Button>
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-warning-bg border border-warning-border">
+            <AlertTriangle size={18} className="text-warning mt-0.5 shrink-0" />
+            <p className="text-body text-warning">
+              Imported checklists are <strong>inactive</strong>. Open each one, set <strong>“Who can use this checklist”</strong>,
+              then <strong>activate</strong> it so it appears when creating tasks.
+            </p>
+          </div>
+          {r.batch_id && (
+            <UndoButton
+              onClick={() => r.batch_id && ctx.requestUndo(r.batch_id)}
+              undoing={ctx.undoingId === r.batch_id}
+            />
           )}
-        </DialogHeader>
+          {ctx.undoResult && (
+            <p className="text-label text-text-secondary">
+              Removed {ctx.undoResult.undone}.{' '}
+              {ctx.undoResult.kept.length > 0 && `Kept ${ctx.undoResult.kept.length} (already activated).`}
+            </p>
+          )}
+        </div>
+      )
+    },
 
-        {/* Body */}
-        <DialogBody className="space-y-4">
-          {/* ── Upload ── */}
-          {phase === 'upload' && (
-            <>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-primary-subtle border border-primary-border">
-                <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-body font-medium text-text-primary">Step 1 — Download the Excel template</p>
-                  <p className="text-body text-text-secondary mt-0.5">
-                    Put <strong>one item per row</strong>. Rows that share the same <strong>Checklist Name</strong> become one
-                    checklist — so a single file can hold <strong>many checklists</strong>. Imported checklists arrive{' '}
-                    <strong>inactive</strong> so you can set who can use each one, then activate it.
+    history: {
+      list: () => tasksApi.listChecklistImportBatches(orgId),
+      undo: (id) => tasksApi.undoChecklistImport(orgId, id),
+      undoToast: (res) => ({
+        kind: res.kept.length > 0 ? 'warning' : 'success',
+        message: res.undone > 0 ? `Removed ${res.undone} imported checklist${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed',
+      }),
+      undoErrorFallback: 'Undo failed.',
+      render: (ctx) => (
+        <div className="space-y-3">
+          {ctx.batches.length === 0 && <p className="text-body text-text-muted text-center py-8">No imports yet.</p>}
+          {ctx.batches.map((b) => (
+            <div key={b.id} className="border border-border-light rounded-lg p-3.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-body font-medium text-text-primary truncate">{b.file_name || 'Checklist import'}</p>
+                  <p className="text-meta text-text-muted mt-0.5">
+                    {formatDateTime(b.created_at)} · by {b.imported_by}
                   </p>
-                  <Button className="mt-3" onClick={downloadTemplate} loading={building} loadingLabel="Building…">
-                    <Download size={15} /> Download Excel template
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-body font-medium text-text-primary mb-2">Step 2 — Upload the filled file to review</p>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
-                >
-                  {validating ? <Loader2 size={26} className="text-primary-text animate-spin" /> : <UploadCloud size={26} className="text-text-muted" />}
-                  <span className="text-label font-medium text-text-secondary">
-                    {validating ? 'Checking your file…' : fileName || 'Click to choose an .xlsx or .csv file'}
-                  </span>
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-                />
-              </div>
-
-              {parseError && (
-                <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-body text-danger">{parseError}</div>
-              )}
-            </>
-          )}
-
-          {/* ── Preview ── */}
-          {phase === 'preview' && validation && (
-            <>
-              <div className="flex items-center gap-2 flex-wrap">
-                <SummaryChip color="blue" label={`${validation.templates} checklist${validation.templates !== 1 ? 's' : ''}`} />
-                <SummaryChip color="green" label={`${validation.ready} item${validation.ready !== 1 ? 's' : ''} ready`} />
-                {validation.errors > 0 && <SummaryChip color="red" label={`${validation.errors} error${validation.errors !== 1 ? 's' : ''}`} />}
-                {validation.warnings > 0 && <SummaryChip color="amber" label={`${validation.warnings} warning${validation.warnings !== 1 ? 's' : ''}`} />}
-                <span className="ml-auto text-meta text-text-muted truncate max-w-[40%]">from {fileName}</span>
-              </div>
-
-              {/* Grouped checklists preview */}
-              <div className="space-y-2">
-                <p className="text-meta font-medium uppercase tracking-wide text-text-muted">Checklists to create</p>
-                {validation.groups.filter((g) => g.items.length > 0).length === 0 && (
-                  <p className="text-body text-text-muted">No valid checklists found. Fix the errors below and re-upload.</p>
-                )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {validation.groups.filter((g) => g.items.length > 0).map((g, i) => (
-                    <div key={i} className="border border-border-light rounded-lg p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-body font-medium text-text-primary truncate">{g.name}</span>
-                        <span className="shrink-0 text-meta font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text">{g.items.length} item{g.items.length !== 1 ? 's' : ''}</span>
-                      </div>
-                      {g.already_exists && (
-                        <span className="inline-block mt-1 text-meta font-medium text-warning">A checklist with this name already exists</span>
-                      )}
-                      <ul className="mt-1.5 space-y-0.5">
-                        {g.items.slice(0, 4).map((it, j) => (
-                          <li key={j} className="text-meta text-text-secondary truncate">• {it}</li>
-                        ))}
-                        {g.items.length > 4 && <li className="text-meta text-text-muted">+{g.items.length - 4} more</li>}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Problem rows */}
-              {(validation.errors > 0 || validation.warnings > 0) && (
-                <div>
-                  <label className="flex items-center gap-2 text-body text-text-secondary mb-2">
-                    <input type="checkbox" checked={onlyProblems} onChange={(e) => setOnlyProblems(e.target.checked)} className="rounded-xs border-border" />
-                    Show only rows with problems
-                  </label>
-                  <div className="border border-border-light rounded-lg overflow-hidden">
-                    <div className="max-h-[34vh] overflow-y-auto">
-                      <table className="w-full text-body">
-                        <thead className="bg-surface-sunken sticky top-0">
-                          <tr className="text-left text-meta text-text-muted">
-                            <th className="px-3 py-2 font-medium w-12">Row</th>
-                            <th className="px-3 py-2 font-medium">Checklist</th>
-                            <th className="px-3 py-2 font-medium">Item</th>
-                            <th className="px-3 py-2 font-medium">Issues</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {visibleRows.map((r) => (
-                            <tr key={r.row} className="border-t border-border-light align-top">
-                              <td className="px-3 py-2 text-text-muted">{r.row}</td>
-                              <td className="px-3 py-2 text-text-primary truncate max-w-[140px]">{r.checklist_name || <span className="text-danger">—</span>}</td>
-                              <td className="px-3 py-2 text-text-secondary truncate max-w-[160px]">{r.item || <span className="text-danger">—</span>}</td>
-                              <td className="px-3 py-2">
-                                {r.issues.length === 0 ? (
-                                  <span className="inline-flex items-center gap-1 text-success text-meta"><CheckCircle2 size={13} /> OK</span>
-                                ) : (
-                                  <ul className="space-y-0.5">
-                                    {r.issues.map((iss, k) => (
-                                      <li key={k} className={`inline-flex items-center gap-1 text-meta ${iss.severity === 'error' ? 'text-danger' : 'text-warning'}`}>
-                                        {iss.severity === 'error' ? <AlertCircle size={12} /> : <AlertTriangle size={12} />} {iss.message}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    <SummaryChip color="green" label={`${b.created_count} created`} />
+                    {b.failed_count > 0 && <SummaryChip color="red" label={`${b.failed_count} failed`} />}
+                    <SummaryChip color="blue" label={`${b.remaining} remaining`} />
+                    {b.status !== 'committed' && (
+                      <SummaryChip color="amber" label={b.status === 'undone' ? 'undone' : 'partly undone'} />
+                    )}
                   </div>
                 </div>
-              )}
-
-              <div className="flex items-center gap-2 pt-1">
-                <Button
-                  onClick={handleImport}
-                  disabled={validation.templates === 0}
-                  loading={importing}
-                  loadingLabel="Importing…"
-                >
-                  <ListChecks size={15} /> {`Import ${validation.templates} checklist${validation.templates !== 1 ? 's' : ''}`}
-                </Button>
-                <Button variant="secondary" onClick={() => setPhase('upload')}>Choose another file</Button>
-              </div>
-            </>
-          )}
-
-          {/* ── Result ── */}
-          {phase === 'result' && commitResult && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <SummaryChip color="green" label={`${commitResult.created} created`} />
-                {commitResult.failed > 0 && <SummaryChip color="red" label={`${commitResult.failed} failed`} />}
-              </div>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-warning-bg border border-warning-border">
-                <AlertTriangle size={18} className="text-warning mt-0.5 shrink-0" />
-                <p className="text-body text-warning">
-                  Imported checklists are <strong>inactive</strong>. Open each one, set <strong>“Who can use this checklist”</strong>,
-                  then <strong>activate</strong> it so it appears when creating tasks.
-                </p>
-              </div>
-              {commitResult.batch_id && (
-                <Button
-                  variant="danger"
-                  onClick={() => handleUndo(commitResult.batch_id as string)}
-                  loading={undoingId === commitResult.batch_id}
-                  loadingLabel="Undoing…"
-                >
-                  <Undo2 size={15} /> Undo this import
-                </Button>
-              )}
-              {undoResult && (
-                <p className="text-label text-text-secondary">Removed {undoResult.undone}. {undoResult.kept.length > 0 && `Kept ${undoResult.kept.length} (already activated).`}</p>
-              )}
-              <div className="flex items-center gap-2 pt-1">
-                <Button onClick={resetToUpload}>Import another file</Button>
-                <Button variant="secondary" onClick={onClose}>Done</Button>
-              </div>
-            </div>
-          )}
-
-          {/* ── History ── */}
-          {phase === 'history' && (
-            <div className="space-y-3">
-              {batches.length === 0 && <p className="text-body text-text-muted text-center py-8">No imports yet.</p>}
-              {batches.map((b) => (
-                <div key={b.id} className="border border-border-light rounded-lg p-3.5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-body font-medium text-text-primary truncate">{b.file_name || 'Checklist import'}</p>
-                      <p className="text-meta text-text-muted mt-0.5">
-                        {formatDateTime(b.created_at)} · by {b.imported_by}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        <SummaryChip color="green" label={`${b.created_count} created`} />
-                        {b.failed_count > 0 && <SummaryChip color="red" label={`${b.failed_count} failed`} />}
-                        <SummaryChip color="blue" label={`${b.remaining} remaining`} />
-                        {b.status !== 'committed' && <SummaryChip color="amber" label={b.status === 'undone' ? 'undone' : 'partly undone'} />}
-                      </div>
-                    </div>
-                    <Tooltip label={b.can_undo ? 'Remove the still-inactive checklists from this import' : 'Nothing left to undo'}>
-                    <Button
-                      variant="danger"
+                <Tooltip label={b.can_undo ? 'Remove the still-inactive checklists from this import' : 'Nothing left to undo'}>
+                  <span className="shrink-0">
+                    <UndoButton
                       size="sm"
-                      className="shrink-0"
-                      onClick={() => handleUndo(b.id)}
+                      label="Undo"
+                      onClick={() => ctx.requestUndo(b.id)}
+                      undoing={ctx.undoingId === b.id}
                       disabled={!b.can_undo}
-                      loading={undoingId === b.id}
-                      loadingLabel="Undoing…"
-                    >
-                      <Undo2 size={14} /> Undo
-                    </Button>
-                    </Tooltip>
-                  </div>
-                </div>
-              ))}
+                    />
+                  </span>
+                </Tooltip>
+              </div>
             </div>
-          )}
-        </DialogBody>
-      </DialogContent>
-    </Dialog>
-  )
+          ))}
+        </div>
+      ),
+    },
+  }
+
+  return <BulkImportWizard config={config} onClose={onClose} onChanged={onImported} />
 }

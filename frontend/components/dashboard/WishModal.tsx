@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 
+import { getInitials } from '@/lib/initials'
 const avatarColors = [
   'bg-primary', 'bg-text-secondary', 'bg-text-secondary',
   'bg-warning', 'bg-success', 'bg-text-secondary',
@@ -26,10 +27,6 @@ function avatarColor(name: string): string {
   let h = 0
   for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return avatarColors[h % avatarColors.length]
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 function defaultMessage(name: string, eventType: 'birthday' | 'anniversary' | 'new_hiring' | 'work_anniversary', years?: number): string {

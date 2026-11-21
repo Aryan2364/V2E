@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { EmploymentType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -18,6 +18,7 @@ import {
   UndoImportResult,
   UndoKeptRow,
 } from './dto/bulk-import-employee.dto';
+import { swallow } from '../common/swallow';
 
 const DEFAULT_IMPORT_PASSWORD = 'Welcome@123';
 /** Combined dropdown values in the template read "Value · Context" with this glue. */
@@ -152,7 +153,7 @@ export class EmployeeImportService {
         if (p.managerRef?.kind === 'user') reportingToUserId = p.managerRef.id;
         else if (p.managerRef?.kind === 'file') {
           const id = createdUserByEmail.get(p.managerRef.email);
-          if (!id) throw new Error(`Manager row (${p.managerRef.email}) was not imported`);
+          if (!id) throw new BadRequestException(`Manager row (${p.managerRef.email}) was not imported`);
           reportingToUserId = id;
         }
 
@@ -163,7 +164,7 @@ export class EmployeeImportService {
             const existing = await tx.organizationMember.findFirst({
               where: { user_id: user.id, organization_id: orgId },
             });
-            if (existing) throw new Error('A user with this email already exists in this organization');
+            if (existing) throw new ConflictException('A user with this email already exists in this organization');
           } else {
             const password_hash = passwordHashMap.get(p.email)!;
             user = await tx.user.create({ data: { name: p.name, email: p.email, password_hash, is_active: true } });
@@ -197,8 +198,8 @@ export class EmployeeImportService {
           // Auto-assign published learning paths (best-effort — never fail the row).
           try {
             await this.learningService.autoAssignForNewEmployee(profile.id, p.role!.id, orgId, user.id, p.dept!.id);
-          } catch {
-            /* non-critical */
+          } catch (err) {
+            swallow('employee-import.postCreate')(err);
           }
           return { id: user.id, wasCreated };
         });

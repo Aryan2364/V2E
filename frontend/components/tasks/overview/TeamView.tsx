@@ -6,9 +6,7 @@ import KpiCards from './KpiCards'
 import SourceTimingPanel from './SourceTimingPanel'
 import DelegationPanel from './DelegationPanel'
 import PeopleLeaderboard from './PeopleLeaderboard'
-import StatusTimingChart from './StatusTimingChart'
-import PrioritySpreadChart from './PrioritySpreadChart'
-import CategorySpreadChart from './CategorySpreadChart'
+import { StatusTimingChart, PrioritySpreadChart, CategorySpreadChart } from './lazy-charts'
 import TagSpreadChart from './TagSpreadChart'
 
 /**

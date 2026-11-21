@@ -5,7 +5,7 @@ import { AssigneeVisibilityService } from '../assignee-visibility/assignee-visib
 import { ChecklistAccessService } from '../task-masters/checklist-access.service';
 import { HolidaysService } from '../holidays/holidays.service';
 import { LeaveService } from '../leave/leave.service';
-import { TasksService } from './tasks.service';
+import { TaskCreateService } from './task-create.service';
 import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { MAX_TAGS_PER_TASK, tagNameKey } from '../task-masters/task-tag.constants';
@@ -26,6 +26,7 @@ import {
   TaskUndoImportResult,
   TaskUndoKeptRow,
 } from './dto/bulk-import-task.dto';
+import { swallow } from '../common/swallow';
 
 /** Combined dropdown values read "Value · Context" with this glue (mirrors employee import). */
 export const VALUE_SEPARATOR = ' · ';
@@ -94,8 +95,8 @@ export class TaskImportService {
     private readonly checklistAccess: ChecklistAccessService,
     private readonly holidays: HolidaysService,
     private readonly leave: LeaveService,
-    @Inject(forwardRef(() => TasksService))
-    private readonly tasks: TasksService,
+    @Inject(forwardRef(() => TaskCreateService))
+    private readonly tasks: TaskCreateService,
   ) {}
 
   // ─── Public API ─────────────────────────────────────────────────────────────
@@ -771,8 +772,8 @@ export class TaskImportService {
         for (const e of avail.results) {
           leaveByUser.set(e.user_id, e.windows.map((w) => ({ start: w.start_date, end: w.end_date })));
         }
-      } catch {
-        /* leave is advisory — never fail validation over it */
+      } catch (err) {
+        swallow('task-import.leaveLookup')(err);
       }
     }
 

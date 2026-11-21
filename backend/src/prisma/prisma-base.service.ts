@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { createPgAdapter } from './pg-connection';
 
 /**
  * The raw, un-extended Prisma client. Owns the connection lifecycle.
@@ -13,14 +13,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 @Injectable()
 export class PrismaBaseService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    const rawUrl = process.env['DATABASE_URL'] ?? 'postgresql://postgres:postgres@localhost:5432/V2E?schema=public';
-    const needsSsl = rawUrl.includes('sslmode');
-    const connectionString = needsSsl ? rawUrl.replace(/[?&]sslmode=[^&]*/g, '') : rawUrl;
-    const adapter = new PrismaPg({
-      connectionString,
-      ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
-    });
-    super({ adapter });
+    super({ adapter: createPgAdapter() });
   }
 
   async onModuleInit() {

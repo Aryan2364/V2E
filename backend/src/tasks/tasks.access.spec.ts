@@ -1,5 +1,5 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { TasksService } from './tasks.service';
+import { buildTaskServices, buildTasksController } from './testing/task-services.testing';
 import { TasksController } from './tasks.controller';
 import { TaskAttachmentsService } from './task-attachments.service';
 import { Principal } from '../access-rights/permissions.service';
@@ -120,23 +120,23 @@ function makeService(prisma: any, discussion?: any) {
     }),
   };
   const notifications = { userName: jest.fn(async () => 'Asha'), emit: jest.fn(async () => undefined) };
-  const service = new TasksService(
-    prisma,
-    {} as any, // workflowEngine
-    {} as any, // holidays
-    {} as any, // projectProgress
-    notifications as any,
-    {} as any, // assigneeVisibility
-    {} as any, // subjects
-    scope as any,
-    {} as any, // leave
-    { now: jest.fn(async () => new Date('2026-10-04T10:00:00Z')) } as any,
-    {} as any, // checklistAccess
-    { registerCounter: jest.fn(), whereForUser: jest.fn() } as any,
-    {} as any, // analytics
-    {} as any, // r2
-    discussion,
-  );
+  const service = buildTaskServices({
+    prisma: prisma,
+    workflowEngine: {} as any,
+    holidays: {} as any,
+    projectProgress: {} as any,
+    notifications: notifications as any,
+    assigneeVisibility: {} as any,
+    subjects: {} as any,
+    scope: scope as any,
+    leave: {} as any,
+    clock: { now: jest.fn(async () => new Date('2026-10-04T10:00:00Z')) } as any,
+    checklistAccess: {} as any,
+    visibility: { registerCounter: jest.fn(), whereForUser: jest.fn() } as any,
+    analytics: {} as any,
+    r2: {} as any,
+    discussion: discussion,
+  }).view;
   return { service, scope, notifications };
 }
 
@@ -292,7 +292,7 @@ describe('TasksController — uploads are gated by the view rule', () => {
   function makeController(gate: () => Promise<void>) {
     const service = { assertCanViewTask: jest.fn(gate) };
     const attachments = { upload: jest.fn(async () => ({ id: 'att' })) };
-    const controller = new TasksController(service as any, {} as any, attachments as any, {} as any, {} as any);
+    const controller = buildTasksController({ taskAccess: service, attachments });
     return { controller, service, attachments };
   }
   const req = { user: { id: 'u-x', is_admin: false } };

@@ -28,6 +28,7 @@ import {
   TASK_TAG_REF_SELECT,
 } from '../common/task-masters-usable';
 import { shouldEntryFireToday, type RecurrenceEntry } from '../common/recurrence/should-fire-today';
+import { swallow } from '../common/swallow';
 
 const ENTRY_INCLUDE = { orderBy: { order_index: 'asc' as const } };
 
@@ -338,7 +339,7 @@ export class RecurringTasksService {
         link: `/dashboard/tasks/recurring/${templateId}`,
         entity: { type: 'recurring_template', id: templateId },
       })
-      .catch(() => {});
+      .catch(swallow('recurring-tasks.notifyAccess'));
   }
 
   private async findTemplateOrFail(orgId: string, templateId: string) {

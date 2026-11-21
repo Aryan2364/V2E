@@ -43,7 +43,7 @@ Filtering by `organization_id` answers neither. You must answer #2 explicitly.
 - **`Principal` + `principalFromUser(req.user)`** (`permissions.service.ts`).
 - **`PermissionAction`** from `@prisma/client` (`read`/`edit`/`delete`/…).
 
-## The required pattern (canonical reference: `src/tasks/tasks.service.ts`)
+## The required pattern (canonical reference: `src/tasks/task-access.service.ts` for the gates, with the per-route flows in the sibling `src/tasks/task-*.service.ts` files)
 
 For every route that reads or mutates a single record by id:
 

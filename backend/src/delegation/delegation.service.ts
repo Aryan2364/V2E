@@ -106,7 +106,7 @@ export class DelegationService {
     );
     if (reviewTaskId) {
       await this.prisma.delegation.update({
-        where: { id: created.id },
+        where: { id: created.id, organization_id: orgId },
         data: { review_task_id: reviewTaskId },
       });
       (created as any).review_task_id = reviewTaskId;
@@ -201,7 +201,7 @@ export class DelegationService {
     });
     if (!criterion) throw new NotFoundException('Criterion not found');
     await this.prisma.delegationCriterion.update({
-      where: { id: criterionId },
+      where: { id: criterionId, delegation_id: id, organization_id: orgId },
       data: { is_met: isMet },
     });
     return this.getOne(orgId, id, principal);

@@ -10,8 +10,10 @@ import { usePermissions } from '@/lib/auth/use-permissions'
 import { getNow } from '@/lib/clock'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
-import type { Task, TaskComment, TaskMasterConfig } from '@/lib/types/tasks'
-import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
+import { useTaskDetail, useUndoWindowTick } from '@/lib/hooks/useTaskDetail'
+import { canDeleteTask, derivePhoneActions, deriveTaskFlags } from '@/lib/tasks/detail-rules'
+import { namesSummary } from '@/lib/tasks/format'
+import type { Task, TaskComment } from '@/lib/types/tasks'
 import { PHONE_HOME, taskEditHref, type PhoneRoute } from '@/lib/phone-routes'
 import { shrinkImageForUpload } from '@/lib/image-resize'
 import { canQuickComplete } from '@/lib/tasks/finish-rules'
@@ -99,16 +101,14 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const orgId = user?.organizationId ?? ''
   const userId = user?.id
 
-  const [task, setTask] = React.useState<Task | null>(null)
-  const [error, setError] = React.useState(false)
+  // The shared task-detail data layer (lib/hooks/useTaskDetail.ts), lean variant: the task,
+  // the org config and the comments each load on their own, as this screen always did.
+  const detail = useTaskDetail({ orgId, taskId, userId, variant: 'lean' })
+  const { task, error, config, setTask, commentsFailed, loadComments } = detail
   const [sheetOpen, setSheetOpen] = React.useState(false)
   // One panel open at a time: the ... menu and the sheets it leads to.
   const [panel, setPanel] = React.useState<null | 'menu' | 'details' | 'activity' | 'cant' | 'delete' | 'reopen' | 'status' | 'mode' | 'completeAll' | 'wholeIncomplete'>(null)
-  const [config, setConfig] = React.useState<TaskMasterConfig | null | undefined>(undefined)
-  const [, setWindowTick] = React.useState(0)
   const [offerPush, setOfferPush] = React.useState(false)
-  const [comments, setComments] = React.useState<TaskComment[] | null>(null)
-  const [commentsFailed, setCommentsFailed] = React.useState(false)
   const [commentCount, setCommentCount] = React.useState(COMMENTS_PAGE)
   const [commentText, setCommentText] = React.useState('')
   const [commentFiles, setCommentFiles] = React.useState<UploadItem[]>([])
@@ -119,55 +119,24 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const [completing, setCompleting] = React.useState(false)
   const [commentToDelete, setCommentToDelete] = React.useState<TaskComment | null>(null)
   const [deletingComment, setDeletingComment] = React.useState(false)
-  const [markingProofId, setMarkingProofId] = React.useState<string | null>(null)
-  // Bumped after a comment file is marked as proof, so the Files & proof section re-lists.
-  const [proofToken, setProofToken] = React.useState(0)
   // A workflow step task: its run's context (undefined = still loading, null = none / could not load).
   const [stepCtx, setStepCtx] = React.useState<WorkflowStepContext | null | undefined>(undefined)
   const workflowsWritable = useWorkflowsWritable()
 
-  const load = React.useCallback(() => {
-    if (!orgId || !taskId) return
-    tasksApi
-      .getTask(orgId, taskId)
-      .then(setTask)
-      .catch(() => setError(true))
-  }, [orgId, taskId])
-
-  React.useEffect(load, [load])
-
-  // Delete's rule needs the org's task config (task_delete_roles), as on desktop.
-  React.useEffect(() => {
-    if (!orgId) return
-    tasksApi.getConfig(orgId).then(setConfig).catch(() => setConfig(null))
-  }, [orgId])
+  const load = () => void detail.reload()
+  const proofToken = detail.proofReloadToken
+  const markingProofId = detail.actionLoading?.startsWith('mark-proof-') ? detail.actionLoading.replace('mark-proof-', '') : null
 
   // Re-evaluate who may reopen the moment the undo window ends.
-  const reopenExpiresAt = task?.reopen_expires_at
-  React.useEffect(() => {
-    if (!reopenExpiresAt) return
-    const ms = new Date(reopenExpiresAt).getTime() - getNow().getTime()
-    if (ms <= 0) return
-    const id = setTimeout(() => setWindowTick((n) => n + 1), ms + 50)
-    return () => clearTimeout(id)
-  }, [reopenExpiresAt])
+  useUndoWindowTick(task?.reopen_expires_at)
 
   // Edit: the same rule the server applies to updateTask (undefined = not known yet).
   const canEditTask = useCanEditTask(task)
 
-  const loadComments = React.useCallback(() => {
-    if (!orgId || !taskId) return
-    setCommentsFailed(false)
-    tasksApi.getComments(orgId, taskId).then(setComments).catch(() => setCommentsFailed(true))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId, taskId])
-
-  React.useEffect(loadComments, [loadComments])
-
   if (error) {
     return (
       <PhoneScreen title="Task" parent={route.parent ?? PHONE_HOME}>
-        <PhoneFailedState what="This task" onRetry={() => { setError(false); load() }} />
+        <PhoneFailedState what="This task" onRetry={detail.retryTask} />
         <PhoneLinkButton href={route.parent ?? PHONE_HOME} fullWidth>
           Go to home
         </PhoneLinkButton>
@@ -186,7 +155,12 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     )
   }
 
-  const assignees = (task.assignees ?? []).filter((a) => !a.is_cc)
+  // The who-may-do-what rules are shared with the computer's task page (lib/tasks/detail-rules.ts);
+  // the phone also counts the permission system's admin.
+  const isAdminUser = !!user?.is_admin || perms.isAdmin
+  const flags = deriveTaskFlags({ task, userId, isAdmin: isAdminUser, now: getNow() })
+  const acts = derivePhoneActions({ task, flags, isAdmin: isAdminUser, windowOpen: isUndoWindowOpen(task) })
+  const { assignees, pendingNames, isFutureTask } = flags
   const assigneeLabel =
     assignees.length === 0
       ? '—'
@@ -201,72 +175,28 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     { label: 'Priority', value: task.priority?.label ?? '—' },
   ]
 
-  const myAssignment = assignees.find((a) => a.user_id === userId)
-  const sharedDone = task.status?.type ? TERMINAL_STATUS_PHASES.includes(task.status.type) : false
-  const isAssignee = !!myAssignment
-  // Whether THIS viewer's part is already done (drives "Complete task" vs "Undo"/"Reopen").
-  const myPartDone = task.completion_mode === 'all_must_complete' ? !!myAssignment?.is_completed : sharedDone
-
-  // Desktop page.tsx: canEdit (~835) = creator or admin; canManageCc (~846) = (that, or on the
-  // task as assignee or CC) and not a simulated-future task and not closed; canDelete (~772).
-  const isCreator = task.created_by_user_id === userId
-  const isAdminUser = !!user?.is_admin || perms.isAdmin
-  const isFutureTask = new Date(task.created_at) > getNow()
-  const isCc = (task.assignees ?? []).some((a) => a.user_id === userId && a.is_cc)
-  const canManageCc = (isCreator || isAdminUser || isAssignee || isCc) && !isFutureTask && !sharedDone
-  // Desktop page.tsx canEdit (~825): creator or admin, not a simulated-future task. isAssignee there (~831)
-  // also excludes a future task; canMoveSharedStatus (~849) = (assignee or canEdit) and not future.
-  const canOwn = (isCreator || isAdminUser) && !isFutureTask
-  const iAmAssignee = isAssignee && !isFutureTask
-  const canMoveShared = (iAmAssignee || canOwn) && !isCc
-  const canDelete: boolean | undefined = user?.is_admin
-    ? true
-    : config === undefined
-      ? undefined
-      : (config?.task_delete_roles ?? []).includes('employee')
-  const allMust = task.completion_mode === 'all_must_complete'
-  // Can't complete: desktop's "Can't complete (my part)" / "mark incomplete" (~1099-1132). An open
-  // task, an assignee whose part is not already finished or flagged.
-  const canCantComplete = isAssignee && !isFutureTask && !sharedDone && !myAssignment?.is_completed && !myAssignment?.cannot_complete
-  // Reopen (backend reopenTask ~3528-3550): inside the undo window any participant reverses a
-  // closure with no reason; after it only the creator or an admin may, with a reason. In
-  // all_must_complete an assignee can also take back just their own finished part (~937-960).
-  const windowOpen = isUndoWindowOpen(task)
-  const reopenKind: 'direct' | 'reason' | null = sharedDone
-    ? windowOpen && (isAssignee || isCreator || isAdminUser)
-      ? 'direct'
-      : isCreator || isAdminUser
-        ? 'reason'
-        : null
-    : allMust && !!myAssignment?.is_completed
-      ? 'direct'
-      : null
-  const partReopen = allMust && !!myAssignment?.is_completed
+  const myAssignment = flags.myAssignee
+  const sharedDone = flags.isTaskTerminal
+  // On the task as a working assignee (also on a simulated-future task); iAmAssignee excludes that.
+  const isAssignee = flags.isOnTask
+  const iAmAssignee = flags.isAssignee
+  const { myPartDone, reopenKind, partReopen, canCantComplete, canCompleteForAll, canWholeIncomplete, statusMine, canChangeStatus, canSharedIncomplete, canChangeMode, canSubmitProof } = acts
+  const canOwn = flags.canEdit
+  const canManageCc = flags.canManageCc
+  const canDelete = canDeleteTask(!!user?.is_admin, config)
+  const allMust = flags.isAllMustComplete
   const tags = task.tags ?? []
-  const pendingNames = assignees.filter((a) => !a.is_completed).map((a) => a.user?.name ?? a.user_name ?? 'Someone')
-  const pendingText = `${pendingNames.slice(0, 3).join(', ')}${pendingNames.length > 3 ? ` +${pendingNames.length - 3} more` : ''}`
-  // Owner override (~906): complete the whole all_must task for everyone, and (~1503/1517) close it incomplete.
-  const canCompleteForAll = allMust && canOwn && !sharedDone && !isCc
-  const canWholeIncomplete = allMust && canOwn && !sharedDone && !isCc
-  // Status (~1480 my track, ~1581 shared): open task only; my track only while my part is open.
-  const statusMine = allMust && iAmAssignee && !myAssignment?.is_completed && !myAssignment?.cannot_complete
-  const canChangeStatus = !sharedDone && !isCc && (allMust ? statusMine : canMoveShared)
-  // Shared mode: any participant (or the owner) can close the task Incomplete from the status control (~1589).
-  const canSharedIncomplete = !allMust && !sharedDone && canMoveShared
-  // Completion mode (~2148): owner, and only when it matters (2+ assignees).
-  const canChangeMode = canOwn && assignees.length > 1
-  // Mark a comment's file as proof (~1263): proof asked for, I am a working assignee, task open.
-  const canSubmitProof = !!task.proof_required && iAmAssignee && !sharedDone
+  const pendingText = namesSummary(pendingNames)
   const proofExts = task.proof_allowed_extensions ?? []
 
   // Oldest first; "Show earlier" adds 10 older ones at the top.
-  const orderedComments = (comments ?? []).slice().sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+  const orderedComments = detail.comments.slice().sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
   const visibleComments = orderedComments.slice(Math.max(0, orderedComments.length - commentCount))
-  const totalCommentCount = comments?.length ?? task._count?.comments ?? 0
-  // Desktop (~1204): a workflow step task shows its run's discussion, once the context says the viewer can see it.
+  const totalCommentCount = detail.commentsLoading ? task._count?.comments ?? 0 : detail.comments.length
+  // Desktop: a workflow step task shows its run's discussion, once the context says the viewer can see it.
   const isWorkflowTask = !!task.workflow_instance_step_id
   const showDiscussion = isWorkflowTask && !!stepCtx?.can_view_discussion
-  // Desktop (~822): everyone who can see the run may write, except on a simulated-future task.
+  // Everyone who can see the run may write, except on a simulated-future task.
   const discussionGate = isFutureTask
     ? { allowed: false as boolean | undefined, reason: 'Comments are locked on tasks created in a simulated future.' }
     : gate(true, workflowsWritable, REASONS.message)
@@ -276,7 +206,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     if (!task) return
     try {
       if (partReopen) await undoCompleteForMe(orgId, task)
-      else await tasksApi.reopenTask(orgId, task.id)
+      else await detail.reopen(undefined, { reload: 'background' })
       load()
       void refreshBadge()
     } catch (e) {
@@ -337,27 +267,11 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     if (!task) return
     const text = commentText.trim()
     if (!text || text.length > COMMENT_MAX) return
-    let created: TaskComment
+    let failed: number
     try {
-      created = await tasksApi.addComment(orgId, task.id, text)
+      ;({ failedFiles: failed } = await detail.postComment(text, commentFiles.map((item) => item.file), shrinkImageForUpload))
     } catch {
       throw new Error('Could not post the comment. Try again.')
-    }
-    let failed = 0
-    for (const item of commentFiles) {
-      try {
-        const shrunk = await shrinkImageForUpload(item.file)
-        await tasksApi.uploadCommentAttachment(orgId, task.id, created.id, shrunk)
-      } catch {
-        failed += 1
-      }
-    }
-    if (commentFiles.length > 0) {
-      // The files are on the server now: reload once so the comment shows them. Same row keys, so nothing flickers.
-      const fresh = await tasksApi.getComments(orgId, task.id).catch(() => null)
-      setComments(fresh ?? ((prev) => [...(prev ?? []), created]))
-    } else {
-      setComments((prev) => [...(prev ?? []), created])
     }
     setCommentText('')
     setCommentFiles([])
@@ -368,31 +282,25 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     if (shouldOfferPushNow(userId)) setOfferPush(true)
   }
 
-  /** Owner override: close the whole all_must task as Complete for everyone (desktop handleCompleteWholeTask ~508). */
+  /** Owner override: close the whole all_must task as Complete for everyone. */
   async function completeForEveryone() {
     if (!task) return
     try {
-      setTask(await tasksApi.completeTask(orgId, task.id, true))
-      load()
+      await detail.completeWholeTask({ reload: 'background' })
       void refreshBadge()
     } catch (e) {
       addToast(apiErrorMessage(e, 'Could not complete the task. Try again.'), 'error')
     }
   }
 
-  /** Deletes my own comment (desktop TaskCommentDelete ~252); its files go with it, so a proof file may have gone too. */
+  /** Deletes my own comment; its files go with it, so a proof file may have gone too. */
   async function deleteComment() {
     if (!task || !commentToDelete) return
     setDeletingComment(true)
     try {
-      await tasksApi.deleteComment(orgId, task.id, commentToDelete.id)
-      const id = commentToDelete.id
-      setComments((prev) => (prev ?? []).filter((x) => x.id !== id))
+      await detail.removeComment(commentToDelete.id)
       setCommentToDelete(null)
-      if (task.proof_required) {
-        load()
-        setProofToken((n) => n + 1)
-      }
+      void detail.syncAfterCommentRemoved()
     } catch (e) {
       addToast(apiErrorMessage(e, 'Could not delete the comment. Try again.'), 'error')
     } finally {
@@ -400,20 +308,13 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     }
   }
 
-  /** Promote a file I shared in a comment to my proof of completion (desktop handleMarkCommentAsProof ~696). */
+  /** Promote a file I shared in a comment to my proof of completion. */
   async function markCommentFileAsProof(attachmentId: string) {
     if (!task || markingProofId) return
-    setMarkingProofId(attachmentId)
     try {
-      await tasksApi.markCommentAttachmentAsProof(orgId, task.id, attachmentId)
-      load()
-      const fresh = await tasksApi.getComments(orgId, task.id).catch(() => null)
-      if (fresh) setComments(fresh)
-      setProofToken((n) => n + 1)
+      await detail.markCommentFileAsProof(attachmentId)
     } catch (e) {
       addToast(apiErrorMessage(e, 'Could not use that file as proof. Try again.'), 'error')
-    } finally {
-      setMarkingProofId(null)
     }
   }
 
@@ -513,13 +414,9 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
             proof={{
               canSubmit: !!task.proof_required && iAmAssignee && !sharedDone,
               allowedExtensions: proofExts,
-              onMark: async (attachmentId) => {
-                await tasksApi.markCommentAttachmentAsProof(orgId, task.id, attachmentId)
-                load()
-                setProofToken((n) => n + 1)
-              },
+              onMark: (attachmentId) => detail.markDiscussionFileAsProof(attachmentId),
             }}
-            onChanged={() => setProofToken((n) => n + 1)}
+            onChanged={() => detail.bumpProof()}
           />
         ) : (
         <section className="flex flex-col gap-[8px]">
@@ -536,7 +433,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           ) : (
           <CommentThread
             followLatest={false}
-            loading={comments === null}
+            loading={detail.commentsLoading}
             hasEarlier={orderedComments.length > commentCount}
             onShowEarlier={() => setCommentCount((n) => n + COMMENTS_PAGE)}
             onWrite={() => commentRef.current?.focus()}
@@ -724,11 +621,12 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         busyLabel="Saving…"
         onConfirm={async (reason) => {
           // Desktop: all_must_complete flags my part (flagCannotComplete); otherwise any assignee closes the task incomplete.
-          const updated = allMust && isAssignee
-            ? await tasksApi.flagCannotComplete(orgId, task.id, reason)
-            : await tasksApi.markIncomplete(orgId, task.id, reason)
-          setTask(updated)
-          load()
+          if (allMust && isAssignee) {
+            await detail.flagMyPart(reason)
+            load()
+          } else {
+            await detail.markIncomplete(reason, { reload: 'background' })
+          }
           void refreshBadge()
         }}
       />
@@ -747,8 +645,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         busyLabel="Saving…"
         destructive
         onConfirm={async (reason) => {
-          setTask(await tasksApi.markIncomplete(orgId, task.id, reason))
-          load()
+          await detail.markIncomplete(reason, { reload: 'background' })
           void refreshBadge()
         }}
       />
@@ -817,7 +714,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         busyLabel="Deleting…"
         destructive
         onConfirm={async (reason) => {
-          await tasksApi.deleteTask(orgId, task.id, reason)
+          await detail.deleteTask(reason)
           void refreshBadge()
           addToast('Task deleted', 'success')
           router.replace(route.parent ?? PHONE_HOME)

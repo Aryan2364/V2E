@@ -3,6 +3,7 @@
 import React from 'react'
 import Tooltip from '@/components/ui/tooltip'
 
+import { getInitials } from '@/lib/initials'
 export interface AvatarPerson {
   id: string
   name: string
@@ -20,17 +21,6 @@ function avatarColor(name: string): string {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i)
   return AVATAR_COLORS[hash % AVATAR_COLORS.length]
-}
-
-function getInitials(name: string): string {
-  const initials = name
-    .split(' ')
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-  return initials || '?'
 }
 
 const SIZES = {

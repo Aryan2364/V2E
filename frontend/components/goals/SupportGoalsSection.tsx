@@ -21,6 +21,7 @@ import LinkGoalModal, { type LinkDirection } from './LinkGoalModal'
 import { CountBadge, GoalStatusBadge, formatDate } from './shared'
 import { inputClass, type EmployeeOption } from './GoalFormFields'
 
+import { getErrorMessage } from '@/lib/api/errors'
 /**
  * The web, on one goal's page — both directions, both editable from here.
  *
@@ -186,8 +187,8 @@ function LinkRow({
       await goalsApi.updateLinkNote(orgId, link.link_id, note.trim() || null)
       setEditingNote(false)
       onChanged()
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not save the note', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, { fallback: 'Could not save the note' }), 'error')
     } finally {
       setSavingNote(false)
     }
@@ -200,8 +201,8 @@ function LinkRow({
       await goalsApi.removeLink(orgId, link.link_id)
       setUnlinkOpen(false)
       onChanged()
-    } catch (err: any) {
-      setUnlinkError(err?.response?.data?.message ?? 'Could not unlink the goals')
+    } catch (err: unknown) {
+      setUnlinkError(getErrorMessage(err, { fallback: 'Could not unlink the goals' }))
     } finally {
       setUnlinking(false)
     }

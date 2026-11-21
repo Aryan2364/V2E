@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateKnowledgePostDto } from './dto/create-knowledge-post.dto';
+import { UpdateKnowledgePostDto } from './dto/update-knowledge-post.dto';
 import { CreateKnowledgeCommentDto } from './dto/create-comment.dto';
 
 const AUTHOR_SELECT = { id: true, name: true, email: true };
@@ -16,6 +18,12 @@ const POST_INCLUDE = {
   reactions: { select: { emoji: true, user_id: true } },
 };
 
+/**
+ * Authorization model: knowledge posts are org-wide broadcast content (scope registry:
+ * org_default), so every org member may read/comment/react. Writes are author-or-admin
+ * (pin = knowledge.manage permission at the controller). Every query is org-scoped and
+ * comments are scoped to their parent post AND org.
+ */
 @Injectable()
 export class KnowledgeService {
   constructor(private readonly prisma: PrismaService) {}
@@ -73,7 +81,18 @@ export class KnowledgeService {
     return post;
   }
 
+  /** A department a post is filed under must belong to this org. */
+  private async assertDepartmentInOrg(orgId: string, departmentId?: string | null) {
+    if (!departmentId) return;
+    const dept = await this.prisma.department.findFirst({
+      where: { id: departmentId, organization_id: orgId },
+      select: { id: true },
+    });
+    if (!dept) throw new NotFoundException('Department not found');
+  }
+
   async create(orgId: string, userId: string, dto: CreateKnowledgePostDto) {
+    await this.assertDepartmentInOrg(orgId, dto.department_id);
     return this.prisma.knowledgePost.create({
       data: {
         ...dto,
@@ -86,13 +105,14 @@ export class KnowledgeService {
     });
   }
 
-  async update(id: string, orgId: string, userId: string, isAdmin: boolean, dto: Partial<CreateKnowledgePostDto>) {
+  async update(id: string, orgId: string, userId: string, isAdmin: boolean, dto: UpdateKnowledgePostDto) {
     const post = await this.findOneRaw(id, orgId);
     if (post.created_by_user_id !== userId && !isAdmin) {
       throw new ForbiddenException('Not allowed');
     }
+    await this.assertDepartmentInOrg(orgId, dto.department_id);
     return this.prisma.knowledgePost.update({
-      where: { id },
+      where: { id, organization_id: orgId },
       data: { ...dto, tags: dto.tags as any, attachment_urls: dto.attachment_urls as any },
       include: POST_INCLUDE,
     });
@@ -103,12 +123,12 @@ export class KnowledgeService {
     if (post.created_by_user_id !== userId && !isAdmin) {
       throw new ForbiddenException('Not allowed');
     }
-    return this.prisma.knowledgePost.delete({ where: { id } });
+    return this.prisma.knowledgePost.delete({ where: { id, organization_id: orgId } });
   }
 
   async togglePin(id: string, orgId: string) {
     const post = await this.findOneRaw(id, orgId);
-    return this.prisma.knowledgePost.update({ where: { id }, data: { is_pinned: !post.is_pinned } });
+    return this.prisma.knowledgePost.update({ where: { id, organization_id: orgId }, data: { is_pinned: !post.is_pinned } });
   }
 
   async addComment(postId: string, orgId: string, userId: string, dto: CreateKnowledgeCommentDto) {
@@ -130,10 +150,13 @@ export class KnowledgeService {
     if (comment.created_by_user_id !== userId && !isAdmin) {
       throw new ForbiddenException('Not allowed');
     }
-    return this.prisma.knowledgeComment.delete({ where: { id: commentId } });
+    return this.prisma.knowledgeComment.delete({ where: { id: commentId, organization_id: orgId } });
   }
 
   async toggleReaction(postId: string, orgId: string, userId: string, emoji: string) {
+    if (typeof emoji !== 'string' || !emoji.trim() || emoji.length > 16) {
+      throw new BadRequestException('emoji must be a short, non-empty string');
+    }
     await this.findOneRaw(postId, orgId);
     const existing = await this.prisma.knowledgeReaction.findUnique({
       where: { knowledge_post_id_user_id_emoji: { knowledge_post_id: postId, user_id: userId, emoji } },

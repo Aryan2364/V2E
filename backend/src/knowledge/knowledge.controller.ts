@@ -10,6 +10,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { AuthRequest } from '../common/types/auth-request';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PermissionAction } from '@prisma/client';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -19,6 +20,7 @@ import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { KnowledgeService } from './knowledge.service';
 import { CreateKnowledgePostDto } from './dto/create-knowledge-post.dto';
+import { UpdateKnowledgePostDto } from './dto/update-knowledge-post.dto';
 import { CreateKnowledgeCommentDto } from './dto/create-comment.dto';
 
 @ApiTags('knowledge')
@@ -57,7 +59,7 @@ export class KnowledgeController {
   @ApiOperation({ summary: 'Create a knowledge post' })
   create(
     @Param('orgId') orgId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateKnowledgePostDto,
   ) {
     return this.service.create(orgId, req.user.id, dto);
@@ -68,8 +70,8 @@ export class KnowledgeController {
   update(
     @Param('orgId') orgId: string,
     @Param('postId') postId: string,
-    @Request() req: any,
-    @Body() dto: Partial<CreateKnowledgePostDto>,
+    @Request() req: AuthRequest,
+    @Body() dto: UpdateKnowledgePostDto,
   ) {
     return this.service.update(postId, orgId, req.user.id, !!req.user.is_admin, dto);
   }
@@ -79,7 +81,7 @@ export class KnowledgeController {
   remove(
     @Param('orgId') orgId: string,
     @Param('postId') postId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     return this.service.remove(postId, orgId, req.user.id, !!req.user.is_admin);
   }
@@ -96,7 +98,7 @@ export class KnowledgeController {
   addComment(
     @Param('orgId') orgId: string,
     @Param('postId') postId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateKnowledgeCommentDto,
   ) {
     return this.service.addComment(postId, orgId, req.user.id, dto);
@@ -107,7 +109,7 @@ export class KnowledgeController {
   deleteComment(
     @Param('orgId') orgId: string,
     @Param('commentId') commentId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     return this.service.deleteComment(commentId, orgId, req.user.id, !!req.user.is_admin);
   }
@@ -117,7 +119,7 @@ export class KnowledgeController {
   toggleReaction(
     @Param('orgId') orgId: string,
     @Param('postId') postId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body('emoji') emoji: string,
   ) {
     return this.service.toggleReaction(postId, orgId, req.user.id, emoji);

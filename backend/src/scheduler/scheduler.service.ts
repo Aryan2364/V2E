@@ -16,7 +16,8 @@ import { resolveRemindAt, expandReminderRows, type ReminderSpec } from '../commo
 import { isTerminal, TERMINAL_TYPES } from '../tasks/status-phase';
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import { GoalsService } from '../goals/goals.service';
-import { WorkflowEngineService } from '../workflows/workflow-engine.service';
+import { WorkflowTaskEventsService } from '../workflows/workflow-task-events.service';
+import { runExclusive } from '../common/run-exclusive';
 
 // Rolling look-ahead for meeting rhythms: the nightly cron keeps the next 60 days
 // of occurrences materialised. (Tasks spawn day-of; rhythms need advance visibility.)
@@ -39,9 +40,9 @@ export class SchedulerService {
     @Optional() private readonly moduleRef?: ModuleRef,
   ) {}
 
-  private workflowEngine(): WorkflowEngineService | null {
+  private workflowEngine(): WorkflowTaskEventsService | null {
     try {
-      return this.moduleRef?.get(WorkflowEngineService, { strict: false }) ?? null;
+      return this.moduleRef?.get(WorkflowTaskEventsService, { strict: false }) ?? null;
     } catch {
       return null;
     }
@@ -124,6 +125,7 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async spawnRecurringTasks() {
+    return runExclusive('SchedulerService.spawnRecurringTasks', async () => {
     this.logger.log('Recurring spawn engine starting...');
     const now = new Date();
 
@@ -144,6 +146,7 @@ export class SchedulerService {
     }
 
     this.logger.log(`Recurring spawn: ${spawned} tasks spawned`);
+    });
   }
 
   // ─── Goal check-in reminders ──────────────────────────────────────────────────
@@ -154,6 +157,7 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async sendGoalCheckInReminders() {
+    return runExclusive('SchedulerService.sendGoalCheckInReminders', async () => {
     const now = new Date();
     // Real-time orgs only — test orgs are driven by ReplayService on their sim clock.
     const orgs = await this.prisma.organization.findMany({
@@ -167,6 +171,7 @@ export class SchedulerService {
         this.logger.warn(`Goal check-in reminders failed for org ${org.id}: ${err}`);
       }
     }
+    });
   }
 
   /** Also called by ReplayService so simulated clocks fire these too. */
@@ -185,6 +190,7 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async warnRecurringLeaveConflicts() {
+    return runExclusive('SchedulerService.warnRecurringLeaveConflicts', async () => {
     const now = new Date();
     const orgs = await this.prisma.organization.findMany({
       where: { is_test: false },
@@ -197,6 +203,7 @@ export class SchedulerService {
         this.logger.warn(`Recurring leave look-ahead failed for org ${org.id}: ${err}`);
       }
     }
+    });
   }
 
   async warnRecurringLeaveForOrg(orgId: string, now: Date): Promise<void> {
@@ -683,12 +690,14 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async processReminders() {
+    return runExclusive('SchedulerService.processReminders', async () => {
     const now = new Date();
     const orgs = await this.prisma.organization.findMany({
       where: { is_test: false },
       select: { id: true },
     });
     for (const org of orgs) await this.processRemindersForOrg(org.id, now);
+    });
   }
 
   // Org-scoped, now-injected — cron passes real now, ReplayService passes sim now.
@@ -788,12 +797,14 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async processMeetingReminders() {
+    return runExclusive('SchedulerService.processMeetingReminders', async () => {
     const now = new Date();
     const orgs = await this.prisma.organization.findMany({
       where: { is_test: false },
       select: { id: true },
     });
     for (const org of orgs) await this.processMeetingRemindersForOrg(org.id, now);
+    });
   }
 
   // Org-scoped, now-injected — cron passes real now, ReplayService passes sim now.
@@ -856,6 +867,7 @@ export class SchedulerService {
 
   @Cron('*/15 * * * *')
   async processEscalations() {
+    return runExclusive('SchedulerService.processEscalations', async () => {
     const now = new Date();
     const orgs = await this.prisma.organization.findMany({
       where: { is_test: false },
@@ -864,6 +876,7 @@ export class SchedulerService {
     let escalated = 0;
     for (const org of orgs) escalated += await this.processEscalationsForOrg(org.id, now);
     if (escalated > 0) this.logger.log(`Escalation engine: ${escalated} escalated`);
+    });
   }
 
   // Org-scoped, now-injected — cron passes real now, ReplayService passes sim now.
@@ -1049,6 +1062,7 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async detectTaskOverdue() {
+    return runExclusive('SchedulerService.detectTaskOverdue', async () => {
     const now = new Date();
     const orgs = await this.prisma.organization.findMany({
       where: { is_test: false },
@@ -1057,6 +1071,7 @@ export class SchedulerService {
     let flagged = 0;
     for (const org of orgs) flagged += await this.detectTaskOverdueForOrg(org.id, now);
     if (flagged > 0) this.logger.log(`Auto-overdue: ${flagged} task(s) marked overdue`);
+    });
   }
 
   // Org-scoped, now-injected — cron passes real now, ReplayService passes sim now.

@@ -408,7 +408,7 @@ export default function ScorecardDetailPage() {
                       const open = expanded.has(g.title)
                       return (
                         <React.Fragment key={g.title}>
-                          <tr onClick={() => toggle(g.title)} className="border-b border-border-light hover:bg-surface-sunken cursor-pointer whitespace-nowrap">
+                          <tr onClick={() => toggle(g.title)} tabIndex={0} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(g.title) } }} className="border-b border-border-light hover:bg-surface-sunken cursor-pointer whitespace-nowrap">
                             <td className="px-4 py-2.5 font-medium text-text-primary">
                               <span className="inline-flex items-center gap-1.5">
                                 {open ? <ChevronDown size={15} className="text-text-muted" /> : <ChevronRight size={15} className="text-text-muted" />}

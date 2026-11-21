@@ -20,6 +20,7 @@ import { useToast } from '@/components/ui/Toast'
 import { delegationsApi, type Delegation } from '@/lib/api/delegations'
 import { StatusPill, fmtDate } from './delegationUtils'
 
+import { getErrorMessage } from '@/lib/api/errors'
 interface Props {
   isOpen: boolean
   onClose: () => void
@@ -59,8 +60,8 @@ export default function DelegationDetailModal({
       const res = await action()
       if ('id' in (res as Delegation)) onChanged(res as Delegation)
       return res
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Action failed.', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, { fallback: 'Action failed.' }), 'error')
       throw err
     } finally {
       setBusy(null)
@@ -71,8 +72,8 @@ export default function DelegationDetailModal({
     try {
       const updated = await delegationsApi.toggleCriterion(orgId, delegation.id, cId, next)
       onChanged(updated)
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not update criterion.', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, { fallback: 'Could not update criterion.' }), 'error')
     }
   }
 

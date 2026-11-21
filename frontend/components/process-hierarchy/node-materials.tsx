@@ -20,6 +20,7 @@ import MaterialViewer from '@/components/learning/MaterialViewer'
 import type { MaterialViewData, PreviewKind } from '@/lib/types/learning'
 import { Label } from '@/components/ui/label'
 
+import { getErrorMessage } from '@/lib/api/errors'
 const TITLE_MAX = 50
 
 // ─── Preview-kind resolver (mirrors the Learning module's mapping) ───────────
@@ -80,11 +81,11 @@ export default function NodeDocuments({
       const created = await processHierarchyApi.createMaterial(orgId, mapId, { name, url })
       await linkToNode(created.id, direction)
       onChanged()
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not add the link.', 'error') }
+    } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Could not add the link.' }), 'error') }
   }
   async function editLink(artifact: ProcessArtifact, name: string, url: string) {
     try { await processHierarchyApi.updateArtifact(orgId, mapId, artifact.id, { name, url }); onChanged() }
-    catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not update the link.', 'error') }
+    catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Could not update the link.' }), 'error') }
   }
   async function saveArticle(direction: ProcessArtifactDirection, name: string, body: string, existing?: ProcessArtifact) {
     try {

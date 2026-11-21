@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
+import { clampTake } from '../common/pagination';
 
 const AUTHOR_SELECT = {
   id: true, name: true, email: true,
@@ -46,7 +47,7 @@ export class AnnouncementsService {
     if (!page) {
       return this.prisma.announcement.findMany({ where, include, orderBy });
     }
-    const take = Math.min(Math.max(query.pageSize ? parseInt(query.pageSize, 10) : 25, 1), 100);
+    const take = clampTake(query.pageSize, 25, 100);
     const skip = (Math.max(page, 1) - 1) * take;
     const [items, total] = await Promise.all([
       this.prisma.announcement.findMany({ where, include, orderBy, skip, take }),

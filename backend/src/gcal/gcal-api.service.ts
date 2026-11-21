@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
 
@@ -82,7 +82,7 @@ export class GcalApiService {
     if (!tokens.refresh_token) {
       // Google only re-issues a refresh token with prompt=consent; we always ask
       // for it, so a missing one means the grant is unusable for offline sync.
-      throw new Error('Google did not return a refresh token');
+      throw new BadRequestException('Google did not return a refresh token');
     }
     return { refreshToken: tokens.refresh_token };
   }

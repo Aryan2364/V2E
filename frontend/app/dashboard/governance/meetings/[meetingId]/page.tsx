@@ -24,6 +24,7 @@ import BusyTimesPanel from '@/components/meetings/BusyTimesPanel'
 import EditMeetingModal from '@/components/meetings/EditMeetingModal'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
 
+import { getErrorMessage } from '@/lib/api/errors'
 const inputClass = 'border border-border rounded-lg px-3 py-2.5 text-[15px] text-text-primary focus:outline-hidden focus:border-primary'
 const cardCls = 'bg-surface border border-border-light rounded-xl'
 const SIDE_TINTS: Record<string, string> = {
@@ -88,7 +89,7 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
   const canManage = m.can_manage ?? false
   const onChanged = (updated: Meeting) => setMeeting(updated)
   const act = async (fn: () => Promise<Meeting>, msg?: string) => {
-    try { setMeeting(await fn()); if (msg) addToast(msg, 'success') } catch (e: any) { addToast(e?.response?.data?.message ?? 'Action failed', 'error') }
+    try { setMeeting(await fn()); if (msg) addToast(msg, 'success') } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Action failed' }), 'error') }
   }
 
   async function copySummary() {
@@ -237,7 +238,7 @@ function RsvpCard({ meeting, orgId, userId, onChanged }: { meeting: Meeting; org
   const submit = async (fn: () => Promise<Meeting>, ok: string) => {
     setBusy(true)
     try { onChanged(await fn()); addToast(ok, 'success'); setMode(false); setText('') }
-    catch (e: any) { addToast(e?.response?.data?.message ?? 'Failed', 'error') }
+    catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') }
     finally { setBusy(false) }
   }
 
@@ -315,7 +316,7 @@ function PeopleCard({ meeting, orgId, canManage, onChanged, nameOf }: { meeting:
 
   async function toggleAttended(uid: string, attended: boolean) {
     try { onChanged(await meetingsApi.markAttendance(orgId, meeting.id, [{ user_id: uid, attended }])) }
-    catch (e: any) { addToast(e?.response?.data?.message ?? 'Failed', 'error') }
+    catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') }
   }
 
   return (
@@ -417,7 +418,7 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
   const locked = meeting.status === 'closed' || meeting.status === 'cancelled'
 
   const run = async (fn: () => Promise<Meeting>, ok?: string) => {
-    try { onChanged(await fn()); if (ok) addToast(ok, 'success') } catch (e: any) { addToast(e?.response?.data?.message ?? 'Failed', 'error') }
+    try { onChanged(await fn()); if (ok) addToast(ok, 'success') } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') }
   }
 
   return (
@@ -495,7 +496,7 @@ function DecisionsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting: 
   const [owner, setOwner] = useState('')
   const [reason, setReason] = useState('')
   const locked = meeting.status === 'closed' || meeting.status === 'cancelled'
-  const run = async (fn: () => Promise<Meeting>, ok?: string) => { try { onChanged(await fn()); if (ok) addToast(ok, 'success') } catch (e: any) { addToast(e?.response?.data?.message ?? 'Failed', 'error') } }
+  const run = async (fn: () => Promise<Meeting>, ok?: string) => { try { onChanged(await fn()); if (ok) addToast(ok, 'success') } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') } }
 
   return (
     <div className={`${cardCls} p-6`}>

@@ -57,3 +57,10 @@ TASK_REVIEW*.md
 
 # One-off brand asset exports (logos) — not used by the app
 brand-exports/
+
+# Claude Code local settings (per-developer)
+.claude/settings.local.json
+
+# Copied from node_modules by frontend/scripts/copy-pdfjs.mjs (postinstall/prebuild)
+frontend/public/pdf.min.mjs
+frontend/public/pdf.worker.min.mjs

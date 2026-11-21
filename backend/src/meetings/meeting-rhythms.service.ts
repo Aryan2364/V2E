@@ -17,6 +17,7 @@ import { HolidaysService } from '../holidays/holidays.service';
 import { Actor } from './meetings.service';
 import { CreateRhythmDto, UpdateRhythmDto, RhythmScheduleDto } from './dto/meeting-actions.dto';
 import { RhythmGoogleSyncService } from '../gcal/rhythm-google-sync.service';
+import { swallow } from '../common/swallow';
 
 const MEETING_LEAF = 'meetings';
 const LINK = '/dashboard/governance/meetings/rhythms';
@@ -154,7 +155,7 @@ export class MeetingRhythmsService {
 
     // Materialise the next 60 days right away so the series is visible immediately.
     const now = await this.clock.now(orgId);
-    await this.scheduler.spawnForMeetingRhythm(orgId, rhythm.id, now, HORIZON).catch(() => null);
+    await this.scheduler.spawnForMeetingRhythm(orgId, rhythm.id, now, HORIZON).catch(swallow('meeting-rhythms.create', null));
 
     // One notification per person that a rhythm was set up (NOT per spawned instance).
     if (attendeeIds.length) {
@@ -165,7 +166,7 @@ export class MeetingRhythmsService {
         body: `${await this.notifications.userName(actor.id)} set up the rhythm "${dto.title}"`,
         link: `${LINK}/${rhythm.id}`,
         entity: { type: 'meeting_rhythm', id: rhythm.id },
-      }).catch(() => {});
+      }).catch(swallow('meeting-rhythms.create'));
     }
 
     await this.syncRhythmToGoogle(orgId, rhythm.id);
@@ -306,7 +307,7 @@ export class MeetingRhythmsService {
     );
 
     // Materialise any newly-due days under the (possibly changed) schedule.
-    await this.scheduler.spawnForMeetingRhythm(orgId, id, now, HORIZON).catch(() => null);
+    await this.scheduler.spawnForMeetingRhythm(orgId, id, now, HORIZON).catch(swallow('meeting-rhythms.update', null));
 
     // Update the single recurring Google event → Google applies to all occurrences.
     await this.syncRhythmToGoogle(orgId, id);
@@ -428,7 +429,7 @@ export class MeetingRhythmsService {
     this.requireManage(actor, rhythm);
     await this.prisma.meetingRhythm.update({ where: { id }, data: { is_active: true } });
     const now = await this.clock.now(orgId);
-    await this.scheduler.spawnForMeetingRhythm(orgId, id, now, HORIZON).catch(() => null);
+    await this.scheduler.spawnForMeetingRhythm(orgId, id, now, HORIZON).catch(swallow('meeting-rhythms.resume', null));
     await this.syncRhythmToGoogle(orgId, id);
     return this.getOne(orgId, actor, id);
   }

@@ -51,6 +51,7 @@ import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import Tooltip from '@/components/ui/tooltip'
 
+import { getErrorMessage } from '@/lib/api/errors'
 export default function GoalDetailView({ goalId }: { goalId: string }) {
   const { user } = useAuth()
   const router = useRouter()
@@ -102,8 +103,8 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       const updated = await goalsApi.update(orgId, goalId, { status: next })
       setGoal((prev) => (prev ? { ...prev, ...updated } : updated))
       addToast(`Status set to ${STATUS_META[next].label}`, 'success')
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not change the status', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, { fallback: 'Could not change the status' }), 'error')
     }
   }
 
@@ -121,8 +122,8 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       await goalsApi.remove(orgId, goalId)
       addToast('Goal deleted', 'success')
       router.push('/goals')
-    } catch (err: any) {
-      setDeleteError(err?.response?.data?.message ?? 'Could not delete the goal')
+    } catch (err: unknown) {
+      setDeleteError(getErrorMessage(err, { fallback: 'Could not delete the goal' }))
       setDeleting(false)
     }
   }

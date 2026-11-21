@@ -1,40 +1,24 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  X,
-  Download,
-  UploadCloud,
-  FileText,
-  AlertCircle,
-  AlertTriangle,
-  Loader2,
-  ArrowLeft,
-  History,
-  Undo2,
-  ShieldAlert,
-  Wrench,
-  Paperclip,
-  CheckCircle2,
-  RefreshCw,
-} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, History, Paperclip } from 'lucide-react'
 import FileDropzone, { AttachmentErrorBox } from '@/components/ui/FileDropzone'
 import { PendingFileList } from '@/components/ui/AttachmentList'
-import { toast } from 'sonner'
+import { toast } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import BulkImportWizard from '@/components/import/BulkImportWizard'
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from '@/components/ui/alert-dialog'
+  FailedTile,
+  FilterChip,
+  FixLoopBanner,
+  IssueList,
+  PreviewTable,
+  StatusDot,
+  SuccessTile,
+  UndoButton,
+  previewRowClass,
+} from '@/components/import/ImportParts'
 import { formatDateTime } from '@/lib/format'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
@@ -49,15 +33,36 @@ import {
   getTaskImportBatchDetail,
   undoTaskImport,
   type BulkTaskImportRow,
+  type TaskImportBatchDetail,
+  type TaskImportBatchSummary,
   type TaskImportOptions,
-  type TaskImportValidationResult,
-  type TaskImportValidationRow,
   type TaskImportResolved,
   type TaskImportResult,
-  type TaskImportBatchSummary,
-  type TaskImportBatchDetail,
+  type TaskImportValidationResult,
   type TaskUndoImportResult,
 } from '@/lib/api/task-import'
+import {
+  GUIDE_MARKER,
+  TASK_COLUMNS,
+  TASK_COLUMN_RULE,
+  TASK_MISSING_COLUMNS,
+  mapTaskRow,
+  normName,
+  referencedAttachmentNames,
+  taskFailureStatuses,
+  type TaskColumn,
+} from '@/lib/import/configs/tasks'
+import {
+  addColumnValidation,
+  columnLetter,
+  dateValidation,
+  listValidation,
+  setColumnWidths,
+  writeColumnHeader,
+  writeReferenceHeader,
+} from '@/lib/import/xlsx'
+import { apiErrorMessage, toYmdLocal } from '@/lib/import/csv'
+import type { ImportConfig } from '@/lib/import/types'
 
 interface Props {
   orgId: string
@@ -68,726 +73,70 @@ interface Props {
   embedded?: boolean
 }
 
-/** Glue for combined dropdown values, e.g. "Jane Doe · Sales · Manager". Must match the backend. */
-const VALUE_SEPARATOR = ' · '
+type TaskConfig = ImportConfig<
+  TaskColumn,
+  BulkTaskImportRow,
+  TaskImportValidationResult,
+  TaskImportResult,
+  TaskImportBatchSummary,
+  TaskImportBatchDetail,
+  TaskUndoImportResult
+>
 
-// Machine column keys, in template order (A…AA — 27 columns).
-const COLUMNS = [
-  'title',
-  'description',
-  'priority',
-  'category',
-  'tags',
-  'deadline_date',
-  'deadline_time',
-  'assignee_1',
-  'assignee_2',
-  'assignee_3',
-  'assignee_4',
-  'assignee_5',
-  'cc_1',
-  'cc_2',
-  'cc_3',
-  'completion_mode',
-  'proof_required',
-  'proof_allowed_types',
-  'escalation_1',
-  'escalation_2',
-  'escalation_3',
-  'linked_goal',
-  'reminder_days_before',
-  'checklist_template',
-  'checklist_items',
-  'attachments',
-  'holiday_override',
-] as const
+type ChipFilter = 'total' | 'ready' | 'error' | 'warning'
 
-type Column = (typeof COLUMNS)[number]
+const ASSIGNEE_COLUMNS: TaskColumn[] = [
+  'assignee_1', 'assignee_2', 'assignee_3', 'assignee_4', 'assignee_5',
+  'cc_1', 'cc_2', 'cc_3', 'escalation_1', 'escalation_2', 'escalation_3',
+]
 
-const REQUIRED: Column[] = ['title', 'deadline_date', 'assignee_1']
-
-const HEADER_LABEL: Record<Column, string> = {
-  title: 'title *',
-  description: 'description',
-  priority: 'priority',
-  category: 'category',
-  tags: 'tags',
-  deadline_date: 'deadline_date *',
-  deadline_time: 'deadline_time',
-  assignee_1: 'assignee_1 *',
-  assignee_2: 'assignee_2',
-  assignee_3: 'assignee_3',
-  assignee_4: 'assignee_4',
-  assignee_5: 'assignee_5',
-  cc_1: 'cc_1',
-  cc_2: 'cc_2',
-  cc_3: 'cc_3',
-  completion_mode: 'completion_mode',
-  proof_required: 'proof_required',
-  proof_allowed_types: 'proof_allowed_types',
-  escalation_1: 'escalation_1',
-  escalation_2: 'escalation_2',
-  escalation_3: 'escalation_3',
-  linked_goal: 'linked_goal',
-  reminder_days_before: 'reminder_days_before',
-  checklist_template: 'checklist_template',
-  checklist_items: 'checklist_items',
-  attachments: 'attachments',
-  holiday_override: 'holiday_override',
+function plural(n: number, word: string): string {
+  return `${n} ${word}${n !== 1 ? 's' : ''}`
 }
 
-// A single guide row is written under the header (row 2) spelling out each column's
-// rule. Its title cell starts with GUIDE_MARKER so the importer always skips it —
-// the user can leave it or delete it, either way it never becomes a task.
-const GUIDE_MARKER = '↳'
-
-const COLUMN_RULE: Record<Column, string> = {
-  title: 'Required · ≤50 chars (Error) · repeats flagged (Warning)',
-  description: '≤2000 chars (Error)',
-  priority: 'Pick from list (Error if unknown)',
-  category: 'Pick from list (Error if unknown)',
-  tags: 'Comma-separated; each must match an existing tag',
-  deadline_date: 'Required · today or later · YYYY-MM-DD (Error) · holiday/leave flagged (Warning)',
-  deadline_time: 'HH:mm · defaults 23:59',
-  assignee_1: 'Required · pick from list (Error)',
-  assignee_2: 'Pick from list (Error if unknown)',
-  assignee_3: 'Pick from list (Error if unknown)',
-  assignee_4: 'Pick from list (Error if unknown)',
-  assignee_5: 'Pick from list (Error if unknown)',
-  cc_1: 'Pick from list (Error if unknown)',
-  cc_2: 'Pick from list (Error if unknown)',
-  cc_3: 'Pick from list (Error if unknown)',
-  completion_mode: 'any_can_complete / all_must_complete',
-  proof_required: 'Yes / No',
-  proof_allowed_types: 'e.g. pdf | png (Warning if unknown)',
-  escalation_1: 'Pick from list (Warning if same as assignee)',
-  escalation_2: 'Pick from list',
-  escalation_3: 'Pick from list',
-  linked_goal: 'Pick from list (Error if unknown)',
-  reminder_days_before: 'Whole number ≥ 0 (Error)',
-  checklist_template: 'Pick a template you can use (Error)',
-  checklist_items: 'Separate items with |',
-  attachments: 'Filenames, separate with | · upload files in the app',
-  holiday_override: 'Yes / No · keep a non-working-day date',
-}
-
-const COLUMN_ALIASES: Record<string, Column> = Object.fromEntries(
-  COLUMNS.map((c) => [c, c]),
-) as Record<string, Column>
-// A few forgiving aliases.
-Object.assign(COLUMN_ALIASES, {
-  name: 'title',
-  task: 'title',
-  task_title: 'title',
-  desc: 'description',
-  due_date: 'deadline_date',
-  deadline: 'deadline_date',
-  due_time: 'deadline_time',
-  assignee: 'assignee_1',
-  cc: 'cc_1',
-  goal: 'linked_goal',
-  checklist: 'checklist_items',
-  tag: 'tags',
-})
-
-function normalizeHeader(h: string): string {
-  return h
-    .replace(/\*/g, '')
-    .replace(/\(.*?\)/g, '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, '_')
-}
-
-function toYmd(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-// ─── CSV helper (fallback when a .csv is uploaded) ─────────────────────────────
-
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let inQuotes = false
-  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1)
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i]
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++ } else inQuotes = false
-      } else field += c
-    } else if (c === '"') inQuotes = true
-    else if (c === ',') { row.push(field); field = '' }
-    else if (c === '\n' || c === '\r') {
-      if (c === '\r' && text[i + 1] === '\n') i++
-      row.push(field); rows.push(row); row = []; field = ''
-    } else field += c
-  }
-  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row) }
-  return rows
-}
-
-const STATUS_STYLES: Record<TaskImportValidationRow['status'], { dot: string; text: string; label: string }> = {
-  ready: { dot: 'bg-success', text: 'text-success', label: 'Ready' },
-  error: { dot: 'bg-danger', text: 'text-danger', label: 'Error' },
-}
-
-/** Fixed vocabulary for the exported failure_status column (sortable in Excel). */
-const FIELD_FAILURE_LABEL: Record<string, string> = {
-  title: 'Title',
-  description: 'Description',
-  priority: 'Priority',
-  category: 'Category',
-  tags: 'Tags',
-  deadline_date: 'Deadline',
-  deadline_time: 'Deadline',
-  assignee_1: 'Assignee',
-  assignee_2: 'Assignee',
-  assignee_3: 'Assignee',
-  assignee_4: 'Assignee',
-  assignee_5: 'Assignee',
-  cc_1: 'CC',
-  cc_2: 'CC',
-  cc_3: 'CC',
-  completion_mode: 'Completion Mode',
-  proof_allowed_types: 'Proof',
-  escalation_1: 'Escalation',
-  escalation_2: 'Escalation',
-  escalation_3: 'Escalation',
-  linked_goal: 'Goal',
-  reminder_days_before: 'Reminder',
-  checklist_template: 'Checklist',
-}
-
-function failureStatusesFromRow(row: TaskImportValidationRow): string[] {
-  const set = new Set<string>()
-  for (const iss of row.issues) {
-    if (iss.severity !== 'error') continue
-    set.add(FIELD_FAILURE_LABEL[iss.field ?? ''] ?? 'Other')
-  }
-  if (set.size === 0) set.add('Other')
-  return Array.from(set)
-}
-
-function normName(s: string): string {
-  return s.trim().toLowerCase()
+function StatusBadge({ s }: { s: TaskImportBatchSummary['status'] }) {
+  const cls = {
+    committed: 'bg-success-bg text-success border-success-border',
+    undone: 'bg-danger-bg text-danger border-danger-border',
+    partially_undone: 'bg-warning-bg text-warning border-warning-border',
+  }[s]
+  const label = s === 'partially_undone' ? 'Partly undone' : s === 'undone' ? 'Undone' : 'Committed'
+  return <span className={`text-meta font-medium px-2 py-0.5 rounded-full border ${cls}`}>{label}</span>
 }
 
 export default function ImportTasksModal({ orgId, onClose, onImported, embedded = false }: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Body-scroll-lock, Escape and the backdrop are the kit Dialog's own behaviour when
-  // standalone; when embedded, the host modal already owns all three.
-
+  // ─── Template options (reference data), loaded up front with a retry ──────────
   const [options, setOptions] = useState<TaskImportOptions | null>(null)
   const [loadingOptions, setLoadingOptions] = useState(true)
   const [optionsError, setOptionsError] = useState<string | null>(null)
-  const loadOptions = useCallback(() => {
-    if (!orgId) { setLoadingOptions(false); setOptionsError('No organization selected.'); return }
-    setLoadingOptions(true)
-    setOptionsError(null)
+  const fetchOptions = useCallback(() => {
     getImportOptions(orgId)
-      .then((o) => { setOptions(o); setOptionsError(null) })
-      .catch((err: any) => {
+      .then((o) => {
+        setOptions(o)
+        setOptionsError(null)
+      })
+      .catch((err: unknown) => {
         setOptions(null)
-        const msg = err?.response?.data?.message
-        setOptionsError(
-          (Array.isArray(msg) ? msg.join(', ') : msg) ??
-            err?.message ??
-            'Could not load the template options. Please retry.',
-        )
+        setOptionsError(apiErrorMessage(err, (err as { message?: string } | null)?.message ?? 'Could not load the template options. Please retry.'))
       })
       .finally(() => setLoadingOptions(false))
   }, [orgId])
-  useEffect(() => { loadOptions() }, [loadOptions])
+  const loadOptions = useCallback(() => {
+    setLoadingOptions(true)
+    setOptionsError(null)
+    fetchOptions()
+  }, [fetchOptions])
+  useEffect(() => {
+    if (orgId) fetchOptions()
+  }, [orgId, fetchOptions])
+  const noOrg = !orgId
 
-  type Phase = 'upload' | 'preview' | 'result' | 'history' | 'batch-detail'
-  const [phase, setPhase] = useState<Phase>('upload')
-  const [fileName, setFileName] = useState('')
-  const [parsedRows, setParsedRows] = useState<BulkTaskImportRow[]>([])
-  // Parallel to parsedRows: the real spreadsheet row each came from (for display).
-  const [sourceRows, setSourceRows] = useState<number[]>([])
-  const [validation, setValidation] = useState<TaskImportValidationResult | null>(null)
-  const [commitResult, setCommitResult] = useState<TaskImportResult | null>(null)
-  const [parseError, setParseError] = useState('')
-  const [building, setBuilding] = useState(false)
-  const [validating, setValidating] = useState(false)
-  const [importing, setImporting] = useState(false)
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const [chipFilter, setChipFilter] = useState<'total' | 'ready' | 'error' | 'warning'>('total')
+  const [chipFilter, setChipFilter] = useState<ChipFilter>('total')
 
-  // Shared attachment pool — files referenced by the sheet's `attachments` column,
+  // Shared attachment pool: files referenced by the sheet's `attachments` column,
   // matched to rows by filename and uploaded to each created task after commit.
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([])
   const [attachErrors, setAttachErrors] = useState<string[]>([])
-
-  const [batches, setBatches] = useState<TaskImportBatchSummary[]>([])
-  const [undoResult, setUndoResult] = useState<TaskUndoImportResult | null>(null)
-  const [undoingId, setUndoingId] = useState<string | null>(null)
-  const [undoConfirm, setUndoConfirm] = useState<string | null>(null)
-  const [batchDetail, setBatchDetail] = useState<TaskImportBatchDetail | null>(null)
-  const [loadingDetail, setLoadingDetail] = useState(false)
-  const [detailOrigin, setDetailOrigin] = useState<'history' | 'import'>('history')
-
-  // Filenames the sheet asks to attach, across all rows (deduped, lowercased).
-  const referencedFileNames = useMemo(() => {
-    const set = new Set<string>()
-    for (const r of parsedRows) {
-      for (const n of (r.attachments ?? '').split(/[|\n]/).map((s) => s.trim()).filter(Boolean)) {
-        set.add(normName(n))
-      }
-    }
-    return set
-  }, [parsedRows])
-
-  const uploadedNameSet = useMemo(
-    () => new Set(attachmentFiles.map((f) => normName(f.name))),
-    [attachmentFiles],
-  )
-  const missingFileNames = useMemo(
-    () => Array.from(referencedFileNames).filter((n) => !uploadedNameSet.has(n)),
-    [referencedFileNames, uploadedNameSet],
-  )
-
-  // ─── Template (.xlsx with reference sheets + dropdowns) ───────────────────────
-  async function downloadTemplate() {
-    if (!options) return
-    const importTags = options.tags ?? []
-    setBuilding(true)
-    try {
-      const mod: any = await import('exceljs')
-      const ExcelJS = mod.default ?? mod
-      const wb = new ExcelJS.Workbook()
-      const ws = wb.addWorksheet('Tasks')
-      const wsPri = wb.addWorksheet('Priorities')
-      const wsCat = wb.addWorksheet('Categories')
-      const wsTag = wb.addWorksheet('Tags')
-      const wsGoal = wb.addWorksheet('Goals')
-      const wsTpl = wb.addWorksheet('Checklist Templates')
-      const wsPeople = wb.addWorksheet('Assignees')
-
-      const refHeader = (sheet: any, headers: string[]) => {
-        sheet.addRow(headers)
-        const hr = sheet.getRow(1)
-        hr.height = 20
-        hr.eachCell((cell: any) => {
-          cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF475569' } }
-          cell.alignment = { vertical: 'middle', horizontal: 'left' }
-        })
-      }
-
-      refHeader(wsPri, ['Sr. No.', 'Priority'])
-      options.priorities.forEach((p, i) => wsPri.addRow([i + 1, p.label]))
-      wsPri.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : 28))
-
-      refHeader(wsCat, ['Sr. No.', 'Category'])
-      options.categories.forEach((c, i) => wsCat.addRow([i + 1, c.name]))
-      wsCat.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : 28))
-
-      // Tags — the valid names for the `tags` column. A cell takes several, so it gets
-      // no dropdown; it is checked against this list on upload.
-      refHeader(wsTag, ['Sr. No.', 'Tag'])
-      importTags.forEach((t, i) => wsTag.addRow([i + 1, t.name]))
-      wsTag.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : 28))
-
-      refHeader(wsGoal, ['Sr. No.', 'Quarterly Goal'])
-      options.goals.forEach((g, i) => wsGoal.addRow([i + 1, g.title]))
-      wsGoal.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : 40))
-
-      refHeader(wsTpl, ['Sr. No.', 'Checklist Template'])
-      options.checklist_templates.forEach((t, i) => wsTpl.addRow([i + 1, t.name]))
-      wsTpl.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : 36))
-
-      // Assignees — Sr | Name | Department | Role | Value (pick this). Value is the
-      // exact dropdown value used by every assignee / CC / escalation column.
-      refHeader(wsPeople, ['Sr. No.', 'Name', 'Department', 'Role', 'Value (pick this)'])
-      options.assignees.forEach((a, i) =>
-        wsPeople.addRow([i + 1, a.name, a.department_name ?? '', a.role_title ?? '', a.value]),
-      )
-      wsPeople.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : i === 4 ? 44 : 24))
-
-      // Main sheet header.
-      ws.addRow(COLUMNS.map((c) => HEADER_LABEL[c]))
-      const headerRow = ws.getRow(1)
-      headerRow.height = 22
-      headerRow.eachCell((cell: any, col: number) => {
-        const key = COLUMNS[col - 1]
-        const required = REQUIRED.includes(key)
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: required ? 'FF1E40AF' : 'FF475569' } }
-        cell.alignment = { vertical: 'middle', horizontal: 'left' }
-      })
-      ws.columns.forEach((c: any) => (c.width = 20))
-
-      // Guide row (row 2) — each column's rule in plain words. Skipped on import
-      // (its title cell starts with GUIDE_MARKER); the user may delete it.
-      const guideCells = COLUMNS.map((c) => COLUMN_RULE[c])
-      guideCells[0] = `${GUIDE_MARKER} Guide row (safe to delete) · ${COLUMN_RULE.title}`
-      const guideRow = ws.addRow(guideCells)
-      guideRow.height = 30
-      guideRow.eachCell((cell: any) => {
-        cell.font = { italic: true, color: { argb: 'FF475569' }, size: 9 }
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }
-        cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
-      })
-
-      // Two example rows using real option values where available.
-      const p0 = options.priorities[0]?.label ?? ''
-      const c0 = options.categories[0]?.name ?? ''
-      const tg0 = importTags.slice(0, 2).map((t) => t.name).join(', ')
-      const a0 = options.assignees[0]?.value ?? 'Jane Doe · Sales'
-      const a1 = options.assignees[1]?.value ?? ''
-      const tpl0 = options.checklist_templates[0]?.name ?? ''
-      const today = getNow()
-      const soon = new Date(today.getTime() + 7 * 864e5)
-      ws.addRow([
-        'Prepare Q3 report', 'Draft and circulate the quarterly report', p0, c0, tg0,
-        toYmd(soon), '17:00', a0, a1, '', '', '', '', '', '',
-        a1 ? 'all_must_complete' : 'any_can_complete', 'No', '', '', '', '', '',
-        '2', tpl0, 'Collect figures | Write summary | Send for review', '', 'No',
-      ])
-      ws.addRow([
-        'Kickoff meeting notes', '', p0, c0, '',
-        toYmd(soon), '', a0, '', '', '', '', '', '', '',
-        'any_can_complete', 'Yes', 'pdf | docx', '', '', '', '', '1', '', '', 'notes.pdf', 'No',
-      ])
-
-      // Column letters A…Z, then AA, AB… (there are more than 26 columns).
-      const letter = (idx: number): string =>
-        idx < 26 ? String.fromCharCode(65 + idx) : letter(Math.floor(idx / 26) - 1) + String.fromCharCode(65 + (idx % 26))
-      const LAST = 500
-      const addListDV = (col: Column, formula: string) => {
-        const L = letter(COLUMNS.indexOf(col))
-        for (let r = 2; r <= LAST; r++) {
-          ws.getCell(`${L}${r}`).dataValidation = {
-            type: 'list', allowBlank: true, formulae: [formula],
-            showErrorMessage: true, errorStyle: 'warning',
-            errorTitle: 'Pick from the list',
-            error: 'Choose a value from the dropdown, or clear the cell.',
-          }
-        }
-      }
-      const addDateDV = (col: Column) => {
-        const L = letter(COLUMNS.indexOf(col))
-        for (let r = 2; r <= LAST; r++) {
-          ws.getCell(`${L}${r}`).numFmt = 'yyyy-mm-dd'
-          ws.getCell(`${L}${r}`).dataValidation = {
-            type: 'date', operator: 'greaterThanOrEqual', allowBlank: true,
-            formulae: ['=TODAY()'], showErrorMessage: true, errorStyle: 'warning',
-            errorTitle: 'Check the date',
-            error: 'Enter a real date that is today or later (YYYY-MM-DD).',
-          }
-        }
-      }
-
-      // Only attach a range-backed dropdown when its reference sheet has rows —
-      // an empty list would produce an inverted range ($B$2:$B$1) that Excel rejects.
-      if (options.priorities.length) addListDV('priority', `Priorities!$B$2:$B$${options.priorities.length + 1}`)
-      if (options.categories.length) addListDV('category', `Categories!$B$2:$B$${options.categories.length + 1}`)
-      addDateDV('deadline_date')
-      if (options.assignees.length) {
-        const range = `Assignees!$E$2:$E$${options.assignees.length + 1}`
-        for (const col of ['assignee_1', 'assignee_2', 'assignee_3', 'assignee_4', 'assignee_5', 'cc_1', 'cc_2', 'cc_3', 'escalation_1', 'escalation_2', 'escalation_3'] as Column[]) {
-          addListDV(col, range)
-        }
-      }
-      addListDV('completion_mode', '"any_can_complete,all_must_complete"')
-      addListDV('proof_required', '"No,Yes"')
-      if (options.goals.length) addListDV('linked_goal', `Goals!$B$2:$B$${options.goals.length + 1}`)
-      if (options.checklist_templates.length) addListDV('checklist_template', `'Checklist Templates'!$B$2:$B$${options.checklist_templates.length + 1}`)
-      addListDV('holiday_override', '"No,Yes"')
-
-      const buf = await wb.xlsx.writeBuffer()
-      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'task-import-template.xlsx'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      toast.error('Could not build the template. Please try again.')
-    } finally {
-      setBuilding(false)
-    }
-  }
-
-  // ─── Parsing ──────────────────────────────────────────────────────────────────
-
-  function gridToRows(grid: string[][]): { rows: BulkTaskImportRow[]; sourceRows: number[]; error?: string } {
-    if (grid.length === 0) return { rows: [], sourceRows: [], error: 'The file is empty.' }
-    const header = grid[0].map(normalizeHeader)
-    const idx: Partial<Record<Column, number>> = {}
-    header.forEach((h, i) => {
-      const col = COLUMN_ALIASES[h]
-      if (col && idx[col] === undefined) idx[col] = i
-    })
-    if (idx.title === undefined) {
-      return { rows: [], sourceRows: [], error: 'Could not find the required "title" column. Download the template to see the expected format.' }
-    }
-    const parsed: BulkTaskImportRow[] = []
-    // The true 1-based spreadsheet row each parsed row came from — so error/preview
-    // row numbers always match what the user sees in Excel, even past the guide row.
-    const sourceRows: number[] = []
-    for (let r = 1; r < grid.length; r++) {
-      const cells = grid[r]
-      if (!cells || cells.every((c) => (c ?? '').trim() === '')) continue
-      const get = (c: Column) => {
-        const i = idx[c]
-        return i !== undefined ? (cells[i] ?? '').trim() : ''
-      }
-      // Skip the template's guide/rules row wherever it sits (its title starts with ↳).
-      if (get('title').startsWith(GUIDE_MARKER)) continue
-      const row: BulkTaskImportRow = {}
-      for (const c of COLUMNS) (row as any)[c] = get(c)
-      // Precompute the browser-local deadline instant so the server never shifts it.
-      if (row.deadline_date && /^\d{4}-\d{2}-\d{2}$/.test(row.deadline_date)) {
-        const t = row.deadline_time && /^\d{2}:\d{2}$/.test(row.deadline_time) ? row.deadline_time : '23:59'
-        const d = new Date(`${row.deadline_date}T${t}`)
-        if (!Number.isNaN(d.getTime())) row.deadline_iso = d.toISOString()
-      }
-      parsed.push(row)
-      sourceRows.push(r + 1) // grid index r (0-based, header at 0) → 1-based Excel row
-    }
-    if (parsed.length === 0) return { rows: [], sourceRows: [], error: 'No data rows found below the header.' }
-    return { rows: parsed, sourceRows }
-  }
-
-  async function parseXlsx(buffer: ArrayBuffer): Promise<string[][]> {
-    const mod: any = await import('exceljs')
-    const ExcelJS = mod.default ?? mod
-    const wb = new ExcelJS.Workbook()
-    await wb.xlsx.load(buffer)
-    const ws = wb.getWorksheet('Tasks') ?? wb.worksheets[0]
-    if (!ws) return []
-    const cellText = (cell: any): string => {
-      const v = cell?.value
-      if (v == null) return ''
-      if (v instanceof Date) return toYmd(v)
-      if (typeof v === 'object') {
-        if (Array.isArray(v.richText)) return v.richText.map((t: any) => t.text).join('')
-        if (typeof v.text === 'string') return v.text
-        if ('result' in v) return v.result == null ? '' : String(v.result)
-        return ''
-      }
-      return String(v)
-    }
-    const colCount = Math.max(ws.getRow(1).cellCount, COLUMNS.length)
-    const grid: string[][] = []
-    for (let r = 1; r <= ws.rowCount; r++) {
-      const row = ws.getRow(r)
-      const cells: string[] = []
-      for (let c = 1; c <= colCount; c++) cells.push(cellText(row.getCell(c)))
-      grid.push(cells)
-    }
-    return grid
-  }
-
-  async function runValidation(rows: BulkTaskImportRow[]) {
-    setValidating(true)
-    try {
-      const res = await validateTaskImport(orgId, rows)
-      setValidation(res)
-      setPhase('preview')
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Could not validate the file. Please try again.'
-      setParseError(Array.isArray(msg) ? msg.join(', ') : msg)
-    } finally {
-      setValidating(false)
-    }
-  }
-
-  function handleFile(file: File) {
-    setParseError('')
-    setValidation(null)
-    setCommitResult(null)
-    setParsedRows([])
-    setFileName(file.name)
-    const finish = (grid: string[][]) => {
-      const { rows, sourceRows: srcs, error } = gridToRows(grid)
-      if (error) { setParseError(error); return }
-      setParsedRows(rows)
-      setSourceRows(srcs)
-      runValidation(rows)
-    }
-    if (/\.xlsx$/i.test(file.name)) {
-      file.arrayBuffer().then(parseXlsx).then(finish).catch(() =>
-        setParseError('Could not read this Excel file. Make sure it is a valid .xlsx.'),
-      )
-    } else {
-      const reader = new FileReader()
-      reader.onload = () => {
-        try { finish(parseCsv(String(reader.result ?? ''))) }
-        catch { setParseError('Could not read this file. Make sure it is a valid CSV.') }
-      }
-      reader.onerror = () => setParseError('Could not read this file.')
-      reader.readAsText(file)
-    }
-  }
-
-  // ─── Failed-rows export ───────────────────────────────────────────────────────
-
-  async function exportRows(
-    entries: { payload: Record<string, any>; status: string; reason: string }[],
-    filename: string,
-  ) {
-    if (entries.length === 0) return
-    try {
-      const mod: any = await import('exceljs')
-      const ExcelJS = mod.default ?? mod
-      const wb = new ExcelJS.Workbook()
-      const ws = wb.addWorksheet('Fix these')
-      ws.addRow([...COLUMNS.map((c) => HEADER_LABEL[c]), 'failure_status', 'reason_for_failure'])
-      const hr = ws.getRow(1)
-      hr.eachCell((cell: any, col: number) => {
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }
-        const fg = col === COLUMNS.length + 1 ? 'FFB45309' : col === COLUMNS.length + 2 ? 'FFDC2626' : 'FF475569'
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fg } }
-      })
-      for (const e of entries) {
-        ws.addRow([...COLUMNS.map((c) => (e.payload as any)[c] ?? ''), e.status, e.reason])
-      }
-      ws.columns.forEach((c: any) => (c.width = 20))
-      ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: COLUMNS.length + 2 } }
-      const buf = await wb.xlsx.writeBuffer()
-      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      toast.error('Could not build the file.')
-    }
-  }
-
-  function downloadFailures() {
-    if (!validation) return
-    const entries = validation.rows
-      .filter((r) => r.status !== 'ready')
-      .map((vr) => ({
-        payload: parsedRows[vr.row - 2] ?? {},
-        status: failureStatusesFromRow(vr).join(', '),
-        reason: vr.issues.filter((i) => i.severity === 'error').map((i) => i.message).join('; '),
-      }))
-    void exportRows(entries, 'task-import-failures.xlsx')
-  }
-
-  function downloadResultFailures() {
-    if (!commitResult) return
-    const entries = commitResult.results
-      .filter((r) => r.status === 'failed')
-      .map((r) => ({ payload: parsedRows[r.row - 2] ?? {}, status: 'Failed', reason: r.error || 'Failed to import' }))
-    void exportRows(entries, 'task-import-fixes.xlsx')
-  }
-
-  async function openBatch(batchId: string, origin: 'history' | 'import' = 'history') {
-    setDetailOrigin(origin)
-    setPhase('batch-detail')
-    setBatchDetail(null)
-    setLoadingDetail(true)
-    try {
-      setBatchDetail(await getTaskImportBatchDetail(orgId, batchId))
-    } catch {
-      toast.error('Could not load this import’s details.')
-      if (origin === 'history') setPhase('history')
-    } finally {
-      setLoadingDetail(false)
-    }
-  }
-
-  // ─── Commit ───────────────────────────────────────────────────────────────────
-
-  async function handleImport() {
-    if (!validation) return
-    setConfirmOpen(false)
-    setImporting(true)
-    try {
-      const res = await commitTaskImport(orgId, parsedRows, fileName)
-      // Upload matched attachments to each created task (best-effort, sequential).
-      let attachFailures = 0
-      if (attachmentFiles.length > 0) {
-        const byName = new Map(attachmentFiles.map((f) => [normName(f.name), f]))
-        for (const r of res.results) {
-          if (r.status !== 'created' || !r.task_id || !r.attachment_names?.length) continue
-          for (const nm of r.attachment_names) {
-            const file = byName.get(normName(nm))
-            if (!file) continue
-            try { await tasksApi.uploadTaskAttachment(orgId, r.task_id, file) }
-            catch { attachFailures++ }
-          }
-        }
-      }
-      setCommitResult(res)
-      if (res.created > 0) {
-        toast[res.failed > 0 || attachFailures > 0 ? 'warning' : 'success'](
-          `Imported ${res.created} task${res.created !== 1 ? 's' : ''}` +
-            (attachFailures > 0 ? ` — ${attachFailures} attachment${attachFailures !== 1 ? 's' : ''} failed to upload` : '')
-        )
-        onImported()
-      } else {
-        toast.error('No tasks were imported')
-      }
-      setPhase('result')
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Import failed. Please try again.'
-      toast.error(Array.isArray(msg) ? msg.join(', ') : msg)
-    } finally {
-      setImporting(false)
-    }
-  }
-
-  // ─── History + undo ───────────────────────────────────────────────────────────
-
-  async function openHistory() {
-    setPhase('history')
-    setUndoResult(null)
-    try { setBatches(await listTaskImportBatches(orgId)) } catch { setBatches([]) }
-  }
-
-  async function handleUndo(batchId: string) {
-    setUndoingId(batchId)
-    try {
-      const res = await undoTaskImport(orgId, batchId)
-      setUndoResult(res)
-      toast[res.kept.length > 0 ? 'warning' : 'success'](
-        res.undone > 0 ? `Removed ${res.undone} imported task${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed'
-      )
-      onImported()
-      setBatches(await listTaskImportBatches(orgId))
-      if (batchDetail?.id === batchId) {
-        try { setBatchDetail(await getTaskImportBatchDetail(orgId, batchId)) } catch { /* keep stale */ }
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Undo failed.'
-      toast.error(Array.isArray(msg) ? msg.join(', ') : msg)
-    } finally {
-      setUndoingId(null)
-    }
-  }
-
-  function resetToUpload() {
-    setPhase('upload')
-    setParsedRows([])
-    setValidation(null)
-    setCommitResult(null)
-    setParseError('')
-    setFileName('')
-    setParsedRows([])
-    setSourceRows([])
-    setAttachmentFiles([])
-    setAttachErrors([])
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  // Map a backend row number (index+2) back to the real spreadsheet row for display.
-  const excelRow = (rowNum: number) => sourceRows[rowNum - 2] ?? rowNum
 
   // A row's resolved tags as chips: colours from the shared tag list, names falling back
   // to the import options (unknown names are row errors, listed under Issues).
@@ -806,612 +155,486 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
     [orgTags, options],
   )
 
-  const visibleRows = useMemo(() => {
-    if (!validation) return []
-    const rows = validation.rows
-    switch (chipFilter) {
-      case 'ready': return rows.filter((r) => r.status === 'ready')
-      case 'error': return rows.filter((r) => r.status === 'error')
-      case 'warning': return rows.filter((r) => r.status === 'ready' && r.issues.some((i) => i.severity === 'warning'))
-      default: return rows
+  const uploadedNameSet = useMemo(() => new Set(attachmentFiles.map((f) => normName(f.name))), [attachmentFiles])
+
+  // ─── Template (.xlsx with reference sheets + dropdowns) ───────────────────────
+  function buildTemplate(wb: Parameters<TaskConfig['template']['build']>[0]) {
+    if (!options) return
+    const importTags = options.tags ?? []
+    const ws = wb.addWorksheet('Tasks')
+    const wsPri = wb.addWorksheet('Priorities')
+    const wsCat = wb.addWorksheet('Categories')
+    const wsTag = wb.addWorksheet('Tags')
+    const wsGoal = wb.addWorksheet('Goals')
+    const wsTpl = wb.addWorksheet('Checklist Templates')
+    const wsPeople = wb.addWorksheet('Assignees')
+
+    writeReferenceHeader(wsPri, ['Sr. No.', 'Priority'])
+    options.priorities.forEach((p, i) => wsPri.addRow([i + 1, p.label]))
+    setColumnWidths(wsPri, (i) => (i === 0 ? 8 : 28))
+
+    writeReferenceHeader(wsCat, ['Sr. No.', 'Category'])
+    options.categories.forEach((c, i) => wsCat.addRow([i + 1, c.name]))
+    setColumnWidths(wsCat, (i) => (i === 0 ? 8 : 28))
+
+    // Tags: the valid names for the `tags` column. A cell takes several, so it gets
+    // no dropdown; it is checked against this list on upload.
+    writeReferenceHeader(wsTag, ['Sr. No.', 'Tag'])
+    importTags.forEach((t, i) => wsTag.addRow([i + 1, t.name]))
+    setColumnWidths(wsTag, (i) => (i === 0 ? 8 : 28))
+
+    writeReferenceHeader(wsGoal, ['Sr. No.', 'Quarterly Goal'])
+    options.goals.forEach((g, i) => wsGoal.addRow([i + 1, g.title]))
+    setColumnWidths(wsGoal, (i) => (i === 0 ? 8 : 40))
+
+    writeReferenceHeader(wsTpl, ['Sr. No.', 'Checklist Template'])
+    options.checklist_templates.forEach((t, i) => wsTpl.addRow([i + 1, t.name]))
+    setColumnWidths(wsTpl, (i) => (i === 0 ? 8 : 36))
+
+    // Assignees: Sr | Name | Department | Role | Value (pick this). Value is the
+    // exact dropdown value used by every assignee / CC / escalation column.
+    writeReferenceHeader(wsPeople, ['Sr. No.', 'Name', 'Department', 'Role', 'Value (pick this)'])
+    options.assignees.forEach((a, i) => wsPeople.addRow([i + 1, a.name, a.department_name ?? '', a.role_title ?? '', a.value]))
+    setColumnWidths(wsPeople, (i) => (i === 0 ? 8 : i === 4 ? 44 : 24))
+
+    writeColumnHeader(ws, TASK_COLUMNS, 20)
+
+    // Guide row (row 2): each column's rule in plain words. Skipped on import
+    // (its title cell starts with GUIDE_MARKER); the user may delete it.
+    const guideCells = TASK_COLUMNS.map((c) => TASK_COLUMN_RULE[c.key])
+    guideCells[0] = `${GUIDE_MARKER} Guide row (safe to delete) · ${TASK_COLUMN_RULE.title}`
+    const guideRow = ws.addRow(guideCells)
+    guideRow.height = 30
+    guideRow.eachCell((cell) => {
+      cell.font = { italic: true, color: { argb: 'FF475569' }, size: 9 }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }
+      cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
+    })
+
+    // Two example rows using real option values where available.
+    const p0 = options.priorities[0]?.label ?? ''
+    const c0 = options.categories[0]?.name ?? ''
+    const tg0 = importTags.slice(0, 2).map((t) => t.name).join(', ')
+    const a0 = options.assignees[0]?.value ?? 'Jane Doe · Sales'
+    const a1 = options.assignees[1]?.value ?? ''
+    const tpl0 = options.checklist_templates[0]?.name ?? ''
+    const soon = toYmdLocal(new Date(getNow().getTime() + 7 * 864e5))
+    ws.addRow([
+      'Prepare Q3 report', 'Draft and circulate the quarterly report', p0, c0, tg0,
+      soon, '17:00', a0, a1, '', '', '', '', '', '',
+      a1 ? 'all_must_complete' : 'any_can_complete', 'No', '', '', '', '', '',
+      '2', tpl0, 'Collect figures | Write summary | Send for review', '', 'No',
+    ])
+    ws.addRow([
+      'Kickoff meeting notes', '', p0, c0, '',
+      soon, '', a0, '', '', '', '', '', '', '',
+      'any_can_complete', 'Yes', 'pdf | docx', '', '', '', '', '1', '', '', 'notes.pdf', 'No',
+    ])
+
+    const LAST = 500
+    const letterOf = (col: TaskColumn) => columnLetter(TASK_COLUMNS.findIndex((c) => c.key === col))
+    const addList = (col: TaskColumn, formula: string) => addColumnValidation(ws, letterOf(col), LAST, listValidation(formula))
+
+    // Only attach a range-backed dropdown when its reference sheet has rows:
+    // an empty list would produce an inverted range ($B$2:$B$1) that Excel rejects.
+    if (options.priorities.length) addList('priority', `Priorities!$B$2:$B$${options.priorities.length + 1}`)
+    if (options.categories.length) addList('category', `Categories!$B$2:$B$${options.categories.length + 1}`)
+    addColumnValidation(
+      ws,
+      letterOf('deadline_date'),
+      LAST,
+      dateValidation('greaterThanOrEqual', 'Enter a real date that is today or later (YYYY-MM-DD).'),
+      'yyyy-mm-dd',
+    )
+    if (options.assignees.length) {
+      const range = `Assignees!$E$2:$E$${options.assignees.length + 1}`
+      for (const col of ASSIGNEE_COLUMNS) addList(col, range)
     }
-  }, [validation, chipFilter])
+    addList('completion_mode', '"any_can_complete,all_must_complete"')
+    addList('proof_required', '"No,Yes"')
+    if (options.goals.length) addList('linked_goal', `Goals!$B$2:$B$${options.goals.length + 1}`)
+    if (options.checklist_templates.length) {
+      addList('checklist_template', `'Checklist Templates'!$B$2:$B$${options.checklist_templates.length + 1}`)
+    }
+    addList('holiday_override', '"No,Yes"')
+  }
 
-  // Full-page preview only makes sense as a standalone overlay; when embedded the host
-  // modal owns the frame, so the preview stays within it and scrolls internally.
-  const isFullPage = phase === 'preview' && !embedded
+  // ─── Views ────────────────────────────────────────────────────────────────────
+  const renderPreview: NonNullable<TaskConfig['preview']>['render'] = (ctx) => {
+    const v = ctx.validation
+    if (!v) return null
+    let visible = v.rows
+    if (chipFilter === 'ready') visible = v.rows.filter((r) => r.status === 'ready')
+    else if (chipFilter === 'error') visible = v.rows.filter((r) => r.status === 'error')
+    else if (chipFilter === 'warning')
+      visible = v.rows.filter((r) => r.status === 'ready' && r.issues.some((i) => i.severity === 'warning'))
+    const notReady = v.rows.filter((r) => r.status !== 'ready').length
 
-  const shell = (
-    <>
-      <div className={embedded
-        ? 'flex flex-col flex-1 min-h-0 bg-surface'
-        : `bg-surface shadow-xl flex flex-col ${isFullPage ? 'w-full h-full max-h-none rounded-none' : 'w-full sm:max-w-3xl sm:rounded-xl rounded-t-xl max-h-[92vh]'}`}>
-        {/* Header — hidden on the upload step when embedded (the host modal's "Create
-            task" header + the Bulk-upload tab already frame it, and History now lives in
-            the Step 1 card), so it doesn't waste a whole row. */}
-        {!(embedded && phase === 'upload') && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-            <div className="flex items-center gap-3">
-              {(phase === 'history' || phase === 'batch-detail') && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Back"
-                        onClick={phase === 'history' ? resetToUpload : detailOrigin === 'import' ? resetToUpload : openHistory}
-                      />
-                    }
-                  >
-                    <ArrowLeft size={18} />
-                  </TooltipTrigger>
-                  <TooltipContent>Back</TooltipContent>
-                </Tooltip>
-              )}
-              <h2 className="text-card-heading font-medium text-text-primary">
-                {phase === 'preview' ? 'Review before importing'
-                  : phase === 'history' ? 'Import history'
-                  : phase === 'batch-detail' ? 'Import details'
-                  : 'Import Tasks'}
-              </h2>
+    const referenced = referencedAttachmentNames(ctx.rows)
+    const missing = Array.from(referenced).filter((n) => !uploadedNameSet.has(n))
+
+    const downloadFailures = () =>
+      ctx.downloadReport(
+        v.rows
+          .filter((r) => r.status !== 'ready')
+          .map((vr) => ({
+            payload: ctx.rows[vr.row - 2] ?? {},
+            status: taskFailureStatuses(vr).join(', '),
+            reason: vr.issues.filter((i) => i.severity === 'error').map((i) => i.message).join('; '),
+          })),
+        'task-import-failures.xlsx',
+      )
+
+    return (
+      <>
+        <div className="flex items-center gap-2 flex-wrap">
+          <FilterChip color="slate" label={`${v.total} total`} active={chipFilter === 'total'} onClick={() => setChipFilter('total')} />
+          <FilterChip color="green" label={`${v.ready} ready`} active={chipFilter === 'ready'} onClick={() => setChipFilter('ready')} />
+          {v.errors > 0 && (
+            <FilterChip color="red" label={`${v.errors} error`} active={chipFilter === 'error'} onClick={() => setChipFilter('error')} />
+          )}
+          {v.warnings > 0 && (
+            <FilterChip color="amber" label={`${v.warnings} warning`} active={chipFilter === 'warning'} onClick={() => setChipFilter('warning')} />
+          )}
+          <span className="ml-auto text-meta text-text-muted">from {ctx.fileName}</span>
+        </div>
+
+        <PreviewTable
+          headers={['#', 'Status', 'Title', 'Assignees', 'Deadline', 'Issues']}
+          maxHeightClass="max-h-[60vh]"
+          textClass="text-body"
+          empty={visible.length === 0}
+        >
+          {visible.map((r, i) => (
+            <tr key={r.row} className={previewRowClass(r.status !== 'ready', i)}>
+              <td className="px-3 py-2 text-text-muted">{ctx.excelRow(r.row)}</td>
+              <td className="px-3 py-2">
+                <StatusDot status={r.status} />
+              </td>
+              <td className="px-3 py-2">
+                <div className="font-medium text-text-primary">{r.title || '—'}</div>
+                {r.resolved.checklist_item_count ? (
+                  <div className="text-text-muted">{plural(r.resolved.checklist_item_count, 'checklist item')}</div>
+                ) : null}
+                {r.resolved.tag_ids?.length ? <TagList tags={resolvedTags(r.resolved)} max={3} className="mt-1" /> : null}
+              </td>
+              <td className="px-3 py-2 text-text-secondary">
+                {r.resolved.assignees?.length ? r.resolved.assignees.join(', ') : '—'}
+                {r.resolved.cc?.length ? <span className="text-text-muted"> · CC {r.resolved.cc.length}</span> : null}
+              </td>
+              <td className="px-3 py-2 text-text-secondary">{r.resolved.deadline || '—'}</td>
+              <td className="px-3 py-2">
+                <IssueList issues={r.issues} />
+              </td>
+            </tr>
+          ))}
+        </PreviewTable>
+
+        {/* Attachments: shared pool matched to rows by filename */}
+        {referenced.size > 0 && (
+          <div className="rounded-lg border border-border-light bg-surface p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Paperclip size={16} className="text-primary-text" />
+              <p className="text-body font-medium text-text-primary">Attachments</p>
+              <span className="text-meta text-text-secondary">
+                {plural(referenced.size, 'file')} referenced · {referenced.size - missing.length} matched
+              </span>
             </div>
-            <div className="flex items-center gap-1">
-              {/* Standalone upload keeps History here; embedded upload hides this whole
-                  header, so History is surfaced in the Step 1 card instead. */}
-              {phase === 'upload' && !embedded && (
-                <Button variant="secondary" size="sm" onClick={openHistory}>
-                  <History size={15} /> History
-                </Button>
-              )}
-              {!embedded && (
-                <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose}>
-                  <X size={18} />
-                </Button>
-              )}
-            </div>
+            <p className="text-body text-text-secondary">
+              Your sheet references files in the <strong>attachments</strong> column. Drop those exact files here — each is matched
+              to its row by filename and uploaded to the created task.
+            </p>
+            <FileDropzone onFiles={(fs) => setAttachmentFiles((prev) => [...prev, ...fs])} onReject={setAttachErrors} disabled={ctx.importing} />
+            {(attachErrors.length > 0 || attachmentFiles.length > 0) && (
+              <div className="max-h-[180px] overflow-y-auto space-y-2">
+                {attachErrors.length > 0 && <AttachmentErrorBox errors={attachErrors} onDismiss={() => setAttachErrors([])} />}
+                {attachmentFiles.length > 0 && (
+                  <PendingFileList files={attachmentFiles} onRemove={(idx) => setAttachmentFiles((prev) => prev.filter((_, i) => i !== idx))} />
+                )}
+              </div>
+            )}
+            {missing.length > 0 && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-bg border border-warning-border">
+                <AlertTriangle size={15} className="text-warning mt-0.5 shrink-0" />
+                <p className="text-body text-warning">
+                  {missing.length} referenced file{missing.length !== 1 ? 's are' : ' is'} not uploaded yet and will be skipped:{' '}
+                  <strong>{missing.join(', ')}</strong>. The tasks still import.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Body */}
-        <div className={`px-6 py-4 overflow-y-auto space-y-4 ${isFullPage || embedded ? 'flex-1 min-h-0' : ''}`}>
-          {/* ── Upload ── */}
-          {phase === 'upload' && (
-            <>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-primary-subtle border border-primary-border">
-                <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-body font-medium text-text-primary">Step 1 — Download the Excel template</p>
-                  <p className="text-body text-text-secondary mt-0.5">
-                    Required columns (<span className="font-medium text-primary-text">blue header, marked *</span>): title,
-                    deadline_date, assignee_1. <strong>Priority</strong>, <strong>category</strong>, <strong>assignees</strong>,{' '}
-                    <strong>CC</strong>, <strong>escalation</strong>, <strong>goal</strong> and <strong>checklist template</strong>{' '}
-                    are <strong>dropdowns</strong>. The assignee / CC / escalation dropdowns only list people you’re allowed to
-                    assign to. Checklist items and attachment filenames are pipe-separated (<code>a | b | c</code>);
-                    <strong> tags</strong> are comma-separated (<code>a, b, c</code>) and each must match one on the template’s Tags sheet. The
-                    template’s <strong>second row spells out each column’s rule</strong> — it’s ignored on upload, so you can leave or delete it.
-                  </p>
-                  {optionsError ? (
-                    <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-danger-bg border border-danger-border">
-                      <AlertCircle size={15} className="text-danger mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-body text-danger">{optionsError}</p>
-                        <Button
-                          size="sm"
-                          onClick={loadOptions}
-                          loading={loadingOptions}
-                          loadingLabel="Retrying…"
-                        >
-                          <RefreshCw size={13} /> Retry
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      className="mt-3"
-                      onClick={downloadTemplate}
-                      disabled={!options}
-                      loading={building || loadingOptions}
-                      loadingLabel={loadingOptions ? 'Loading options…' : 'Building…'}
-                    >
-                      <Download size={15} /> Download Excel template
-                    </Button>
-                  )}
-                </div>
-              </div>
+        <FixLoopBanner ready={v.ready} total={v.total} notReady={notReady} detailed={false} onDownload={downloadFailures} />
+      </>
+    )
+  }
 
-              <div>
-                {/* Step 2 heading row — History sits on the right (embedded only; the
-                    standalone modal keeps History in its own header). */}
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-body font-medium text-text-primary">Step 2 — Upload the filled file to review</p>
-                  {embedded && (
-                    <Button variant="secondary" size="sm" onClick={openHistory}>
-                      <History size={15} /> History
-                    </Button>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
+  const config: TaskConfig = {
+    title: 'Import Tasks',
+    columns: TASK_COLUMNS,
+    parse: {
+      headerRequired: ['title'],
+      missingColumnsError: TASK_MISSING_COLUMNS,
+      mapRow: mapTaskRow,
+      sheetName: 'Tasks',
+      dateMode: 'local',
+    },
+    template: { fileName: 'task-import-template.xlsx', build: buildTemplate },
+    uploadIntro: (
+      <p className="mt-0.5">
+        Required columns (<span className="font-medium text-primary-text">blue header, marked *</span>): title, deadline_date,
+        assignee_1. <strong>Priority</strong>, <strong>category</strong>, <strong>assignees</strong>, <strong>CC</strong>,{' '}
+        <strong>escalation</strong>, <strong>goal</strong> and <strong>checklist template</strong> are <strong>dropdowns</strong>.
+        The assignee / CC / escalation dropdowns only list people you’re allowed to assign to. Checklist items and attachment
+        filenames are pipe-separated (<code>a | b | c</code>);
+        <strong> tags</strong> are comma-separated (<code>a, b, c</code>) and each must match one on the template’s Tags sheet.
+        The template’s <strong>second row spells out each column’s rule</strong> — it’s ignored on upload, so you can leave or
+        delete it.
+      </p>
+    ),
+    uploadStep2Label: 'Step 2 — Upload the filled file to review',
+    historyButtonLabel: 'History',
+
+    validate: (rows) => validateTaskImport(orgId, rows),
+    preview: {
+      fullPage: true,
+      readyCount: (v) => v.ready,
+      importLabel: (n) => `Import ${n} ready`,
+      render: renderPreview,
+      footerWarning: (v) => (
+        <>
+          Importing creates live tasks and notifies assignees. Only the <strong>{v.ready} ready</strong> row
+          {v.ready !== 1 ? 's' : ''} import; the rest are skipped. A short-lived undo is available right after.
+        </>
+      ),
+      confirm: {
+        tone: 'primary',
+        title: (v) => `Import ${plural(v.ready, 'task')}?`,
+        description:
+          'This creates live tasks and notifies each assignee. A guarded undo is available for a short window afterward (it can only remove tasks nobody has acted on yet).',
+      },
+    },
+
+    commit: async (rows, fileName) => {
+      const res = await commitTaskImport(orgId, rows, fileName)
+      // Upload matched attachments to each created task (best-effort, sequential).
+      let attachFailures = 0
+      if (attachmentFiles.length > 0) {
+        const byName = new Map(attachmentFiles.map((f) => [normName(f.name), f]))
+        for (const r of res.results) {
+          if (r.status !== 'created' || !r.task_id || !r.attachment_names?.length) continue
+          for (const nm of r.attachment_names) {
+            const file = byName.get(normName(nm))
+            if (!file) continue
+            try {
+              await tasksApi.uploadTaskAttachment(orgId, r.task_id, file)
+            } catch {
+              attachFailures++
+            }
+          }
+        }
+      }
+      if (res.created > 0) {
+        toast[res.failed > 0 || attachFailures > 0 ? 'warning' : 'success'](
+          `Imported ${plural(res.created, 'task')}` +
+            (attachFailures > 0 ? ` — ${plural(attachFailures, 'attachment')} failed to upload` : ''),
+        )
+        onImported()
+      } else {
+        toast.error('No tasks were imported')
+      }
+      return { result: res }
+    },
+    commitErrorMode: 'toast',
+    commitErrorFallback: 'Import failed. Please try again.',
+
+    renderResult: (ctx) => {
+      const result = ctx.result
+      if (!result) return null
+      const undo = ctx.undoResult
+      const failed = result.results.filter((r) => r.status === 'failed')
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <SuccessTile label={`${result.created} created`} />
+            {result.failed > 0 && <FailedTile label={`${result.failed} failed`} />}
+          </div>
+
+          {undo && (
+            <div className="p-3.5 rounded-lg bg-surface-sunken border border-border-light text-body text-text-secondary">
+              Undo removed <strong className="text-text-primary">{undo.undone}</strong> task{undo.undone !== 1 ? 's' : ''}.
+              {undo.kept.length > 0 && (
+                <>
+                  {' '}
+                  <strong className="text-text-primary">{undo.kept.length}</strong> kept because they’ve been acted on:
+                  <ul className="mt-1.5 space-y-1">
+                    {undo.kept.map((k, i) => (
+                      <li key={i} className="text-text-secondary">
+                        <strong className="text-text-primary">{k.title}</strong> — {k.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+          )}
+
+          {failed.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-body font-medium text-text-primary">Rows that didn’t import</p>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    ctx.downloadReport(
+                      failed.map((r) => ({ payload: ctx.rows[r.row - 2] ?? {}, status: 'Failed', reason: r.error || 'Failed to import' })),
+                      'task-import-fixes.xlsx',
+                    )
+                  }
                 >
-                  {validating ? <Loader2 size={26} className="text-primary-text animate-spin" /> : <UploadCloud size={26} className="text-text-muted" />}
-                  <span className="text-label font-medium text-text-secondary">
-                    {validating ? 'Checking your file…' : fileName || 'Click to choose an .xlsx or .csv file'}
-                  </span>
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-                />
+                  Download to fix
+                </Button>
               </div>
-
-              {parseError && (
-                <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-body text-danger">{parseError}</div>
-              )}
-            </>
-          )}
-
-          {/* ── Preview ── */}
-          {phase === 'preview' && validation && (
-            <>
-              <div className="flex items-center gap-2 flex-wrap">
-                <FilterChip color="slate" label={`${validation.total} total`} active={chipFilter === 'total'} onClick={() => setChipFilter('total')} />
-                <FilterChip color="green" label={`${validation.ready} ready`} active={chipFilter === 'ready'} onClick={() => setChipFilter('ready')} />
-                {validation.errors > 0 && (
-                  <FilterChip color="red" label={`${validation.errors} error`} active={chipFilter === 'error'} onClick={() => setChipFilter('error')} />
-                )}
-                {validation.warnings > 0 && (
-                  <FilterChip color="amber" label={`${validation.warnings} warning`} active={chipFilter === 'warning'} onClick={() => setChipFilter('warning')} />
-                )}
-                <span className="ml-auto text-meta text-text-muted">from {fileName}</span>
-              </div>
-
-              {/* Row table */}
-              <div className="border border-border-light rounded-lg overflow-hidden">
-                <div className="max-h-[60vh] overflow-auto">
-                  <table className="w-full text-body">
-                    <thead className="bg-surface-sunken sticky top-0 z-10">
-                      <tr className="text-left text-text-muted">
-                        <th className="px-3 py-2 font-medium">#</th>
-                        <th className="px-3 py-2 font-medium">Status</th>
-                        <th className="px-3 py-2 font-medium">Title</th>
-                        <th className="px-3 py-2 font-medium">Assignees</th>
-                        <th className="px-3 py-2 font-medium">Deadline</th>
-                        <th className="px-3 py-2 font-medium">Issues</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-surface-control-pressed">
-                      {visibleRows.length === 0 ? (
-                        <tr><td colSpan={6} className="px-3 py-8 text-center text-body text-text-muted">No rows in this category.</td></tr>
-                      ) : (
-                        visibleRows.map((r, i) => {
-                          const s = STATUS_STYLES[r.status]
-                          const rowBg = r.status !== 'ready'
-                            ? 'bg-danger-bg hover:bg-danger-bg'
-                            : `${i % 2 === 1 ? 'bg-surface-sunken' : 'bg-surface'} hover:bg-surface-control`
-                          return (
-                            <tr key={r.row} className={`${rowBg} transition-colors`}>
-                              <td className="px-3 py-2 text-text-muted">{excelRow(r.row)}</td>
-                              <td className="px-3 py-2">
-                                <span className={`inline-flex items-center gap-1.5 font-medium ${s.text}`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />{s.label}
-                                </span>
-                              </td>
-                              <td className="px-3 py-2">
-                                <div className="font-medium text-text-primary">{r.title || '—'}</div>
-                                {r.resolved.checklist_item_count ? (
-                                  <div className="text-text-muted">{r.resolved.checklist_item_count} checklist item{r.resolved.checklist_item_count !== 1 ? 's' : ''}</div>
-                                ) : null}
-                                {r.resolved.tag_ids?.length ? (
-                                  <TagList tags={resolvedTags(r.resolved)} max={3} className="mt-1" />
-                                ) : null}
-                              </td>
-                              <td className="px-3 py-2 text-text-secondary">
-                                {r.resolved.assignees?.length ? r.resolved.assignees.join(', ') : '—'}
-                                {r.resolved.cc?.length ? <span className="text-text-muted"> · CC {r.resolved.cc.length}</span> : null}
-                              </td>
-                              <td className="px-3 py-2 text-text-secondary">{r.resolved.deadline || '—'}</td>
-                              <td className="px-3 py-2">
-                                {r.issues.length === 0 ? <span className="text-text-muted">—</span> : (
-                                  <ul className="space-y-0.5">
-                                    {r.issues.map((iss, k) => (
-                                      <li key={k} className={`flex items-start gap-1 ${iss.severity === 'error' ? 'text-danger' : 'text-warning'}`}>
-                                        {iss.severity === 'error' ? <AlertCircle size={13} className="mt-0.5 shrink-0" /> : <AlertTriangle size={13} className="mt-0.5 shrink-0" />}
-                                        <span>{iss.message}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </td>
-                            </tr>
-                          )
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Attachments — shared pool matched to rows by filename */}
-              {referencedFileNames.size > 0 && (
-                <div className="rounded-lg border border-border-light bg-surface p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Paperclip size={16} className="text-primary-text" />
-                    <p className="text-body font-medium text-text-primary">Attachments</p>
-                    <span className="text-meta text-text-secondary">
-                      {referencedFileNames.size} file{referencedFileNames.size !== 1 ? 's' : ''} referenced ·{' '}
-                      {referencedFileNames.size - missingFileNames.length} matched
-                    </span>
+              <div className="border border-border-light rounded-lg max-h-[280px] overflow-auto divide-y divide-surface-control-pressed">
+                {failed.map((r) => (
+                  <div key={r.row} className="px-3 py-2 text-body bg-danger-bg">
+                    <span className="text-text-muted">Row {ctx.excelRow(r.row)}</span> ·{' '}
+                    <span className="font-medium text-text-primary">{r.title || '—'}</span>
+                    <div className="text-danger">{r.error}</div>
                   </div>
-                  <p className="text-body text-text-secondary">
-                    Your sheet references files in the <strong>attachments</strong> column. Drop those exact files here — each
-                    is matched to its row by filename and uploaded to the created task.
-                  </p>
-                  <FileDropzone onFiles={(fs) => setAttachmentFiles((prev) => [...prev, ...fs])} onReject={setAttachErrors} disabled={importing} />
-                  {(attachErrors.length > 0 || attachmentFiles.length > 0) && (
-                    <div className="max-h-[180px] overflow-y-auto space-y-2">
-                      {attachErrors.length > 0 && <AttachmentErrorBox errors={attachErrors} onDismiss={() => setAttachErrors([])} />}
-                      {attachmentFiles.length > 0 && (
-                        <PendingFileList files={attachmentFiles} onRemove={(idx) => setAttachmentFiles((prev) => prev.filter((_, i) => i !== idx))} />
-                      )}
-                    </div>
-                  )}
-                  {missingFileNames.length > 0 && (
-                    <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-bg border border-warning-border">
-                      <AlertTriangle size={15} className="text-warning mt-0.5 shrink-0" />
-                      <p className="text-body text-warning">
-                        {missingFileNames.length} referenced file{missingFileNames.length !== 1 ? 's are' : ' is'} not uploaded yet
-                        and will be skipped: <strong>{missingFileNames.join(', ')}</strong>. The tasks still import.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Fix-loop guidance + download */}
-              {(() => {
-                const notReady = validation.rows.filter((r) => r.status !== 'ready').length
-                if (notReady === 0) return null
-                const rowWord = notReady === 1 ? 'row' : 'rows'
-                return (
-                  <div className="flex items-start gap-3 p-3.5 rounded-lg bg-primary-subtle border border-primary-border">
-                    <Wrench size={18} className="text-primary-text mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-body text-primary-text">
-                        <strong>{validation.ready} of {validation.total} rows are ready</strong> and will be imported now.
-                        The other <strong>{notReady} {rowWord}</strong> {notReady === 1 ? 'has a problem' : 'have problems'} and
-                        will be skipped.
-                      </p>
-                      <Button size="sm" className="mt-2.5" onClick={downloadFailures}>
-                        <Download size={14} /> Download {notReady} {rowWord} to fix
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })()}
-            </>
-          )}
-
-          {/* ── Result ── */}
-          {phase === 'result' && commitResult && (
-            <ResultView
-              result={commitResult}
-              onUndo={() => commitResult.batch_id && setUndoConfirm(commitResult.batch_id)}
-              undoing={undoingId === commitResult.batch_id}
-              undoResult={undoResult}
-              onDownloadFailures={downloadResultFailures}
-              rowLabel={excelRow}
-            />
-          )}
-
-          {/* ── History ── */}
-          {phase === 'history' && (
-            <HistoryView batches={batches} onUndo={(id) => setUndoConfirm(id)} onOpen={openBatch} undoingId={undoingId} />
-          )}
-
-          {/* ── Batch detail ── */}
-          {phase === 'batch-detail' && (
-            <BatchDetailView detail={batchDetail} loading={loadingDetail} onUndo={(id) => setUndoConfirm(id)} undoing={!!batchDetail && undoingId === batchDetail.id} />
-          )}
-        </div>
-
-        {/* Footer — preview */}
-        {phase === 'preview' && validation && (
-          <div className="flex items-center gap-4 px-6 py-4 border-t border-border-light">
-            <div className="flex items-start gap-2 flex-1 min-w-0">
-              <ShieldAlert size={16} className="text-warning mt-0.5 shrink-0" />
-              <p className="text-meta leading-snug text-warning">
-                Importing creates live tasks and notifies assignees. Only the <strong>{validation.ready} ready</strong> row
-                {validation.ready !== 1 ? 's' : ''} import; the rest are skipped. A short-lived undo is available right after.
-              </p>
-            </div>
-            <Button variant="secondary" className="shrink-0" onClick={() => setPhase('upload')}>
-              Choose another file
-            </Button>
-            <Button
-              className="shrink-0"
-              onClick={() => setConfirmOpen(true)}
-              disabled={validation.ready === 0}
-              loading={importing}
-            >
-              {`Import ${validation.ready} ready`}
-            </Button>
-          </div>
-        )}
-
-        {/* Footer — result */}
-        {phase === 'result' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
-            <Button variant="secondary" onClick={resetToUpload}>
-              Import another file
-            </Button>
-            <Button onClick={onClose}>
-              Done
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Confirm popup */}
-      <AlertDialog open={confirmOpen && !!validation} onOpenChange={(next) => { if (!next) setConfirmOpen(false) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary-subtle flex items-center justify-center shrink-0">
-                <CheckCircle2 size={20} className="text-primary-text" />
-              </div>
-              <div>
-                <AlertDialogTitle>Import {validation?.ready ?? 0} task{validation?.ready !== 1 ? 's' : ''}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This creates live tasks and notifies each assignee. A guarded undo is available for a short window afterward
-                  (it can only remove tasks nobody has acted on yet).
-                </AlertDialogDescription>
-              </div>
-            </div>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Go back</AlertDialogCancel>
-            <AlertDialogAction variant="primary" onClick={handleImport}>Yes, import now</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Undo confirmation */}
-      <AlertDialog open={!!undoConfirm} onOpenChange={(next) => { if (!next) setUndoConfirm(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
-                <Undo2 size={20} className="text-danger" />
-              </div>
-              <div>
-                <AlertDialogTitle>Undo this import?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This removes the tasks created by this import. Any task that has already been acted on — worked on, commented,
-                  or completed — is <strong>kept</strong> and listed afterward. This can’t be reversed.
-                </AlertDialogDescription>
-              </div>
-            </div>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Go back</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { const id = undoConfirm; setUndoConfirm(null); if (id) handleUndo(id) }}>
-              <Undo2 size={14} /> Yes, undo import
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  )
-
-  if (embedded) return shell
-  return (
-    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
-      <DialogContent
-        size="lg"
-        showCloseButton={false}
-        className={isFullPage
-          ? 'max-w-none! w-screen h-[100dvh] max-h-[100dvh]! rounded-none! p-0'
-          : 'max-w-3xl max-h-[92vh] p-0'}
-      >
-        {shell}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────────
-
-function FilterChip({ color, label, active, onClick }: { color: 'slate' | 'green' | 'red' | 'amber'; label: string; active: boolean; onClick: () => void }) {
-  const palette = {
-    slate: { on: 'bg-text-primary text-primary-foreground border-text-primary', off: 'bg-surface-control text-text-secondary border-border-light hover:bg-surface-control-pressed' },
-    green: { on: 'bg-success text-primary-foreground border-success', off: 'bg-success-bg text-success border-success-border hover:bg-success-bg' },
-    red: { on: 'bg-danger text-primary-foreground border-danger', off: 'bg-danger-bg text-danger border-danger-border hover:bg-danger-bg' },
-    amber: { on: 'bg-warning text-primary-foreground border-warning-border', off: 'bg-warning-bg text-warning border-warning-border hover:bg-warning-bg' },
-  }[color]
-  return (
-    <button type="button" onClick={onClick} aria-pressed={active} className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-meta font-medium transition-colors ${active ? palette.on : palette.off}`}>
-      {label}
-    </button>
-  )
-}
-
-function ResultView({
-  result, onUndo, undoing, undoResult, onDownloadFailures, rowLabel,
-}: {
-  result: TaskImportResult
-  onUndo: () => void
-  undoing: boolean
-  undoResult: TaskUndoImportResult | null
-  onDownloadFailures: () => void
-  rowLabel: (rowNum: number) => number
-}) {
-  const failed = result.results.filter((r) => r.status === 'failed')
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-bg text-success text-body font-medium border border-success-border">
-          <CheckCircle2 size={15} /> {result.created} created
-        </span>
-        {result.failed > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-body font-medium border border-danger-border">
-            <AlertCircle size={15} /> {result.failed} failed
-          </span>
-        )}
-      </div>
-
-      {undoResult && (
-        <div className="p-3.5 rounded-lg bg-surface-sunken border border-border-light text-body text-text-secondary">
-          Undo removed <strong className="text-text-primary">{undoResult.undone}</strong> task{undoResult.undone !== 1 ? 's' : ''}.
-          {undoResult.kept.length > 0 && (
-            <> <strong className="text-text-primary">{undoResult.kept.length}</strong> kept because they’ve been acted on:
-              <ul className="mt-1.5 space-y-1">
-                {undoResult.kept.map((k, i) => (
-                  <li key={i} className="text-text-secondary"><strong className="text-text-primary">{k.title}</strong> — {k.reason}</li>
                 ))}
-              </ul>
-            </>
+              </div>
+            </div>
+          )}
+
+          {result.batch_id && result.created > 0 && !undo && (
+            <UndoButton undoing={ctx.undoingId === result.batch_id} onClick={() => result.batch_id && ctx.requestUndo(result.batch_id)} />
           )}
         </div>
-      )}
+      )
+    },
 
-      {failed.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-body font-medium text-text-primary">Rows that didn’t import</p>
-            <Button size="sm" onClick={onDownloadFailures}>
-              <Download size={13} /> Download to fix
-            </Button>
+    history: {
+      list: () => listTaskImportBatches(orgId),
+      undo: (id) => undoTaskImport(orgId, id),
+      detail: (id) => getTaskImportBatchDetail(orgId, id),
+      undoToast: (res) => ({
+        kind: res.kept.length > 0 ? 'warning' : 'success',
+        message: res.undone > 0 ? `Removed ${plural(res.undone, 'imported task')}` : 'Nothing was removed',
+      }),
+      undoErrorFallback: 'Undo failed.',
+      undoConfirm: {
+        description: (
+          <>
+            This removes the tasks created by this import. Any task that has already been acted on — worked on, commented, or
+            completed — is <strong>kept</strong> and listed afterward. This can’t be reversed.
+          </>
+        ),
+      },
+      render: (ctx) =>
+        ctx.batches.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mb-3">
+              <History size={20} className="text-text-muted" />
+            </div>
+            <p className="text-body font-medium text-text-primary">No imports yet</p>
+            <p className="text-body text-text-secondary mt-1">Task imports you run will appear here.</p>
           </div>
-          <div className="border border-border-light rounded-lg max-h-[280px] overflow-auto divide-y divide-surface-control-pressed">
-            {failed.map((r) => (
-              <div key={r.row} className="px-3 py-2 text-body bg-danger-bg">
-                <span className="text-text-muted">Row {rowLabel(r.row)}</span> · <span className="font-medium text-text-primary">{r.title || '—'}</span>
-                <div className="text-danger">{r.error}</div>
+        ) : (
+          <div className="space-y-2">
+            {ctx.batches.map((b) => (
+              <div key={b.id} className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:bg-surface-sunken transition-colors">
+                <button onClick={() => ctx.openBatch(b.id, 'history')} className="flex-1 min-w-0 text-left">
+                  <div className="flex items-center gap-2">
+                    <p className="text-body font-medium text-text-primary truncate">{b.file_name || 'Task import'}</p>
+                    <StatusBadge s={b.status} />
+                  </div>
+                  <p className="text-meta text-text-secondary mt-0.5">
+                    {b.created_count} created{b.failed_count > 0 ? ` · ${b.failed_count} failed` : ''} · {b.remaining} present · by{' '}
+                    {b.imported_by} · {formatDateTime(b.created_at)}
+                  </p>
+                </button>
+                {b.can_undo && (
+                  <UndoButton size="sm" label="Undo" className="shrink-0" undoing={ctx.undoingId === b.id} onClick={() => ctx.requestUndo(b.id)} />
+                )}
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {result.batch_id && result.created > 0 && !undoResult && (
-        <Button variant="danger" onClick={onUndo} loading={undoing} loadingLabel="Undoing…">
-          <Undo2 size={14} /> Undo this import
-        </Button>
-      )}
-    </div>
-  )
-}
-
-function HistoryView({
-  batches, onUndo, onOpen, undoingId,
-}: {
-  batches: TaskImportBatchSummary[]
-  onUndo: (id: string) => void
-  onOpen: (id: string, origin?: 'history' | 'import') => void
-  undoingId: string | null
-}) {
-  if (batches.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mb-3"><History size={20} className="text-text-muted" /></div>
-        <p className="text-body font-medium text-text-primary">No imports yet</p>
-        <p className="text-body text-text-secondary mt-1">Task imports you run will appear here.</p>
-      </div>
-    )
-  }
-  const statusBadge = (s: TaskImportBatchSummary['status']) => {
-    const map = {
-      committed: 'bg-success-bg text-success border-success-border',
-      undone: 'bg-danger-bg text-danger border-danger-border',
-      partially_undone: 'bg-warning-bg text-warning border-warning-border',
-    }[s]
-    const label = s === 'partially_undone' ? 'Partly undone' : s === 'undone' ? 'Undone' : 'Committed'
-    return <span className={`text-meta font-medium px-2 py-0.5 rounded-full border ${map}`}>{label}</span>
-  }
-  return (
-    <div className="space-y-2">
-      {batches.map((b) => (
-        <div key={b.id} className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:bg-surface-sunken transition-colors">
-          <button onClick={() => onOpen(b.id, 'history')} className="flex-1 min-w-0 text-left">
-            <div className="flex items-center gap-2">
-              <p className="text-body font-medium text-text-primary truncate">{b.file_name || 'Task import'}</p>
-              {statusBadge(b.status)}
+        ),
+      renderDetail: (ctx) => {
+        const detail = ctx.detail
+        if (ctx.loadingDetail || !detail) {
+          return (
+            <div className="space-y-2 py-2">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
             </div>
-            <p className="text-meta text-text-secondary mt-0.5">
-              {b.created_count} created{b.failed_count > 0 ? ` · ${b.failed_count} failed` : ''} · {b.remaining} present · by {b.imported_by} · {formatDateTime(b.created_at)}
-            </p>
-          </button>
-          {b.can_undo && (
-            <Button
-              variant="danger"
-              size="sm"
-              className="shrink-0"
-              onClick={() => onUndo(b.id)}
-              loading={undoingId === b.id}
-              loadingLabel="Undoing…"
-            >
-              <Undo2 size={13} /> Undo
-            </Button>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function BatchDetailView({
-  detail, loading, onUndo, undoing,
-}: {
-  detail: TaskImportBatchDetail | null
-  loading: boolean
-  onUndo: (id: string) => void
-  undoing: boolean
-}) {
-  if (loading || !detail) {
-    return (
-      <div className="space-y-2 py-2">
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-16 w-full" />
-      </div>
-    )
-  }
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-bg text-success text-body font-medium border border-success-border">{detail.created_count} created</span>
-        {detail.failed_count > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-body font-medium border border-danger-border">{detail.failed_count} failed</span>}
-        <span className="text-body text-text-secondary">{detail.remaining} still present</span>
-        {detail.can_undo && (
-          <Button variant="danger" size="sm" className="ml-auto" onClick={() => onUndo(detail.id)} loading={undoing} loadingLabel="Undoing…">
-            <Undo2 size={13} /> Undo import
-          </Button>
-        )}
-      </div>
-      <div className="border border-border-light rounded-lg max-h-[52vh] overflow-auto divide-y divide-surface-control-pressed">
-        {detail.rows.map((r) => (
-          <div key={r.row} className={`px-3 py-2 text-body ${r.status === 'failed' ? 'bg-danger-bg' : 'bg-surface'}`}>
-            <div className="flex items-center gap-2">
-              <span className="text-text-muted">Row {r.row}</span>
-              <span className="font-medium text-text-primary">{r.title || '—'}</span>
-              {r.status === 'created' ? (
-                <span className={`ml-auto text-meta font-medium px-2 py-0.5 rounded-full border ${r.still_present ? 'bg-success-bg text-success border-success-border' : 'bg-surface-control text-text-secondary border-border-light'}`}>
-                  {r.still_present ? 'Present' : 'Removed'}
+          )
+        }
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-bg text-success text-body font-medium border border-success-border">
+                {detail.created_count} created
+              </span>
+              {detail.failed_count > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-body font-medium border border-danger-border">
+                  {detail.failed_count} failed
                 </span>
-              ) : (
-                <span className="ml-auto text-meta font-medium px-2 py-0.5 rounded-full border bg-danger-bg text-danger border-danger-border">Failed</span>
+              )}
+              <span className="text-body text-text-secondary">{detail.remaining} still present</span>
+              {detail.can_undo && (
+                <UndoButton size="sm" label="Undo import" className="ml-auto" undoing={ctx.undoingId === detail.id} onClick={() => ctx.requestUndo(detail.id)} />
               )}
             </div>
-            {r.error && <div className="text-danger mt-0.5">{r.error}</div>}
+            <div className="border border-border-light rounded-lg max-h-[52vh] overflow-auto divide-y divide-surface-control-pressed">
+              {detail.rows.map((r) => (
+                <div key={r.row} className={`px-3 py-2 text-body ${r.status === 'failed' ? 'bg-danger-bg' : 'bg-surface'}`}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-text-muted">Row {r.row}</span>
+                    <span className="font-medium text-text-primary">{r.title || '—'}</span>
+                    {r.status === 'created' ? (
+                      <span
+                        className={`ml-auto text-meta font-medium px-2 py-0.5 rounded-full border ${r.still_present ? 'bg-success-bg text-success border-success-border' : 'bg-surface-control text-text-secondary border-border-light'}`}
+                      >
+                        {r.still_present ? 'Present' : 'Removed'}
+                      </span>
+                    ) : (
+                      <span className="ml-auto text-meta font-medium px-2 py-0.5 rounded-full border bg-danger-bg text-danger border-danger-border">
+                        Failed
+                      </span>
+                    )}
+                  </div>
+                  {r.error && <div className="text-danger mt-0.5">{r.error}</div>}
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
+        )
+      },
+    },
+  }
+
+  return (
+    <BulkImportWizard
+      config={config}
+      onClose={onClose}
+      onChanged={onImported}
+      embedded={embedded}
+      report={{ colWidth: 20 }}
+      templateGate={{
+        loading: loadingOptions && !noOrg,
+        loadingLabel: 'Loading options…',
+        disabled: !options,
+        error: noOrg ? 'No organization selected.' : optionsError,
+        onRetry: loadOptions,
+      }}
+      onReset={() => {
+        setAttachmentFiles([])
+        setAttachErrors([])
+      }}
+    />
   )
 }

@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
+import { getErrorMessage } from '@/lib/api/errors'
 /**
  * Create a project without leaving the goal form.
  *
@@ -85,8 +86,8 @@ export default function QuickCreateProjectModal({
       addToast('Project created', 'success')
       onCreated(project)
       onClose()
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not create the project. Try again.', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, { fallback: 'Could not create the project. Try again.' }), 'error')
     } finally {
       setSaving(false)
     }

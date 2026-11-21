@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { TasksService } from './tasks.service';
+import { buildTaskServices } from './testing/task-services.testing';
 import { Principal } from '../access-rights/permissions.service';
 
 /**
@@ -79,22 +79,22 @@ function makeService(prisma: any, overrides: { scope?: any } = {}) {
       throw new ForbiddenException('out of scope');
     }),
   };
-  const service = new TasksService(
-    prisma,
-    {} as any, // workflowEngine
-    { adjustDeadline: jest.fn() } as any, // holidays
-    {} as any, // projectProgress
-    { userName: jest.fn(async () => 'Asha'), emit: jest.fn(async () => undefined) } as any,
-    { resolve: jest.fn(async () => ({ pool: new Set(['u-1', 'u-2', 'u-3']) })) } as any,
-    { assertAllEligible: jest.fn(async () => undefined) } as any,
-    scope,
-    {} as any, // leave
-    { now: jest.fn(async () => new Date('2026-10-04T10:00:00Z')) } as any,
-    { isAccessible: jest.fn(async () => true) } as any,
-    { registerCounter: jest.fn(), whereForUser: jest.fn() } as any,
-    { timingWhere: jest.fn(() => ({})) } as any,
-    {} as any, // r2
-  );
+  const service = buildTaskServices({
+    prisma: prisma,
+    workflowEngine: {} as any,
+    holidays: { adjustDeadline: jest.fn() } as any,
+    projectProgress: {} as any,
+    notifications: { userName: jest.fn(async () => 'Asha'), emit: jest.fn(async () => undefined) } as any,
+    assigneeVisibility: { resolve: jest.fn(async () => ({ pool: new Set(['u-1', 'u-2', 'u-3']) })) } as any,
+    subjects: { assertAllEligible: jest.fn(async () => undefined) } as any,
+    scope: scope,
+    leave: {} as any,
+    clock: { now: jest.fn(async () => new Date('2026-10-04T10:00:00Z')) } as any,
+    checklistAccess: { isAccessible: jest.fn(async () => true) } as any,
+    visibility: { registerCounter: jest.fn(), whereForUser: jest.fn() } as any,
+    analytics: { timingWhere: jest.fn(() => ({})) } as any,
+    r2: {} as any,
+  }).view;
   return { service, scope };
 }
 
@@ -183,7 +183,7 @@ describe('TasksService tags — createTask', () => {
 
 describe('TasksService tags — updateTask', () => {
   let prisma: any;
-  let service: TasksService;
+  let service: any;
 
   beforeEach(() => {
     prisma = makePrisma();

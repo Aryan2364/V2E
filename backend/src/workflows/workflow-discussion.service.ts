@@ -14,11 +14,12 @@ import { NotificationsService } from '../notifications/notifications.service'
 import { R2Service } from '../storage/r2.service'
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee'
 import { TaskAttachmentsService, type UploadedFile } from '../tasks/task-attachments.service'
-import { WorkflowEngineService } from './workflow-engine.service'
+import { WorkflowEngineSupportService } from './workflow-engine-support.service'
 import { WorkflowFilesService, canSeeProof } from './workflow-files.service'
 import { isBranchRow, readSnapshot } from './engine/snapshot'
 import { isOpen } from './engine/dag'
 import { DISCUSSION_PAGE, DISCUSSION_PAGE_MAX, MENTION_MAX, MESSAGE_BODY_MAX } from './dto/discussion.dto'
+import { swallow } from '../common/swallow';
 
 /**
  * One discussion per workflow instance (instance-thread spec).
@@ -32,8 +33,8 @@ import { DISCUSSION_PAGE, DISCUSSION_PAGE_MAX, MENTION_MAX, MESSAGE_BODY_MAX } f
  * `for_instance_step_id` ("For “Issue PO”"); the reason a send-back posts is a message
  * marked `sent_back_from_row_id` / `sent_back_to_row_id`.
  *
- * AUTHORIZATION: this service performs NO caller gating — `WorkflowTemplateService`
- * gates the instance (run-access participant rule / workflow capabilities) before every
+ * AUTHORIZATION: this service performs NO caller gating — the workflow instance services (`WorkflowInstanceCollabService` / `WorkflowInstanceQueryService`)
+ * gate the instance (run-access participant rule / workflow capabilities) before every
  * call, and `TasksService` gates the task before it asks for notifications. Every query
  * here is scoped by `organization_id` + the instance id (AUTHORIZATION.md rule 2/3);
  * read markers are scoped by `user_id` (rule 4).
@@ -270,7 +271,7 @@ export class WorkflowDiscussionService {
     private readonly prisma: PrismaService,
     private readonly clock: ClockService,
     private readonly notifications: NotificationsService,
-    private readonly engine: WorkflowEngineService,
+    private readonly engine: WorkflowEngineSupportService,
     private readonly r2: R2Service,
     private readonly files: WorkflowFilesService,
     // TaskAttachmentsService lives in TasksModule (which imports this module), so it is
@@ -978,7 +979,7 @@ export class WorkflowDiscussionService {
         data: { deleted_at: now },
       })
     }
-    await Promise.all([...taskFiles, ...instanceFiles].map((f) => this.r2.deleteObject(f.storage_key).catch(() => undefined)))
+    await Promise.all([...taskFiles, ...instanceFiles].map((f) => this.r2.deleteObject(f.storage_key).catch(swallow('workflow-discussion.remove'))))
     if (m.task_id) await this.taskActivity(ctx.orgId, m.task_id, viewer.userId, 'comment_deleted', { comment_id: m.id })
     return { id: m.id, deleted: true }
   }

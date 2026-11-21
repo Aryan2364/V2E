@@ -205,7 +205,7 @@ export default function TaskTable({
                 const timing = taskTiming(t)
                 const overdue = timing === 'overdue'
                 return (
-                  <tr key={t.id} onClick={() => onOpenTask(t.id)} className="border-b border-border-light hover:bg-primary-subtle cursor-pointer transition-colors">
+                  <tr key={t.id} onClick={() => onOpenTask(t.id)} tabIndex={0} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onOpenTask(t.id) } }} className="border-b border-border-light hover:bg-primary-subtle cursor-pointer transition-colors">
                     <td className="px-3 py-2.5 align-top max-w-[240px]">
                       <div className="font-medium text-text-primary truncate">{t.title}</div>
                       <div className="text-meta text-text-muted">{t.type === 'recurring' ? 'Recurring' : 'One-time'}</div>

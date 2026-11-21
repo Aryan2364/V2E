@@ -60,6 +60,7 @@ import {
   type DataScope,
 } from '@/lib/api/permissions'
 
+import { getErrorMessage } from '@/lib/api/errors'
 // The PDF columns map onto the registry actions: read→View, write→Create.
 const ACTION_LABEL: Record<PermAction, string> = {
   read: 'View',
@@ -281,7 +282,7 @@ export default function AccessControlPage() {
       })
       .catch((err) => {
         if (err?.response?.status === 403) setDenied(true)
-        else toast.error(err?.response?.data?.message ?? 'Failed to load access control')
+        else toast.error(getErrorMessage(err, { fallback: 'Failed to load access control' }))
       })
       .finally(() => setLoading(false))
   }, [orgId, applyMatrix])
@@ -566,8 +567,8 @@ export default function AccessControlPage() {
       applyMatrix(latest)
       clearPermissionsCache(orgId)
       toast.success('Access saved')
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Failed to save')
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, { fallback: 'Failed to save' }))
     } finally {
       setSaving(false)
     }
@@ -585,8 +586,8 @@ export default function AccessControlPage() {
       setCreating(false)
       setNewName('')
       toast.success('Role created')
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Failed to create role')
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, { fallback: 'Failed to create role' }))
     }
   }
   async function handleRename() {
@@ -600,8 +601,8 @@ export default function AccessControlPage() {
       applyMatrix(await updateSystemRole(orgId, selectedRole.id, { name }))
       setRenaming(false)
       toast.success('Role renamed')
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Failed to rename')
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, { fallback: 'Failed to rename' }))
     }
   }
   async function performDeleteRole() {
@@ -615,10 +616,10 @@ export default function AccessControlPage() {
       clearPermissionsCache(orgId)
       setConfirmDeleteRole(false)
       toast.success('Role deleted')
-    } catch (err: any) {
+    } catch (err: unknown) {
       // The server blocks deletion while employees still hold the role — show
       // the plain-language reason here rather than as a toast that vanishes.
-      setDeleteRoleError(err?.response?.data?.message ?? 'Failed to delete role.')
+      setDeleteRoleError(getErrorMessage(err, { fallback: 'Failed to delete role.' }))
     } finally {
       setDeletingRole(false)
     }
@@ -653,8 +654,8 @@ export default function AccessControlPage() {
       setPolicies(updated.policies)
       setPolicyEdits(Object.fromEntries(updated.policies.map((p) => [p.subject_key, p.default_eligible])))
       toast.success('Subject eligibility saved')
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Failed to save')
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, { fallback: 'Failed to save' }))
     } finally {
       setSavingPolicies(false)
     }

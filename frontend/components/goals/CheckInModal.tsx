@@ -17,6 +17,7 @@ import {
 import { inputClass, labelClass } from './GoalFormFields'
 import { Label } from '@/components/ui/label'
 
+import { getErrorMessage } from '@/lib/api/errors'
 const todayStr = () => {
   const d = new Date()
   const p = (n: number) => String(n).padStart(2, '0')
@@ -83,8 +84,8 @@ export default function CheckInModal({
       addToast('Check-in recorded', 'success')
       onDone()
       onClose()
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not record the check-in', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, { fallback: 'Could not record the check-in' }), 'error')
     } finally {
       setSaving(false)
     }

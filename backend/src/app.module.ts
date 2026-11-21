@@ -4,6 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { rateLimitConfig } from './common/rate-limit/rate-limit.config';
 import { RateLimitGuard } from './common/rate-limit/rate-limit.guard';
+import { validateEnv } from './config/env.validation';
+import { HealthModule } from './health/health.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -48,8 +50,9 @@ import { TimeBlocksModule } from './time-blocks/time-blocks.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     ThrottlerModule.forRoot(rateLimitConfig),
+    HealthModule,
     ScheduleModule.forRoot(),
     AuditClsModule,
     PrismaModule,

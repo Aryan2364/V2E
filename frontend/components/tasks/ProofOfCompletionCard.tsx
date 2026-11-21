@@ -21,6 +21,8 @@ import { tasksApi } from '@/lib/api/tasks'
 import { extensionOf, fileKindLabel, formatBytes } from '@/lib/attachments'
 import type { Task, TaskAssigneeUser, TaskAttachment, ProofVisibility } from '@/lib/types/tasks'
 
+import { getErrorMessage } from '@/lib/api/errors'
+import { toast } from '@/components/ui/sonner'
 function formatWhen(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
@@ -112,8 +114,8 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
       for (const f of files) await tasksApi.uploadProof(orgId, task.id, f, visibility)
       load()
       onChanged()
-    } catch (e: any) {
-      setErrors([e?.response?.data?.message ?? 'Upload failed. Please try again.'])
+    } catch (e: unknown) {
+      setErrors([getErrorMessage(e, { fallback: 'Upload failed. Please try again.' })])
     } finally {
       setUploading(false)
     }
@@ -130,15 +132,15 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
       setQueue(rest)
       setChoice('private')
       if (rest.length === 0) { load(); onChanged() }
-    } catch (e: any) {
-      setErrors([e?.response?.data?.message ?? 'Upload failed. Please try again.'])
+    } catch (e: unknown) {
+      setErrors([getErrorMessage(e, { fallback: 'Upload failed. Please try again.' })])
       setQueue([])
     } finally {
       setUploading(false)
     }
   }
 
-  const download = (a: TaskAttachment) => tasksApi.downloadProof(orgId, task.id, a.id).catch(() => {})
+  const download = (a: TaskAttachment) => tasksApi.downloadProof(orgId, task.id, a.id).catch((e) => toast.error(getErrorMessage(e, { fallback: 'Could not download that file.' })))
 
   async function handleDeleteProof(a: TaskAttachment) {
     setErrors([])
@@ -148,8 +150,8 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
       setProofToDelete(null)
       load()
       onChanged()
-    } catch (e: any) {
-      setErrors([e?.response?.data?.message ?? 'Could not remove the file.'])
+    } catch (e: unknown) {
+      setErrors([getErrorMessage(e, { fallback: 'Could not remove the file.' })])
       setProofToDelete(null)
     } finally {
       setDeleting(false)

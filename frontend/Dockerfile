@@ -62,6 +62,9 @@ USER node
 
 EXPOSE 3000
 
+# Next answers on / (may redirect to login, so any status < 500 counts as alive).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3   CMD node -e "require('http').get({host:'127.0.0.1',port:process.env.PORT||3000,path:'/'},r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+
 # NOT `npm start` (= `next start`), which needs the dependency tree this stage
 # no longer carries. The standalone bundle is started by its own server.js.
 CMD ["node", "server.js"]
