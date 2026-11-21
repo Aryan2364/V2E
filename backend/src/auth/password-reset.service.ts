@@ -3,6 +3,7 @@ import * as bcrypt from 'bcryptjs';
 import { randomBytes, randomInt } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
+import { AUTH_MESSAGES } from './auth.messages';
 
 const OTP_TTL_MS = 10 * 60 * 1000; // codes are valid for 10 minutes
 const MAX_ATTEMPTS = 5; // wrong-OTP guesses allowed before a new code is required
@@ -27,9 +28,10 @@ export class PasswordResetService {
     const normalized = email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({ where: { email: normalized } });
 
-    if (!user) {
-      throw new BadRequestException('No account found with that email address.');
-    }
+    // Same answer whether or not the account exists, so this route cannot be used to
+    // test which emails are registered (auth.messages.ts). No email is sent, and step 2
+    // then answers "invalid or expired code" like any wrong code.
+    if (!user) return { success: true, message: AUTH_MESSAGES.resetCodeSent };
 
     // Anti-spam: if a still-valid code was sent less than a minute ago, don't
     // send another — clicking "send" 100 times yields at most one email/minute.
@@ -42,7 +44,7 @@ export class PasswordResetService {
       recent.expires_at.getTime() > Date.now() &&
       Date.now() - recent.created_at.getTime() < RESEND_COOLDOWN_MS
     ) {
-      return { success: true };
+      return { success: true, message: AUTH_MESSAGES.resetCodeSent };
     }
 
     const otp = String(randomInt(0, 1_000_000)).padStart(6, '0');
@@ -56,7 +58,7 @@ export class PasswordResetService {
     });
 
     await this.mail.sendPasswordResetOtp(normalized, otp);
-    return { success: true };
+    return { success: true, message: AUTH_MESSAGES.resetCodeSent };
   }
 
   /** Step 2 — verify the OTP; on success mint an opaque single-use reset token. */

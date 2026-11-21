@@ -89,7 +89,9 @@ export async function assertTagsUsable(
 ): Promise<string[] | undefined> {
   if (tagIds === undefined) return undefined;
   if (!Array.isArray(tagIds) || tagIds.some((id) => typeof id !== 'string')) {
-    throw new BadRequestException('tag_ids must be a list of tag ids.');
+    throw new BadRequestException(
+      'The tags are not in a valid format. Refresh the page and try again.',
+    );
   }
   const ids = [...new Set(tagIds.map((id) => id.trim()).filter(Boolean))];
   if (ids.length > MAX_TAGS_PER_TASK) {

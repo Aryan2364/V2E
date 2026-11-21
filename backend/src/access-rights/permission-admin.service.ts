@@ -154,7 +154,7 @@ export class PermissionAdminService {
     const roleById = new Map(roles.map((r) => [r.id, r]));
     for (const e of entries) {
       const role = roleById.get(e.system_role_id);
-      if (!role) throw new BadRequestException(`Unknown system role "${e.system_role_id}"`);
+      if (!role) throw new BadRequestException('This system role does not exist.');
       // The Administrator (system) role is locked — full access, never editable.
       if (role.is_system) {
         throw new BadRequestException(`"Administrator" is a system role and cannot be modified.`);

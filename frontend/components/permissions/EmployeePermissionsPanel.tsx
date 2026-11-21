@@ -20,7 +20,7 @@ import {
   type DataScope,
 } from '@/lib/api/permissions'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 const ACTION_LABEL: Record<PermAction, string> = { read: 'Read', write: 'Write', edit: 'Edit', delete: 'Delete' }
 
 type OverrideState = OverrideEffect | null
@@ -141,7 +141,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
       setData(updated)
       clearPermissionsCache(orgId)
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Failed to update'))
+      toast.error(getErrorMessage(err, { fallback: 'Failed to update' }))
     } finally {
       setBusyKey(null)
     }
@@ -158,7 +158,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
       setData(updated)
       clearPermissionsCache(orgId)
     } catch (err: unknown) {
-      toast.error(getErrorMessage(err, 'Failed to update'))
+      toast.error(getErrorMessage(err, { fallback: 'Failed to update' }))
     } finally {
       setBusyKey(null)
     }

@@ -1,12 +1,16 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { trustProxySetting } from './common/http/trust-proxy';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Real client IP from Caddy / Next.js (common/http/trust-proxy.ts); rate limits depend on it.
+  app.set('trust proxy', trustProxySetting(process.env.TRUST_PROXY));
 
   // CORS_ORIGIN is required in production (enforced by env validation); the
   // localhost fallback is for local development only.

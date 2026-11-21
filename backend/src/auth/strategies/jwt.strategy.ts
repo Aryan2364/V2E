@@ -5,6 +5,16 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MEMBERSHIP_ENDED_MESSAGE, ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../../common/org-status.util';
 
+/** What our signed access tokens carry (auth.service.ts signs them). */
+interface JwtPayload {
+  sub: string;
+  organizationId?: string | null;
+  /** The device session the token belongs to; absent on tokens from before sessions existed. */
+  sid?: string | null;
+  /** 'org_selection' for the short-lived token issued before an organisation is picked. */
+  type?: string;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -18,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });
@@ -82,6 +92,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       employee_profile_id: employeeProfileId,
       // The device session this token belongs to (null for pre-sessions tokens).
       sid: payload.sid ?? null,
+      // True for the short-lived token issued after sign-in when the person must still
+      // pick an organisation. It is not a session: JwtAuthGuard refuses it everywhere
+      // except endpoints marked @AllowSelectionToken().
+      isSelectionToken: payload.type === 'org_selection',
     };
   }
 }

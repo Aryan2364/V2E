@@ -16,6 +16,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  encoding:
+    name: UTF-8 check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # tsc and nest build accept a Windows-1252 character in a source file; the dev
+      # compiler (swc) does not and the app then fails to start. See the script header.
+      - name: Check tracked files are valid UTF-8
+        run: node scripts/check-utf8.mjs
+
   backend:
     name: Backend
     runs-on: ubuntu-latest

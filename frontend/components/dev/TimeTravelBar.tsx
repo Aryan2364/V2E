@@ -8,7 +8,7 @@ import { syncClock, useNow } from '@/lib/clock'
 import Tooltip from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 function toLocalInput(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
@@ -94,7 +94,7 @@ export default function TimeTravelBar() {
       // Full reload so all client-fetched views reflect the new simulated time.
       window.location.reload()
     } catch (e: unknown) {
-      const msg = getErrorMessage(e, 'Failed to set clock')
+      const msg = getErrorMessage(e, { fallback: 'Failed to set clock' })
       setError(Array.isArray(msg) ? msg.join(', ') : String(msg))
       setBusy(false)
     }

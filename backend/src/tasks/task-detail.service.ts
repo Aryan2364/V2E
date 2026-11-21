@@ -188,7 +188,7 @@ export class TaskDetailService {
         },
       },
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
 
     // Authorization (external callers only — internal post-mutation reads pass no
     // principal). Reuses the already-fetched participants to avoid a second query.

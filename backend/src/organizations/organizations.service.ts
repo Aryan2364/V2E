@@ -61,7 +61,7 @@ export class OrganizationsService {
       },
     });
 
-    if (!org) throw new NotFoundException(`Organization with id ${id} not found`);
+    if (!org) throw new NotFoundException('Organization not found');
 
     // Enrich members with their other org memberships (also_in)
     const enrichedMembers = await Promise.all(
@@ -99,7 +99,7 @@ export class OrganizationsService {
       },
     });
 
-    if (!org) throw new NotFoundException(`Organization with id ${id} not found`);
+    if (!org) throw new NotFoundException('Organization not found');
 
     return { ...org, entitlements: await this.entitlementMap(id) };
   }
@@ -262,7 +262,7 @@ export class OrganizationsService {
           where: { id: existing_user_id },
           select: { id: true, name: true, email: true, country_code: true, phone: true, is_active: true, created_at: true },
         });
-        if (!found) throw new NotFoundException(`User ${existing_user_id} not found`);
+        if (!found) throw new NotFoundException('User not found');
         // Issue #5: a typed phone can't be applied to an already-existing account here.
         if (admin_phone && (found.country_code !== admin_country_code || found.phone !== admin_phone)) {
           throw new BadRequestException(

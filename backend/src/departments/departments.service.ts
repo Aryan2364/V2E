@@ -55,7 +55,7 @@ export class DepartmentsService {
     });
 
     if (!department) {
-      throw new NotFoundException(`Department ${id} not found in this organization`);
+      throw new NotFoundException('Department not found in this organization');
     }
 
     return department;
@@ -130,7 +130,7 @@ export class DepartmentsService {
     });
 
     if (!department) {
-      throw new NotFoundException(`Department ${id} not found in this organization`);
+      throw new NotFoundException('Department not found in this organization');
     }
 
     if (department._count.child_departments > 0) {
@@ -253,7 +253,7 @@ export class DepartmentsService {
     });
 
     if (!batch) {
-      throw new NotFoundException(`Import batch ${batchId} not found`);
+      throw new NotFoundException('Import batch not found');
     }
 
     if (batch.status !== 'committed') {

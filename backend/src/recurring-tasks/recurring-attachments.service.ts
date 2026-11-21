@@ -30,7 +30,7 @@ export class RecurringAttachmentsService {
       where: { id: templateId, organization_id: orgId },
       select: { id: true },
     });
-    if (!t) throw new NotFoundException(`Recurring template ${templateId} not found`);
+    if (!t) throw new NotFoundException('Recurring template not found');
   }
 
   async upload(orgId: string, userId: string, templateId: string, file: UploadedFile | undefined) {

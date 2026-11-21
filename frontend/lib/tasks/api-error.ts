@@ -1,14 +1,10 @@
-import axios from 'axios'
+import { getErrorMessage } from '@/lib/api/errors'
 
 /**
  * The server's own sentence for a failed task call (400 / 403 ...), or the
  * given fallback. Phone sheets show it inline so a refusal always says why.
+ * A thin name for getErrorMessage (lib/api/errors.ts), kept for its callers.
  */
 export function apiErrorMessage(e: unknown, fallback: string): string {
-  if (axios.isAxiosError(e)) {
-    const message = (e.response?.data as { message?: unknown } | undefined)?.message
-    if (typeof message === 'string' && message) return message
-    if (Array.isArray(message) && typeof message[0] === 'string') return message[0]
-  }
-  return fallback
+  return getErrorMessage(e, { fallback })
 }

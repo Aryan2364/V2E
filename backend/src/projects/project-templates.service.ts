@@ -14,7 +14,7 @@ export class ProjectTemplatesService {
         tasks: { orderBy: { order_index: 'asc' } },
       },
     });
-    if (!t) throw new NotFoundException(`Project template ${templateId} not found`);
+    if (!t) throw new NotFoundException('Project template not found');
     return t;
   }
 
@@ -144,7 +144,7 @@ export class ProjectTemplatesService {
       where: { id: milestoneId, project_template_id: templateId, organization_id: orgId },
       select: { id: true },
     });
-    if (!milestone) throw new NotFoundException(`Template milestone ${milestoneId} not found`);
+    if (!milestone) throw new NotFoundException('Template milestone not found');
     return this.prisma.projectTemplateMilestone.update({
       where: { id: milestoneId, project_template_id: templateId, organization_id: orgId },
       data: {
@@ -161,7 +161,7 @@ export class ProjectTemplatesService {
       where: { id: milestoneId, project_template_id: templateId, organization_id: orgId },
       select: { id: true },
     });
-    if (!milestone) throw new NotFoundException(`Template milestone ${milestoneId} not found`);
+    if (!milestone) throw new NotFoundException('Template milestone not found');
     await this.prisma.projectTemplateMilestone.delete({ where: { id: milestoneId, project_template_id: templateId, organization_id: orgId } });
     return { message: 'Milestone deleted' };
   }
@@ -202,7 +202,7 @@ export class ProjectTemplatesService {
       where: { id: taskId, project_template_id: templateId, organization_id: orgId },
       select: { id: true },
     });
-    if (!task) throw new NotFoundException(`Template task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Template task not found');
     return this.prisma.projectTemplateTask.update({
       where: { id: taskId, project_template_id: templateId, organization_id: orgId },
       data: {
@@ -224,7 +224,7 @@ export class ProjectTemplatesService {
       where: { id: taskId, project_template_id: templateId, organization_id: orgId },
       select: { id: true },
     });
-    if (!task) throw new NotFoundException(`Template task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Template task not found');
     await this.prisma.projectTemplateTask.delete({ where: { id: taskId, project_template_id: templateId, organization_id: orgId } });
     return { message: 'Task deleted' };
   }

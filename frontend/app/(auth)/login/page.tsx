@@ -15,6 +15,8 @@ import { BrandGlyph } from '@/components/ui/BrandMark'
 import { DEFAULT_COUNTRY, cleanNationalNumber } from '@/lib/phone'
 import { useLayout } from '@/lib/layout'
 import { signedInHome } from '@/lib/phone-routes'
+import { identifierSchema, loginSchema, passwordSchema } from '@/lib/auth/login-schema'
+import { getErrorMessage } from '@/lib/api/errors'
 
 export default function LoginPage() {
   const { login, user } = useAuth()
@@ -34,21 +36,38 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{ identifier?: string; password?: string }>({})
 
-  // One box for both. As soon as what's typed looks like a phone (has a digit and
-  // no '@'), a country-code picker appears beside it; an email keeps the box alone.
+  // One box for both, mobile number by default: the country-code picker shows while
+  // the box is empty or holds a number, and goes away as soon as a letter or '@' is
+  // typed, which can only be an email. Submitting still follows the backend's rule
+  // (lib/auth/login-schema.ts): '@' means email, anything else is a phone.
   const isEmailish = identifier.includes('@')
-  const isPhoneish = !isEmailish && /\d/.test(identifier)
+  const isPhoneish = !/[@a-z]/i.test(identifier)
+
+  // Checked when the person leaves a field, not on every keystroke (11.3 rule 6).
+  const checkIdentifier = () => {
+    const result = identifierSchema(countryCode).safeParse(identifier)
+    setFieldErrors((p) => ({ ...p, identifier: result.success ? undefined : result.error.issues[0].message }))
+  }
+  const checkPassword = () => {
+    const result = passwordSchema.safeParse(password)
+    setFieldErrors((p) => ({ ...p, password: result.success ? undefined : result.error.issues[0].message }))
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
 
-    if (!identifier.trim() || !password) {
-      setFieldErrors({
-        identifier: identifier.trim() ? undefined : 'Enter your email address or mobile number.',
-        password: password ? undefined : 'Enter your password.',
-      })
-      document.getElementById(identifier.trim() ? 'password' : 'identifier')?.focus()
+    // Nothing reaches the login API unless the identifier is a real email or a
+    // mobile number of the right length (lib/auth/login-schema.ts).
+    const parsed = loginSchema.safeParse({ identifier, countryCode, password })
+    if (!parsed.success) {
+      const errors: { identifier?: string; password?: string } = {}
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0]
+        if ((field === 'identifier' || field === 'password') && !errors[field]) errors[field] = issue.message
+      }
+      setFieldErrors(errors)
+      document.getElementById(errors.identifier ? 'identifier' : 'password')?.focus()
       return
     }
     setFieldErrors({})
@@ -62,13 +81,9 @@ export default function LoginPage() {
         await login(cleanNationalNumber(identifier, countryCode), password, countryCode)
       }
     } catch (err: unknown) {
-      // Never says which field was wrong (kit 11.7).
-      const status = (err as { response?: { status?: number } })?.response?.status
-      setError(
-        status && status >= 500
-          ? 'We could not sign you in just now. Try again in a moment.'
-          : 'The email or password is not right. Check both and try again.',
-      )
+      // The backend sends one message for every credential failure (never which field was
+      // wrong, kit 11.7), a wait time when rate limited, and plain text otherwise.
+      setError(getErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -138,7 +153,11 @@ export default function LoginPage() {
               {isPhoneish && (
                 <CountryCodeSelect
                   value={countryCode}
-                  onChange={setCountryCode}
+                  onChange={(code) => {
+                    setCountryCode(code)
+                    // The old message was about the old country's digit count.
+                    setFieldErrors((p) => ({ ...p, identifier: undefined }))
+                  }}
                   disabled={isLoading}
                   wrapperClassName="w-30 shrink-0"
                 />
@@ -147,9 +166,10 @@ export default function LoginPage() {
                 id="identifier"
                 name="identifier"
                 type="text"
-                placeholder="For example, you@company.com"
+                placeholder={isPhoneish ? 'For example, 98765 43210' : 'For example, you@company.com'}
                 value={identifier}
                 onChange={(e) => { setIdentifier(e.target.value); setFieldErrors((p) => ({ ...p, identifier: undefined })) }}
+                onBlur={checkIdentifier}
                 aria-invalid={fieldErrors.identifier ? true : undefined}
                 disabled={isLoading}
                 autoComplete="username"
@@ -168,6 +188,7 @@ export default function LoginPage() {
               name="password"
               value={password}
               onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: undefined })) }}
+              onBlur={checkPassword}
               aria-invalid={fieldErrors.password ? true : undefined}
               disabled={isLoading}
               autoComplete="current-password"

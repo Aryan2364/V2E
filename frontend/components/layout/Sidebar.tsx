@@ -14,6 +14,8 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { getMyOrgs } from '@/lib/api/auth'
+import { getErrorMessage } from '@/lib/api/errors'
+import { toast } from '@/components/ui/sonner'
 import type { OrgMembership } from '@/lib/types'
 
 export type SidebarRole = 'super_admin' | 'admin' | 'member'
@@ -84,8 +86,10 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
       await switchOrg(orgId)
       setShowOrgSwitcher(false)
       router.push('/dashboard')
-    } catch {
-      // ignore
+    } catch (err) {
+      // Say why the switch failed (e.g. the organisation was deactivated), in the
+      // backend's words; never fail silently.
+      toast.error(getErrorMessage(err))
     } finally {
       setSwitching(null)
     }

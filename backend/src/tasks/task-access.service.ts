@@ -175,7 +175,7 @@ export class TaskAccessService {
         },
       },
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
     await this.assertParticipantView(
       orgId,
       principal,
@@ -201,7 +201,7 @@ export class TaskAccessService {
       where: { id: taskId, organization_id: orgId, is_deleted: false },
       include: TASK_INCLUDE,
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
     if (isWrite) {
       const now = await this.clock.now(orgId);
       if (task.created_at > now) {

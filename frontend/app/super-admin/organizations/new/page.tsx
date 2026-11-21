@@ -24,7 +24,7 @@ import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { DEFAULT_COUNTRY, cleanNationalNumber, nationalDigitsFor } from '@/lib/phone'
 import type { OrganizationGroup } from '@/lib/types'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 // ─── Schema ────────────────────────────────────────────────────────────────────
 
 const schema = z.object({
@@ -181,7 +181,7 @@ export default function NewOrganizationPage() {
       await createOrganization(payload)
       router.push('/super-admin/organizations')
     } catch (err: unknown) {
-      setServerError(getErrorMessage(err, 'Could not create the organization. Try again.'))
+      setServerError(getErrorMessage(err, { fallback: 'Could not create the organization. Try again.' }))
     }
   }
 

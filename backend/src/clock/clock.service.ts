@@ -59,7 +59,7 @@ export class ClockService {
       where: { id: orgId },
       select: { is_test: true, sim_epoch: true, sim_anchor: true, sim_replayed_until: true },
     });
-    if (!org) throw new NotFoundException(`Organization ${orgId} not found`);
+    if (!org) throw new NotFoundException('Organization not found');
 
     return {
       is_test: org.is_test,
@@ -78,7 +78,7 @@ export class ClockService {
       where: { id: orgId },
       select: { is_test: true },
     });
-    if (!org) throw new NotFoundException(`Organization ${orgId} not found`);
+    if (!org) throw new NotFoundException('Organization not found');
     if (!org.is_test) {
       throw new BadRequestException('The simulated clock can only be set for test organizations');
     }

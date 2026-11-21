@@ -9,7 +9,7 @@ import RichEditor from '@/components/ui/RichEditor'
 import type { Meeting } from '@/lib/types/meetings'
 import { Label } from '@/components/ui/label'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 // Agenda + Minutes as true WYSIWYG editors. Bold/Heading/List format the text
 // visually — the user never sees or types any symbols. Stored as markdown under
 // the hood (unchanged for the copy-summary, backend, etc.).
@@ -30,7 +30,7 @@ export default function MeetingRecordTab({ orgId, meeting, canEdit, onSaved }: {
       setTimeout(() => setSaved(false), 2500)
       onSaved()
     } catch (e: unknown) {
-      addToast(getErrorMessage(e, 'Failed to save'), 'error')
+      addToast(getErrorMessage(e, { fallback: 'Failed to save' }), 'error')
     } finally {
       setSaving(false)
     }

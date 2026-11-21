@@ -13,7 +13,7 @@ import { inputClass, labelClass, type EmployeeOption } from './GoalFormFields'
 import { formatDate } from './shared'
 import { Label } from '@/components/ui/label'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 export type LinkDirection = 'supported_by' | 'supports'
 
 /**
@@ -82,7 +82,7 @@ export default function LinkGoalModal({
       onLinked()
       onClose()
     } catch (err: unknown) {
-      addToast(getErrorMessage(err, 'Could not link the goals'), 'error')
+      addToast(getErrorMessage(err, { fallback: 'Could not link the goals' }), 'error')
     } finally {
       setSaving(false)
     }
@@ -96,7 +96,7 @@ export default function LinkGoalModal({
       onClose()
     } catch (err: unknown) {
       addToast(
-        getErrorMessage(err, 'The goal was created but could not be linked'),
+        getErrorMessage(err, { fallback: 'The goal was created but could not be linked' }),
         'error',
       )
       onLinked()

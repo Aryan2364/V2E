@@ -67,7 +67,7 @@ export class AnnouncementsService {
         },
       },
     });
-    if (!ann) throw new NotFoundException(`Announcement ${id} not found`);
+    if (!ann) throw new NotFoundException('Announcement not found');
     return ann;
   }
 
@@ -152,7 +152,7 @@ export class AnnouncementsService {
 
   private async findOneRaw(id: string, orgId: string) {
     const ann = await this.prisma.announcement.findFirst({ where: { id, organization_id: orgId } });
-    if (!ann) throw new NotFoundException(`Announcement ${id} not found`);
+    if (!ann) throw new NotFoundException('Announcement not found');
     return ann;
   }
 }

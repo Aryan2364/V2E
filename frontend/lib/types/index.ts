@@ -258,7 +258,8 @@ export interface LoginCredentials {
 
 export interface AuthTokens {
   access_token: string;
-  refresh_token: string;
+  /** Absent for the web app: its refresh token is an httpOnly cookie, never in the body. */
+  refresh_token?: string;
   user: AuthUser;
 }
 

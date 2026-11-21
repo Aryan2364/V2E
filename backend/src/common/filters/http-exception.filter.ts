@@ -1,6 +1,22 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
+import { defaultErrorMessage, isStockMessage } from '../http/error-messages';
+
+/**
+ * Several validation messages as one readable paragraph: each ends with a full stop
+ * and they are separated by a space ("Enter your email. Enter your password."),
+ * not run together with commas.
+ */
+function asSentences(messages: unknown[]): string {
+  return messages
+    .filter((m): m is string => typeof m === 'string' && !!m.trim())
+    .map((m) => {
+      const s = m.trim();
+      return /[.!?]$/.test(s) ? s : `${s}.`;
+    })
+    .join(' ');
+}
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -18,6 +34,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // behind a refusal. Without this the filter would flatten every error to its
     // message alone, and the UI could only print it, never act on it.
     let extra: Record<string, unknown> = {};
+    // Technical detail for the server log only (database codes, column names).
+    let detail: string | null = null;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -31,30 +49,44 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Prisma.PrismaClientValidationError) {
       // Malformed query data (missing required field, wrong type, bad enum value).
-      // The full message is a multi-line code frame — surface only the final
-      // human-readable line (e.g. "Argument `created_by_user_id` is missing.").
+      // The detail names columns and query internals: it goes to the log, never to
+      // the user, who gets the plain 400 sentence.
       status = HttpStatus.BAD_REQUEST;
       const lines = exception.message.trim().split('\n');
-      message = `Invalid data: ${lines[lines.length - 1].trim()}`;
+      message = defaultErrorMessage(status);
+      detail = `Prisma validation: ${lines[lines.length - 1].trim()}`;
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      // Same rule: table and column names stay in the log.
       switch (exception.code) {
         case 'P2002': // unique constraint
           status = HttpStatus.CONFLICT;
-          message = `Duplicate value for unique field(s): ${(exception.meta?.target as string[])?.join(', ') ?? 'unknown'}`;
+          message = 'This already exists. Use a different value and try again.';
+          detail = `P2002 unique constraint on ${(exception.meta?.target as string[])?.join(', ') ?? 'unknown'}`;
           break;
         case 'P2003': // foreign key constraint
           status = HttpStatus.BAD_REQUEST;
-          message = `Invalid reference: related record not found (${(exception.meta?.field_name as string) ?? 'foreign key'})`;
+          message =
+            'This refers to something that no longer exists. Refresh the page and try again.';
+          detail = `P2003 foreign key ${(exception.meta?.field_name as string) ?? 'unknown'}`;
           break;
         case 'P2025': // record not found
           status = HttpStatus.NOT_FOUND;
-          message = 'Record not found';
+          message = defaultErrorMessage(status);
+          detail = 'P2025 record not found';
           break;
         default:
           status = HttpStatus.BAD_REQUEST;
-          message = `Database request failed (${exception.code})`;
+          message = defaultErrorMessage(status);
+          detail = `Prisma ${exception.code}: ${exception.message.split('\n').pop()?.trim() ?? ''}`;
       }
     }
+
+    // A message that is only the framework's stock text ("Forbidden resource",
+    // "Cannot GET /x", "Internal server error") becomes the plain default sentence for
+    // its status (common/http/error-messages.ts). A message written where the error
+    // was thrown is kept as it is. The log below keeps the original for developers.
+    const logged = detail ?? message;
+    if (isStockMessage(message, status)) message = defaultErrorMessage(status);
 
     // Always log server-side so 500s are never opaque in the server console.
     let debug: { name?: string; message?: string; stack?: string[] } | null = null;
@@ -71,13 +103,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         };
       }
     } else if (status >= 400) {
-      this.logger.warn(`${request.method} ${request.url} -> ${status}: ${Array.isArray(message) ? message.join(', ') : message}`);
+      this.logger.warn(
+        `${request.method} ${request.url} -> ${status}: ${Array.isArray(logged) ? logged.join(', ') : logged}`,
+      );
     }
 
     response.status(status).json({
       success: false,
       data: null,
-      message: Array.isArray(message) ? message.join(', ') : message,
+      message: Array.isArray(message) ? asSentences(message) : message,
       meta: null,
       ...extra,
       ...(debug ? { debug } : {}),

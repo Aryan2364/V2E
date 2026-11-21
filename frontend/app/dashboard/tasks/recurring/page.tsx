@@ -55,7 +55,7 @@ import {
   LayoutGrid, Table as TableIcon, ArrowUpRight, ArrowDownLeft, Inbox,
 } from 'lucide-react'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 // ─── Delete flow ──────────────────────────────────────────────────────────────
 
 type DeleteMode = 'stop' | 'delete-future' | 'delete-all'
@@ -112,7 +112,7 @@ function DeleteConfirmDialog({
             onClick={async () => {
               setBusy(true); setError(null)
               try { await onConfirm() }
-              catch (e: unknown) { setError(getErrorMessage(e, 'Could not do this — please try again.')) }
+              catch (e: unknown) { setError(getErrorMessage(e, { fallback: 'Could not do this — please try again.' })) }
               finally { setBusy(false) }
             }}
           >
@@ -150,7 +150,7 @@ function RecurringCard({
       if (template.is_active) await onPause()
       else await onResume()
     } catch (e: unknown) {
-      setToggleErr(getErrorMessage(e, 'Could not change status.'))
+      setToggleErr(getErrorMessage(e, { fallback: 'Could not change status.' }))
       setTimeout(() => setToggleErr(null), 3000)
     } finally { setToggling(false) }
   }

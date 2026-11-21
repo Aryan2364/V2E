@@ -24,7 +24,7 @@ import { Label } from '@/components/ui/label'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 interface Props {
   orgId: string
   onClose: () => void
@@ -124,7 +124,7 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
       onCreated()
       onClose()
     } catch (e: unknown) {
-      setError(getErrorMessage(e, 'Could not send the log request. Try again.'))
+      setError(getErrorMessage(e, { fallback: 'Could not send the log request. Try again.' }))
     } finally {
       setSaving(false)
     }

@@ -464,7 +464,7 @@ export class HolidaysService {
 
   private async findOrgHolidayOrFail(orgId: string, id: string) {
     const h = await this.prisma.orgHoliday.findFirst({ where: { id, organization_id: orgId } })
-    if (!h) throw new NotFoundException(`Holiday ${id} not found`)
+    if (!h) throw new NotFoundException('Holiday not found')
     return h
   }
 
@@ -792,7 +792,7 @@ export class HolidaysService {
 
   async updateDeptHoliday(orgId: string, deptId: string, id: string, dto: UpdateDepartmentHolidayDto) {
     const existing = await this.prisma.departmentHoliday.findFirst({ where: { id, organization_id: orgId, department_id: deptId } })
-    if (!existing) throw new NotFoundException(`Department holiday ${id} not found`)
+    if (!existing) throw new NotFoundException('Department holiday not found')
     const date = dto.date ? new Date(dto.date) : undefined
     const endDate = dto.end_date ? new Date(dto.end_date) : undefined
     const updated = await this.prisma.departmentHoliday.update({
@@ -823,7 +823,7 @@ export class HolidaysService {
 
   async deleteDeptHoliday(orgId: string, deptId: string, id: string) {
     const existing = await this.prisma.departmentHoliday.findFirst({ where: { id, organization_id: orgId, department_id: deptId } })
-    if (!existing) throw new NotFoundException(`Department holiday ${id} not found`)
+    if (!existing) throw new NotFoundException('Department holiday not found')
     // Targets + dept opt-outs cascade via FK; individual opt-outs reference by id with no FK.
     await this.prisma.individualHolidayOptOut.deleteMany({
       where: { organization_id: orgId, holiday_source: HolidayOptOutSource.department, holiday_id: id },
@@ -842,7 +842,7 @@ export class HolidaysService {
    */
   async optOutDeptHoliday(orgId: string, deptId: string, holidayId: string, actorId: string) {
     const holiday = await this.prisma.departmentHoliday.findFirst({ where: { id: holidayId, organization_id: orgId } })
-    if (!holiday) throw new NotFoundException(`Department holiday ${holidayId} not found`)
+    if (!holiday) throw new NotFoundException('Department holiday not found')
     if (holiday.department_id === deptId) {
       throw new BadRequestException('Cannot opt out of a holiday this department owns — delete it instead.')
     }
@@ -897,7 +897,7 @@ export class HolidaysService {
   /** Reverse a local opt-out (re-attach the inherited holiday for this department). */
   async undoOptOutDeptHoliday(orgId: string, deptId: string, holidayId: string, actorId: string) {
     const holiday = await this.prisma.departmentHoliday.findFirst({ where: { id: holidayId, organization_id: orgId } })
-    if (!holiday) throw new NotFoundException(`Department holiday ${holidayId} not found`)
+    if (!holiday) throw new NotFoundException('Department holiday not found')
 
     const removed = await this.prisma.departmentHolidayOptOut.deleteMany({
       where: { holiday_id: holidayId, department_id: deptId },
@@ -937,7 +937,7 @@ export class HolidaysService {
       where: { id: deptId, organization_id: orgId },
       select: { name: true },
     })
-    if (!dept) throw new NotFoundException(`Department ${deptId} not found`)
+    if (!dept) throw new NotFoundException('Department not found')
     const holidays = await this.prisma.orgHoliday.findMany({
       where: { id: { in: orgHolidayIds }, organization_id: orgId },
     })
@@ -1143,7 +1143,7 @@ export class HolidaysService {
 
   async updateUserWorkingDays(orgId: string, userId: string, id: string, dto: UpdateIndividualWorkingDaysDto) {
     const existing = await this.prisma.individualWorkingDays.findFirst({ where: { id, organization_id: orgId, user_id: userId } })
-    if (!existing) throw new NotFoundException(`Working days schedule ${id} not found`)
+    if (!existing) throw new NotFoundException('Working days schedule not found')
     return this.prisma.individualWorkingDays.update({
       where: { id },
       data: {
@@ -1156,7 +1156,7 @@ export class HolidaysService {
 
   async deleteUserWorkingDays(orgId: string, userId: string, id: string) {
     const existing = await this.prisma.individualWorkingDays.findFirst({ where: { id, organization_id: orgId, user_id: userId } })
-    if (!existing) throw new NotFoundException(`Working days schedule ${id} not found`)
+    if (!existing) throw new NotFoundException('Working days schedule not found')
     await this.prisma.individualWorkingDays.delete({ where: { id } })
     return { ok: true }
   }
@@ -1190,7 +1190,7 @@ export class HolidaysService {
 
   async updateUserHoliday(orgId: string, userId: string, id: string, dto: UpdateIndividualHolidayDto) {
     const existing = await this.prisma.individualHoliday.findFirst({ where: { id, organization_id: orgId, user_id: userId } })
-    if (!existing) throw new NotFoundException(`Individual holiday ${id} not found`)
+    if (!existing) throw new NotFoundException('Individual holiday not found')
     const date = dto.date ? new Date(dto.date) : undefined
     return this.prisma.individualHoliday.update({
       where: { id },
@@ -1206,7 +1206,7 @@ export class HolidaysService {
 
   async deleteUserHoliday(orgId: string, userId: string, id: string) {
     const existing = await this.prisma.individualHoliday.findFirst({ where: { id, organization_id: orgId, user_id: userId } })
-    if (!existing) throw new NotFoundException(`Individual holiday ${id} not found`)
+    if (!existing) throw new NotFoundException('Individual holiday not found')
     await this.prisma.individualHoliday.delete({ where: { id } })
     return { ok: true }
   }

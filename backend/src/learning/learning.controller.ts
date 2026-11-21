@@ -37,7 +37,7 @@ import { AssignPathDto } from './dto/assign-path.dto';
 import { CompleteItemDto } from './dto/complete-item.dto';
 import { ReorderItemsDto } from './dto/reorder-items.dto';
 
-/** The caller's learner profile in this org — people without one have no assignments. */
+/** The caller's learner profile in this org â€” people without one have no assignments. */
 function requireProfileId(req: AuthRequest): string {
   const id = req.user.employee_profile_id;
   if (!id) throw new ForbiddenException('No employee profile in this organization');

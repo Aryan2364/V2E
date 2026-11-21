@@ -19,7 +19,7 @@ import Tooltip from '@/components/ui/tooltip'
 import { PageHeader } from '@/components/shell/page-header'
 import { formatWeekday, formatDayMonth } from '@/lib/format'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 function cadence(r: MeetingRhythm): string {
   const e = r.schedule_entries?.[0]
   if (!e) return '—'
@@ -71,7 +71,7 @@ export default function RhythmsPage() {
       const updated = r.is_active ? await meetingsApi.pauseRhythm(orgId, r.id) : await meetingsApi.resumeRhythm(orgId, r.id)
       setRhythms((rs) => rs.map((x) => (x.id === r.id ? updated : x)))
       addToast(r.is_active ? 'Rhythm paused' : 'Rhythm resumed', 'success')
-    } catch (e: unknown) { addToast(getErrorMessage(e, 'Failed'), 'error') }
+    } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') }
   }
 
   async function stop(mode: 'stop' | 'delete-future') {
@@ -81,7 +81,7 @@ export default function RhythmsPage() {
       addToast('Rhythm stopped', 'success')
       setStopping(null)
       load()
-    } catch (e: unknown) { addToast(getErrorMessage(e, 'Failed'), 'error') }
+    } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') }
   }
 
   return (

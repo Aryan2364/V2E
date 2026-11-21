@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Banner, BannerDescription } from '@/components/ui/banner'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { getErrorMessage } from '@/lib/api/errors'
 
 export default function AdminLoginPage() {
   const [identifier, setIdentifier] = useState('')
@@ -54,16 +55,12 @@ export default function AdminLoginPage() {
         ? await apiAdminLogin(identifier.trim(), password)
         : await apiAdminLogin(cleanNationalNumber(identifier, countryCode), password, countryCode)
       localStorage.setItem('access_token', tokens.access_token)
-      localStorage.setItem('refresh_token', tokens.refresh_token)
+      localStorage.removeItem('refresh_token') // the refresh token is an httpOnly cookie now; a stale legacy copy would override it
       window.location.href = '/super-admin/organizations'
     } catch (err: unknown) {
-      // Never says which field was wrong (kit 11.7).
-      const status = (err as { response?: { status?: number } })?.response?.status
-      setError(
-        status && status >= 500
-          ? 'We could not sign you in just now. Try again in a moment.'
-          : 'The email or password is not right. Check both and try again.',
-      )
+      // The backend sends one message for every credential failure (never which field was
+      // wrong, kit 11.7), a wait time when rate limited, and plain text otherwise.
+      setError(getErrorMessage(err))
       setLoading(false)
     }
   }

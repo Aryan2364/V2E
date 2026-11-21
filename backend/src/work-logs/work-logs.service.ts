@@ -613,7 +613,7 @@ export class WorkLogsService {
       if (!readable.has(writerId)) throw new ForbiddenException('No access to this log');
     }
 
-    // A reply's parent must be a remark on the SAME log in this org — never a pasted
+    // A reply's parent must be a remark on the SAME log in this org â€” never a pasted
     // foreign remark id (it would otherwise notify that remark's author).
     let parentUserId: string | null = null;
     if (dto.reply_to_remark_id) {

@@ -81,6 +81,6 @@ describe('phone login (country-code aware)', () => {
     // Asha is +91; searching those digits under +44 finds nobody.
     await expect(
       makeService().login({ identifier: '9876543210', country_code: '+44', password: 'secret123' } as any),
-    ).rejects.toThrow(/not found/i);
+    ).rejects.toThrow(/not right/i);
   });
 });

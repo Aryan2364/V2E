@@ -167,7 +167,7 @@ export class ChecklistImportService {
     const batch = await this.prisma.checklistTemplateImportBatch.findFirst({
       where: { id: batchId, organization_id: orgId },
     });
-    if (!batch) throw new NotFoundException(`Import batch ${batchId} not found`);
+    if (!batch) throw new NotFoundException('Import batch not found');
 
     const templates = await this.prisma.taskChecklistTemplate.findMany({
       where: { organization_id: orgId, import_batch_id: batchId },

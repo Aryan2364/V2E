@@ -16,7 +16,7 @@ import GoalFormFields, {
 import { toDateInput } from './shared'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 export default function EditGoalModal({
   isOpen,
   onClose,
@@ -118,7 +118,7 @@ export default function EditGoalModal({
       onSaved(updated)
       onClose()
     } catch (err: unknown) {
-      addToast(getErrorMessage(err, 'Could not save the goal. Try again.'), 'error')
+      addToast(getErrorMessage(err, { fallback: 'Could not save the goal. Try again.' }), 'error')
     } finally {
       setSaving(false)
     }

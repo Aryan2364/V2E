@@ -107,7 +107,7 @@ export class TaskCreateService {
       });
       if (!st)
         throw new BadRequestException(
-          `Status ${statusId} not found or inactive in this organization`,
+          'Status not found or inactive in this organization',
         );
       if (isTerminal(st.type)) {
         throw new BadRequestException(

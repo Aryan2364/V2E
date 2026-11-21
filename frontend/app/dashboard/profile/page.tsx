@@ -19,7 +19,7 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 
 import { getInitials } from '@/lib/initials'
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 const roleLevelLabel: Record<string, string> = { junior: 'Junior', mid: 'Mid', senior: 'Senior', head: 'Head' }
 
 type Kpi = NonNullable<Role['kpi']>[number]
@@ -240,7 +240,7 @@ function MyProfileContent() {
       setProfile(updated)
       addToast('Personal details updated', 'success')
     } catch (e: unknown) {
-      const m = getErrorMessage(e, 'Could not update personal details')
+      const m = getErrorMessage(e, { fallback: 'Could not update personal details' })
       addToast(Array.isArray(m) ? m.join(', ') : m, 'error')
     } finally {
       setSavingPersonal(false)
@@ -263,7 +263,7 @@ function MyProfileContent() {
       setShowConfirm(false)
       addToast('Password changed', 'success')
     } catch (e: unknown) {
-      const m = getErrorMessage(e, 'Could not change your password')
+      const m = getErrorMessage(e, { fallback: 'Could not change your password' })
       addToast(Array.isArray(m) ? m.join(', ') : m, 'error')
     } finally {
       setSavingPassword(false)

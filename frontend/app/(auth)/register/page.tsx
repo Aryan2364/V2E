@@ -16,8 +16,8 @@ import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { Banner, BannerDescription } from '@/components/ui/banner'
 import { BrandGlyph } from '@/components/ui/BrandMark'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getErrorMessage } from '@/lib/api/errors'
 
-import { getErrorMessage } from '@/lib/errors'
 const schema = z
   .object({
     name: z.string().min(1, 'Full name is required'),
@@ -64,9 +64,7 @@ function RegisterForm() {
       await login(data.email, data.password)
       router.replace('/dashboard')
     } catch (err: unknown) {
-      setServerError(
-        getErrorMessage(err, 'Registration failed. Please try again.')
-      )
+      setServerError(getErrorMessage(err, { fallback: 'Registration failed. Please try again.' }))
     }
   }
 

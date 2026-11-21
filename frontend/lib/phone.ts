@@ -41,13 +41,24 @@ export function nationalDigitsFor(code: string): number {
  * fixes the value (mirrors the backend's normaliseNationalNumber).
  */
 export function cleanNationalNumber(raw: string, countryCode: string): string {
+  const d = normaliseNationalNumber(raw, countryCode)
+  const c = findCountry(countryCode)
+  return c && d.length > c.nationalDigits ? d.slice(0, c.nationalDigits) : d
+}
+
+/**
+ * The same normalisation as the backend's normalizeNationalNumber, WITHOUT the
+ * final clamp: digits only, a pasted country-code prefix dropped, one leading
+ * trunk 0 dropped. A validator needs this form, because clamping would turn an
+ * over-long number ("9876543210123") into a valid-looking one before it is checked.
+ */
+export function normaliseNationalNumber(raw: string, countryCode: string): string {
   let d = (raw ?? '').replace(/\D/g, '')
   const c = findCountry(countryCode)
   if (c) {
     const cc = c.code.replace(/\D/g, '')
     if (cc && d.startsWith(cc) && d.length > c.nationalDigits) d = d.slice(cc.length)
     if (d.length > c.nationalDigits && d.startsWith('0')) d = d.slice(1)
-    if (d.length > c.nationalDigits) d = d.slice(0, c.nationalDigits)
   }
   return d
 }

@@ -61,7 +61,7 @@ export class MessagingService {
         members: { include: { user: { select: USER_SELECT } } },
       },
     });
-    if (!conv) throw new NotFoundException(`Conversation ${id} not found`);
+    if (!conv) throw new NotFoundException('Conversation not found');
     const isMember = conv.members.some((m) => m.user_id === userId);
     if (!isMember) throw new ForbiddenException('Not a member of this conversation');
     return conv;

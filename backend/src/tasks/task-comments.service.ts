@@ -254,7 +254,7 @@ export class TaskCommentsService {
     // Messages written on a workflow instance page (no task) are removed through the
     // instance discussion, never here.
     if (!comment || !comment.task_id)
-      throw new NotFoundException(`Comment ${commentId} not found`);
+      throw new NotFoundException('Comment not found');
     await this.taskAccess.findTaskOrFail(orgId, comment.task_id, true);
     if (comment.user_id !== userId)
       throw new ForbiddenException("Cannot delete another user's comment");

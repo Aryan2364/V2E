@@ -50,7 +50,7 @@ import {
 } from 'lucide-react'
 import { useMapHistory } from '@/components/process-hierarchy/useMapHistory'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 const ADD_KINDS: ProcessNodeKind[] = ['task', 'decision', 'subprocess', 'container', 'start_event', 'end_event']
 // Inside a swimlane there are no containers (folders) — a lane holds flow steps and
 // sub-processes only. See the process-swimlanes design decisions.
@@ -287,7 +287,7 @@ export default function ProcessMapExplorerPage() {
       await refresh()
       // Note: intentionally do NOT select/open the pasted node — pasting shouldn't pop the sidebar.
       toast.success(`Pasted ${pasted_node_ids.length} item${pasted_node_ids.length !== 1 ? 's' : ''}.`)
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not paste here.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not paste here.' })) }
   }, [clipboard, orgId, mapId, parentId, refresh])
 
   // Create a swimlane (a department lane) straight from the Add step menu, and reveal the
@@ -298,7 +298,7 @@ export default function ProcessMapExplorerPage() {
       await processHierarchyApi.createLane(orgId, mapId, { department_id: deptId, parent_node_id: parentId })
       setShowAdd(false); setAddLanePick(false)
       await refresh()
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not add the lane.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not add the lane.' })) }
   }, [orgId, mapId, parentId, refresh])
 
   // Open the "change a lane's department" dialog (clicking the lane's name).
@@ -314,21 +314,21 @@ export default function ProcessMapExplorerPage() {
       const { updated } = await processHierarchyApi.reassignLane(orgId, mapId, lr.laneId, newDeptId)
       await refresh()
       toast.success(`Lane changed — ${updated} step${updated !== 1 ? 's' : ''} moved.`)
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not change the lane.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not change the lane.' })) }
   }, [laneRename, orgId, mapId, refresh])
   // Drag a lane's grip → persist the new top→bottom order of the department lanes.
   const onReorderLanes = useCallback(async (laneIds: string[]) => {
     try {
       await processHierarchyApi.reorderLanes(orgId, mapId, laneIds, parentId)
       await refresh()
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not reorder the lanes.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not reorder the lanes.' })) }
   }, [orgId, mapId, parentId, refresh])
   // Drag a pool's grip → persist the new top→bottom order of the pools.
   const onReorderPools = useCallback(async (pools: ProcessPool[]) => {
     try {
       await processHierarchyApi.setPoolOrder(orgId, mapId, pools, parentId)
       await refresh()
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not reorder the pools.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not reorder the pools.' })) }
   }, [orgId, mapId, parentId, refresh])
   // Remove the lane outright (only offered when it's empty).
   const removeLane = useCallback(async () => {
@@ -339,7 +339,7 @@ export default function ProcessMapExplorerPage() {
       await processHierarchyApi.deleteLane(orgId, mapId, lr.laneId)
       await refresh()
       toast.success('Lane removed.')
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not remove the lane.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not remove the lane.' })) }
   }, [laneRename, orgId, mapId, refresh])
 
   // Output rules: a decision has exactly one Yes + one No. Every other step can fan out from each
@@ -428,7 +428,7 @@ export default function ProcessMapExplorerPage() {
       setSelectedNodeId(created.id)
       // Only ask for the branch when the rule said to (a decision's very first branch).
       if (fromNodeId && newConnId && ask) setBranchPick({ mode: 'set', connId: newConnId })
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not add a step to this lane.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not add a step to this lane.' })) }
   }, [laneAdd, orgId, mapId, parentId, refresh, flow])
 
   // Drawing a line FROM a decision to an existing node → ask Yes/No before creating it.
@@ -438,7 +438,7 @@ export default function ProcessMapExplorerPage() {
     try {
       await processHierarchyApi.updateNode(orgId, mapId, nodeId, { pool, department_id: departmentId, position_x: positionX })
       await refresh()
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not move it out of the lane.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not move it out of the lane.' })) }
   }, [orgId, mapId, refresh])
 
   // A box-selected group dragged across lanes — reassign each node's pool/department (+ x/y) to
@@ -451,7 +451,7 @@ export default function ProcessMapExplorerPage() {
         await processHierarchyApi.updateNode(orgId, mapId, it.id, { pool: it.pool, department_id: it.department_id, position_x: it.position_x, position_y: it.position_y })
       }
       await refresh()
-    } catch (e: unknown) { toast.error(getErrorMessage(e, 'Could not move those to that lane.')) }
+    } catch (e: unknown) { toast.error(getErrorMessage(e, { fallback: 'Could not move those to that lane.' })) }
   }, [orgId, mapId, refresh])
 
   const onDecisionConnect = useCallback((source: string, target: string, sourceSide?: string, targetSide?: string) => {

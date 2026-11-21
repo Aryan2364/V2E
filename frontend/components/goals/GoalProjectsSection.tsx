@@ -14,7 +14,7 @@ import type { Goal, GoalCandidateProject, LinkedProject } from '@/lib/types/goal
 import { CountBadge, formatDate } from './shared'
 import { Label } from '@/components/ui/label'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 const PROJECT_STATUS_META: Record<string, { label: string; bg: string; text: string; border: string }> = {
   active: { label: 'Active', bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)' },
   on_hold: { label: 'On hold', bg: 'var(--warning-bg)', text: 'var(--warning)', border: 'var(--warning-border)' },
@@ -153,7 +153,7 @@ function ProjectRow({
       onChanged()
       addToast('Project unlinked', 'success')
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Could not unlink the project'))
+      setError(getErrorMessage(err, { fallback: 'Could not unlink the project' }))
     } finally {
       setUnlinking(false)
     }
@@ -259,7 +259,7 @@ function LinkProjectModal({
       onLinked()
       onClose()
     } catch (err: unknown) {
-      addToast(getErrorMessage(err, 'Could not link the project'), 'error')
+      addToast(getErrorMessage(err, { fallback: 'Could not link the project' }), 'error')
     } finally {
       setSaving(false)
     }

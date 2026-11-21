@@ -30,7 +30,7 @@ import Tooltip from '@/components/ui/tooltip'
 import { PageHeader } from '@/components/shell/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 import axios from 'axios'
 type Tab = 'materials' | 'assignments' | 'engagement'
 
@@ -148,7 +148,7 @@ export default function ManagePathPage() {
       setDeleteError(
         axios.isAxiosError(e) && e.response?.status === 403
           ? 'You don’t have permission to delete this course — only an administrator can.'
-          : getErrorMessage(e, 'Could not delete the course. Please try again.'),
+          : getErrorMessage(e, { fallback: 'Could not delete the course. Please try again.' }),
       )
     }
   }

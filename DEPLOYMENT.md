@@ -123,10 +123,60 @@ generate the nginx config.
 
 ---
 
+## Sign-in cookie (refresh token)
+
+The web app keeps the refresh token in an **httpOnly cookie** (`v2e_refresh`), not in
+browser storage. Things to know when deploying:
+
+- **Deploy the backend first, then the frontend.** An older frontend keeps working against
+  the new backend; the new frontend needs the new backend to set the cookie.
+- **It needs HTTPS in production.** The cookie is `Secure` whenever the container runs with
+  `NODE_ENV=production` (the Dockerfile sets it). Over plain HTTP the browser would drop it and
+  people would be signed out after 15 minutes. If an environment really is HTTP-only, set
+  `AUTH_COOKIE_SECURE=false` in its env file.
+- **Same origin.** The browser must reach `/api` on the same host as the page (the Next proxy,
+  or nginx routing `/api` to the backend). Make sure nginx passes `Set-Cookie` and `Cookie`
+  through (it does by default) and does not add a `Domain` to cookies.
+- **Nobody is signed out by the upgrade.** Each existing session moves into the cookie on its
+  next token refresh. Rolling back the frontend returns to the old behaviour, and anyone already
+  moved signs in once more.
+- **Check after deploying:** sign in, then DevTools → Application. Cookies should show
+  `v2e_refresh` as **HttpOnly** and **Secure**; Local Storage should have `access_token` and
+  **no** `refresh_token`.
+
+Full details: [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md).
+
+---
+
+## Rate limiting
+
+The backend rate-limits the **auth routes only** (`backend/src/common/rate-limit/`): sign-in,
+admin sign-in, register, password reset and change password. There is no API-wide limit yet.
+
+- **Nothing to configure in the proxy.** Every limit is counted per account (email / phone),
+  so colleagues behind one office IP never block each other.
+- **Failed sign-ins per IP:** an IP with 500 wrong sign-ins (any accounts) in 15 minutes is
+  blocked from signing in for the rest of that window. Successful sign-ins never count, so an
+  office signing in together is not affected. Code: `backend/src/common/rate-limit/failed-login.limiter.ts`.
+- **Real client IP.** The backend reads the client IP from `X-Forwarded-For`, which Caddy's
+  `reverse_proxy` sends by default and Next.js passes on. It trusts that header only from
+  proxies on loopback / private networks (`backend/src/common/http/trust-proxy.ts`); override with `TRUST_PROXY`
+  in the backend env (a hop count such as `2`, or an Express trust list). If the header ever
+  stops arriving, every user looks like one IP; the per-account limits still protect
+  sign-in either way.
+- **Keep ports 3300 and 4300 closed to the internet** (EC2 security group). Reaching the app
+  directly, past Caddy, lets a client write its own `X-Forwarded-For` and pick its IP.
+- Counts are kept in memory. That is right for one backend container; if the backend is ever
+  scaled to several, move the storage to Redis.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
+| Signed out after ~15 minutes on one environment only | The refresh-token cookie isn't being stored or sent: the site is served over HTTP while the cookie is `Secure` (set `AUTH_COOKIE_SECURE=false` for an HTTP-only environment), or a proxy strips `Set-Cookie`. See "Sign-in cookie" above. |
+| "Too many attempts" when signing in | The account hit its limit (e.g. 10 wrong passwords in 15 minutes). It clears on its own when the wait shown has passed, or when the backend restarts. See "Rate limiting" above. |
 | Actions build fails on push | Open the failed job in the Actions tab; the red step shows why (usually a compile/build error). |
 | `docker compose pull` → `denied` / `unauthorized` | Redo Part B (token needs `read:packages`; `docker login ghcr.io` again). |
 | Backend restarts over and over | `logs` it. Usually `DATABASE_URL` wrong or RDS security group not allowing EC2 (Part C.3). |

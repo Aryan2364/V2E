@@ -1,0 +1,6 @@
+# Editors that honour EditorConfig (VS Code with the extension, JetBrains, etc.) read this.
+# charset = utf-8 stops them saving a source file in Windows-1252, which breaks the dev build.
+root = true
+
+[*]
+charset = utf-8

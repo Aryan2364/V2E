@@ -135,7 +135,7 @@ export class TaskAttachmentsService {
       where: { id: taskId, organization_id: orgId, is_deleted: false },
       select: { id: true },
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
   }
 
   /** Attach a document to a task (commentId null) or one of its comments. */
@@ -158,7 +158,7 @@ export class TaskAttachmentsService {
         where: { id: commentId, organization_id: orgId, task_id: taskId, is_deleted: false },
         select: { id: true, user_id: true },
       });
-      if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+      if (!comment) throw new NotFoundException('Comment not found');
       if (comment.user_id !== userId) {
         throw new ForbiddenException('You can only attach files to your own comments.');
       }
@@ -334,7 +334,7 @@ export class TaskAttachmentsService {
         assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
       },
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
     return task;
   }
 

@@ -38,7 +38,7 @@ export class LeaveController {
     @Query('from') from: string,
     @Query('to') to: string,
   ) {
-    if (!from || !to) throw new BadRequestException('from and to query parameters are required');
+    if (!from || !to) throw new BadRequestException('Choose a start date and an end date.');
     const ids = (userIds ?? '').split(',').map((s) => s.trim()).filter(Boolean);
     return this.service.availability(orgId, ids, from, to);
   }

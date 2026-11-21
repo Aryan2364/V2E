@@ -27,7 +27,7 @@ import DatePicker from '@/components/ui/DatePicker'
 import { Label } from '@/components/ui/label'
 
 import { getInitials } from '@/lib/initials'
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 type Kpi = NonNullable<Role['kpi']>[number]
 
 const kpiColumns: ResponsiveColumn<Kpi>[] = [
@@ -321,7 +321,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
       onSaved(updated)
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Failed to save changes'))
+      setError(getErrorMessage(err, { fallback: 'Failed to save changes' }))
     } finally {
       setSaving(false)
     }
@@ -341,7 +341,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
       } else {
         // Everything else (self, primary admin, real records) is final — surface
         // the server's plain-language reason and let the user pick another path.
-        setError(getErrorMessage(err, 'Failed to delete employee.'))
+        setError(getErrorMessage(err, { fallback: 'Failed to delete employee.' }))
         setConfirmDelete(false)
       }
     } finally {

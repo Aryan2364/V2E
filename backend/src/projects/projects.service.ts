@@ -76,7 +76,7 @@ export class ProjectsService {
       where: { id: projectId, organization_id: orgId, is_deleted: false },
       include: PROJECT_INCLUDE,
     });
-    if (!p) throw new NotFoundException(`Project ${projectId} not found`);
+    if (!p) throw new NotFoundException('Project not found');
     return p;
   }
 
@@ -168,7 +168,7 @@ export class ProjectsService {
       where: { id: taskId, organization_id: orgId, is_deleted: false },
       select: { created_by_user_id: true, assignees: { where: { removed_at: null }, select: { user_id: true } } },
     });
-    if (!t) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!t) throw new NotFoundException('Task not found');
     const participants = [t.created_by_user_id, ...t.assignees.map((a) => a.user_id)];
     if (participants.includes(principal.userId)) return;
     await this.scope.assertCanActOn(orgId, principal, 'tasks.task.manage', PermissionAction.read, participants);
@@ -403,7 +403,7 @@ export class ProjectsService {
     await this.requireManagerOrEditor(orgId, projectId, userId);
 
     if ((dto.status === 'on_hold' || dto.status === 'cancelled') && !dto.status_reason?.trim()) {
-      throw new BadRequestException('status_reason is required when status is on_hold or cancelled');
+      throw new BadRequestException('Give a reason when putting a project on hold or cancelling it.');
     }
 
     const updated = await this.prisma.project.update({
@@ -573,7 +573,7 @@ export class ProjectsService {
       where: { id: milestoneId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
-    if (!milestone) throw new NotFoundException(`Milestone ${milestoneId} not found`);
+    if (!milestone) throw new NotFoundException('Milestone not found');
 
     return this.prisma.projectMilestone.update({
       where: { id: milestoneId, project_id: projectId, organization_id: orgId },
@@ -593,7 +593,7 @@ export class ProjectsService {
       where: { id: milestoneId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
-    if (!milestone) throw new NotFoundException(`Milestone ${milestoneId} not found`);
+    if (!milestone) throw new NotFoundException('Milestone not found');
     await this.prisma.projectMilestone.delete({ where: { id: milestoneId, project_id: projectId, organization_id: orgId } });
     await this.progressService.recalculateProjectProgress(projectId);
     return { message: 'Milestone deleted' };
@@ -643,7 +643,7 @@ export class ProjectsService {
     const task = await this.prisma.task.findFirst({
       where: { id: dto.task_id, organization_id: orgId, is_deleted: false },
     });
-    if (!task) throw new NotFoundException(`Task ${dto.task_id} not found`);
+    if (!task) throw new NotFoundException('Task not found');
     await this.assertCanLinkTask(orgId, principal, task.id);
 
     // Check not already linked
@@ -675,12 +675,12 @@ export class ProjectsService {
     const pt = await this.prisma.projectTask.findFirst({
       where: { id: projectTaskId, project_id: projectId, organization_id: orgId, task_id: null },
     });
-    if (!pt) throw new NotFoundException(`Pending project task ${projectTaskId} not found`);
+    if (!pt) throw new NotFoundException('Pending project task not found');
 
     const task = await this.prisma.task.findFirst({
       where: { id: taskId, organization_id: orgId, is_deleted: false },
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
     await this.assertCanLinkTask(orgId, principal, task.id);
 
     const updated = await this.prisma.projectTask.update({
@@ -698,7 +698,7 @@ export class ProjectsService {
     await this.requireManagerOrEditor(orgId, projectId, userId);
 
     const pt = await this.prisma.projectTask.findFirst({ where: { id: projectTaskId, project_id: projectId, organization_id: orgId } });
-    if (!pt) throw new NotFoundException(`Project task ${projectTaskId} not found`);
+    if (!pt) throw new NotFoundException('Project task not found');
 
     await this.prisma.projectTask.delete({ where: { id: projectTaskId, project_id: projectId, organization_id: orgId } });
     await this.progressService.recalculateProjectProgress(projectId);
@@ -761,7 +761,7 @@ export class ProjectsService {
       where: { id: depId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
-    if (!dep) throw new NotFoundException(`Dependency ${depId} not found`);
+    if (!dep) throw new NotFoundException('Dependency not found');
     await this.prisma.projectTaskDependency.delete({ where: { id: depId, project_id: projectId, organization_id: orgId } });
     await this.log(orgId, projectId, userId, 'dependency_removed', { dep_id: depId });
     return { message: 'Dependency removed' };
@@ -804,7 +804,7 @@ export class ProjectsService {
       where: { id: commentId, project_id: projectId, organization_id: orgId, is_deleted: false },
       select: { id: true, user_id: true },
     });
-    if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+    if (!comment) throw new NotFoundException('Comment not found');
     if (comment.user_id !== userId && member.role !== 'manager') {
       throw new ForbiddenException("Cannot delete another user's comment");
     }
@@ -847,7 +847,7 @@ export class ProjectsService {
       where: { id: docId, project_id: projectId, organization_id: orgId },
       select: { id: true },
     });
-    if (!doc) throw new NotFoundException(`Document ${docId} not found`);
+    if (!doc) throw new NotFoundException('Document not found');
     await this.prisma.projectDocument.delete({ where: { id: docId, project_id: projectId, organization_id: orgId } });
     return { message: 'Document removed' };
   }

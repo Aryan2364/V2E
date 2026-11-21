@@ -19,7 +19,7 @@ import { getNow } from '@/lib/clock'
 import { TERMINAL_STATUS_PHASES, type Task, type TaskChecklistItem, type TaskChecklistItemStateEntry } from '@/lib/types/tasks'
 
 import { getInitials as initials } from '@/lib/initials'
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 interface Props {
   task: Task
   orgId: string
@@ -55,7 +55,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
     } catch (e: unknown) {
       // Surface the backend's plain-English reason (e.g. the gate message) via the
       // app's own toast — never a native browser dialog.
-      const msg = getErrorMessage(e, 'Something went wrong.')
+      const msg = getErrorMessage(e, { fallback: 'Something went wrong.' })
       toast.warning(Array.isArray(msg) ? msg.join('\n') : msg)
     } finally {
       setBusy(null)

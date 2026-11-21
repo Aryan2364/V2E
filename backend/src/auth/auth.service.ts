@@ -15,6 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { SwitchOrgDto } from './dto/switch-org.dto';
 import { classifyIdentifier } from '../common/identifier.util';
+import { AUTH_MESSAGES, InvalidCredentialsException, TIMING_EQUALISER_HASH } from './auth.messages';
 import { MEMBERSHIP_ENDED_MESSAGE, ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../common/org-status.util';
 
 @Injectable()
@@ -65,18 +66,25 @@ export class AuthService {
     return { user, kind: classified.kind };
   }
 
-  private identifierNotFoundMessage(kind: 'email' | 'phone'): string {
-    return kind === 'phone'
-      ? 'Mobile number not found. Please try another number, or your email address.'
-      : 'Email address not found. Please try another email, or your phone number if registered.';
+  /**
+   * The account for these credentials, or null. Unknown account and wrong password are
+   * indistinguishable to the caller: same result, and a bcrypt comparison runs every
+   * time so the response time does not give it away either. The returned account may
+   * be deactivated; the caller checks that, after the password is known to be right.
+   * See auth.messages.ts.
+   */
+  private async verifyCredentials(identifier: string, password: string, countryCode?: string) {
+    const { user } = await this.findUserByIdentifier(identifier, countryCode);
+    const valid = await bcrypt.compare(password, user?.password_hash ?? TIMING_EQUALISER_HASH);
+    return user && valid ? user : null;
   }
 
   async login(dto: LoginDto, userAgent?: string) {
-    const { user, kind } = await this.findUserByIdentifier(dto.identifier, dto.country_code);
-    if (!user || !user.is_active) throw new UnauthorizedException(this.identifierNotFoundMessage(kind));
-
-    const valid = await bcrypt.compare(dto.password, user.password_hash);
-    if (!valid) throw new UnauthorizedException('Incorrect password. Please try again.');
+    const user = await this.verifyCredentials(dto.identifier, dto.password, dto.country_code);
+    if (!user) throw new InvalidCredentialsException();
+    // Only reached with the correct password, so saying why is safe: the person
+    // proved they own the account (auth.messages.ts).
+    if (!user.is_active) throw new UnauthorizedException(AUTH_MESSAGES.accountDeactivated);
 
     const allMemberships = await this.prisma.organizationMember.findMany({
       where: { user_id: user.id, is_active: true },
@@ -95,7 +103,7 @@ export class AuthService {
 
     if (memberships.length === 0) {
       throw new UnauthorizedException(
-        allMemberships.length > 0 ? ORG_DEACTIVATED_MESSAGE : 'No active organization membership',
+        allMemberships.length > 0 ? ORG_DEACTIVATED_MESSAGE : AUTH_MESSAGES.noOrganization,
       );
     }
 
@@ -294,13 +302,12 @@ export class AuthService {
   }
 
   async adminLogin(dto: LoginDto, userAgent?: string) {
-    const { user, kind } = await this.findUserByIdentifier(dto.identifier, dto.country_code);
-    if (!user || !user.is_active) throw new UnauthorizedException(this.identifierNotFoundMessage(kind));
-
-    const valid = await bcrypt.compare(dto.password, user.password_hash);
-    if (!valid) throw new UnauthorizedException('Incorrect password. Please try again.');
-
-    if (!user.is_super_admin) throw new UnauthorizedException('Access denied. Super administrator credentials required.');
+    // A normal account with the right password gets the same refusal: saying "not a
+    // super admin" would confirm the password is correct.
+    const user = await this.verifyCredentials(dto.identifier, dto.password, dto.country_code);
+    if (!user || !user.is_super_admin) throw new InvalidCredentialsException();
+    // A super admin with the correct password whose access was switched off.
+    if (!user.is_active) throw new UnauthorizedException(AUTH_MESSAGES.superAdminDeactivated);
 
     const tokens = await this.issueFullTokens(user.id, user.email, null, true, { userAgent });
     return { ...tokens, user: await this.buildUserPayload(user, null, false, true) };

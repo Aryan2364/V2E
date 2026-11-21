@@ -105,7 +105,7 @@ export class ProcessArtifactService {
       dto.content_body !== undefined && dto.content_body !== null;
     if (isLink === isArticle) {
       throw new BadRequestException(
-        'Provide either a url (link) or content_body (article), not both',
+        'Add either a link or an article, not both.',
       );
     }
     return this.prisma.processArtifact.create({

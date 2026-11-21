@@ -7,6 +7,7 @@ import { PasswordResetService } from './password-reset.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GcalModule } from '../gcal/gcal.module';
+import { FailedLoginLimiter } from '../common/rate-limit/failed-login.limiter';
 
 @Module({
   imports: [
@@ -24,7 +25,12 @@ import { GcalModule } from '../gcal/gcal.module';
     GcalModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PasswordResetService, JwtStrategy],
+  providers: [
+    AuthService,
+    PasswordResetService,
+    JwtStrategy,
+    FailedLoginLimiter,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

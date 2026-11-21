@@ -17,7 +17,7 @@ import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { Banner, BannerDescription } from '@/components/ui/banner'
 import { PageHeader } from '@/components/shell/page-header'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   description: z.string().optional(),
@@ -52,7 +52,7 @@ export default function NewGroupPage() {
       await createGroup(values)
       router.push('/super-admin/groups')
     } catch (err: unknown) {
-      setServerError(getErrorMessage(err, 'Could not create the group. Try again.'))
+      setServerError(getErrorMessage(err, { fallback: 'Could not create the group. Try again.' }))
     }
   }
 

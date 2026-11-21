@@ -8,6 +8,10 @@ result is that any authenticated org member can read or mutate any record in the
 org — or, when the `organization_id` filter is also missing, any record in *any*
 org — by pasting or guessing an id.
 
+> How a person *signs in* and how the session is carried (access / refresh / selection
+> tokens, the httpOnly refresh cookie) is in [AUTHENTICATION.md](AUTHENTICATION.md). This
+> file is about what a signed-in person may do.
+
 **The guards do NOT save you.** `JwtAuthGuard` proves identity, `OrgScopeGuard`
 proves the caller's active org equals the path `:orgId`, `RolesGuard` enforces only
 coarse `@RequireAdmin`/`@RequirePermission` action gates. **None of them enforce

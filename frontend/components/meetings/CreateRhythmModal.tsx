@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-body font-medium text-text-secondary mb-1'
@@ -233,7 +233,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
       onCreated(r)
       onClose()
     } catch (err: unknown) {
-      addToast(getErrorMessage(err, rhythm ? 'Could not save the recurring meeting. Try again.' : 'Could not add the recurring meeting. Try again.'), 'error')
+      addToast(getErrorMessage(err, { fallback: rhythm ? 'Could not save the recurring meeting. Try again.' : 'Could not add the recurring meeting. Try again.' }), 'error')
     } finally {
       setSaving(false)
     }

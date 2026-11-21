@@ -11,7 +11,7 @@ import { GoalStatusBadge, formatDate } from './shared'
 import { inputClass, labelClass } from './GoalFormFields'
 import { Label } from '@/components/ui/label'
 
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 /**
  * The dated record. Rows are never edited or deleted — a wrong entry is VOIDED
  * (kept, struck through, with the reason on show) and superseded by the next
@@ -162,7 +162,7 @@ function VoidModal({
       onDone()
       onClose()
     } catch (err: unknown) {
-      addToast(getErrorMessage(err, 'Could not void the check-in'), 'error')
+      addToast(getErrorMessage(err, { fallback: 'Could not void the check-in' }), 'error')
     } finally {
       setSaving(false)
     }

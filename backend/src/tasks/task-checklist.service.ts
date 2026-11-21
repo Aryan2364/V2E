@@ -33,8 +33,7 @@ export class TaskChecklistService {
     const item = await this.prisma.taskChecklist.findFirst({
       where: { id: itemId, task_id: taskId, organization_id: orgId },
     });
-    if (!item)
-      throw new NotFoundException(`Checklist item ${itemId} not found`);
+    if (!item) throw new NotFoundException('Checklist item not found');
     return { task, item };
   }
 

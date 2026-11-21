@@ -2,6 +2,10 @@ import axios from 'axios'
 
 // ─── Single-flight token refresh (cross-tab safe) ────────────────────────────
 //
+// The refresh token lives in an httpOnly cookie (set by the server, invisible to
+// scripts), so this module never sees it. It only asks the server to refresh and
+// stores the new ACCESS token.
+//
 // The refresh token rotates on every use and only a short "grace" window keeps
 // the previous one alive server-side. So if several callers refresh at once —
 // multiple browser tabs waking together, or this tab's proactive timer racing
@@ -23,7 +27,10 @@ const BASE_URL = ''
 function getAccess(): string | null {
   return typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
 }
-function getRefresh(): string | null {
+// A refresh token written to localStorage by an earlier version of the app. It is sent
+// once, in the request body, so the server can move that session into the cookie; the
+// copy is then deleted. New sign-ins never write it.
+function getLegacyRefresh(): string | null {
   return typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null
 }
 
@@ -57,17 +64,23 @@ async function doRefresh(prevAccess: string | null): Promise<string> {
     return current
   }
 
-  const rt = getRefresh()
-  if (!rt) throw new RefreshError('no_refresh_token', true)
+  // With no cookie (never signed in, signed out, or the session ended) the server
+  // answers 401, which is the definitive "session is gone" below.
+  const legacy = getLegacyRefresh()
 
   try {
-    const { data } = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, { refresh_token: rt })
+    const { data } = await axios.post(
+      `${BASE_URL}/api/v1/auth/refresh`,
+      legacy ? { refresh_token: legacy } : {},
+      { withCredentials: true, headers: { 'X-V2E-Auth': 'cookie' } },
+    )
     const access: string | undefined = data.data?.access_token ?? data.access_token
-    const newRefresh: string | undefined = data.data?.refresh_token ?? data.refresh_token
     if (!access) throw new RefreshError('refresh_failed', true)
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', access)
-      if (newRefresh) localStorage.setItem('refresh_token', newRefresh)
+      // The session now lives in the cookie, so the old copy must go: the server
+      // prefers a token in the body, and a stale one would be refused for ever.
+      if (legacy) localStorage.removeItem('refresh_token')
     }
     return access
   } catch (err) {

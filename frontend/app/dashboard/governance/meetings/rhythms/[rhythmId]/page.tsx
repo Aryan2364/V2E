@@ -19,7 +19,7 @@ import { useToast } from '@/components/ui/Toast'
 import Tooltip from '@/components/ui/tooltip'
 
 import { getInitials as initials } from '@/lib/initials'
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage } from '@/lib/api/errors'
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function cadence(r: MeetingRhythm): string {
@@ -158,7 +158,7 @@ export default function RhythmDetailPage() {
       setRhythm(updated)
       addToast(rhythm.is_active ? 'Rhythm paused' : 'Rhythm resumed', 'success')
       load()
-    } catch (e: unknown) { addToast(getErrorMessage(e, 'Failed'), 'error') }
+    } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') }
   }
   async function stop(mode: 'stop' | 'delete-future') {
     if (!rhythm) return
@@ -167,7 +167,7 @@ export default function RhythmDetailPage() {
       addToast('Rhythm stopped', 'success')
       setStopping(false)
       load()
-    } catch (e: unknown) { addToast(getErrorMessage(e, 'Failed'), 'error') }
+    } catch (e: unknown) { addToast(getErrorMessage(e, { fallback: 'Failed' }), 'error') }
   }
 
   if (loading) return <div className="p-8 text-center text-body text-text-secondary">Loading…</div>
