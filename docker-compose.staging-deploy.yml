@@ -1,0 +1,58 @@
+# Runs the PRE-BUILT staging images from GHCR. GitHub Actions copies this file to
+# the server and runs it on every green push to main (deploy-staging job in
+# .github/workflows/deploy-images.yml). Nothing is built on the server.
+#
+# Requires a .env.staging file next to this one (see .env.staging.example). It
+# MUST point at the staging database, never production's.
+#
+# Manual run on the server (IMAGE_TAG defaults to latest):
+#   docker compose -f docker-compose.staging-deploy.yml pull
+#   docker compose -f docker-compose.staging-deploy.yml up -d
+
+# Fixed project name, so staging can never be mistaken for (and replace) the
+# production containers, even when both compose files sit in the same folder.
+name: v2e-staging
+
+services:
+  backend:
+    image: ghcr.io/aryan2364/v2e-backend:${IMAGE_TAG:-latest}
+    env_file: .env.staging
+    environment:
+      PORT: 3001
+      CORS_ORIGIN: https://v2estaging.rgbindia.com
+      TZ: Asia/Kolkata
+    ports:
+      - "4301:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get({host:'127.0.0.1',port:3001,path:'/health'},r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - v2e_staging
+
+  frontend:
+    image: ghcr.io/aryan2364/v2e-frontend-staging:${IMAGE_TAG:-latest}
+    environment:
+      BACKEND_URL: http://backend:3001
+      TZ: Asia/Kolkata
+    ports:
+      - "3301:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get({host:'127.0.0.1',port:3000,path:'/'},r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - v2e_staging
+
+networks:
+  v2e_staging:
+    driver: bridge

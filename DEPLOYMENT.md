@@ -109,6 +109,81 @@ Actions tab → SSH to EC2 → `./deploy.sh`. That's it.
 
 ---
 
+## Part E — Staging deploys itself (every push to main)
+
+Every push to `main` whose checks pass is deployed automatically to
+**https://v2estaging.rgbindia.com**:
+
+```
+push/merge to main → CI (lint, types, tests, build) → build images → deploy-staging
+                                                                        │
+                       SSH to server → pull images for that commit → restart → wait healthy
+```
+
+Production does **not** change automatically. Once staging looks right,
+deploy production by hand with `./deploy.sh` (Part D), as before. If the CI
+checks fail, nothing is built and staging is not touched. If staging comes up
+unhealthy, the job fails (red X in the Actions tab) and prints the backend logs.
+
+Staging runs `docker-compose.staging-deploy.yml` (project name `v2e-staging`,
+ports 3301/4301, matching the Caddy block). The workflow copies that file to the
+server on every deploy, so you never edit it on the box.
+
+### One-time setup
+
+1. **On the server, make the staging folder and its secrets file:**
+   ```bash
+   mkdir -p ~/v2e-staging && cd ~/v2e-staging
+   nano .env.staging     # copy .env.staging.example; STAGING database only
+   ```
+   `.env.staging` needs its own `DATABASE_URL` (a staging database, **never**
+   production's: migrations run against it on every deploy), plus `JWT_SECRET`
+   and `JWT_REFRESH_SECRET`, each 32+ characters, different from each other and
+   from production's (`openssl rand -base64 48`).
+
+2. **Stop any old staging containers** holding ports 3301/4301 (for example ones
+   started from `docker-compose.staging.yml`, which built on the server):
+   ```bash
+   docker ps --filter publish=3301 --filter publish=4301
+   docker stop <ids> && docker rm <ids>
+   ```
+
+3. **Make a deploy key** (on your own computer, not the server):
+   ```bash
+   ssh-keygen -t ed25519 -f v2e-staging-deploy -N "" -C "github-actions-staging"
+   ```
+   Add the contents of `v2e-staging-deploy.pub` as a new line in
+   `~/.ssh/authorized_keys` on the server, for the user that runs Docker.
+
+4. **Get the server's host key** (so Actions can verify it is really your server):
+   ```bash
+   ssh-keyscan -H <server-ip-or-hostname>
+   ```
+
+5. **Add the secrets** in GitHub → repo → Settings → Secrets and variables →
+   Actions → New repository secret:
+
+   | Secret | Value |
+   |---|---|
+   | `STAGING_SSH_HOST` | server IP or hostname |
+   | `STAGING_SSH_USER` | the SSH user from step 3 (e.g. `ubuntu`) |
+   | `STAGING_SSH_KEY` | full contents of the private key file `v2e-staging-deploy` |
+   | `STAGING_SSH_KNOWN_HOSTS` | the output of step 4 |
+   | `STAGING_APP_DIR` | the folder from step 1, as an absolute path (e.g. `/home/ubuntu/v2e-staging`) |
+
+   Then delete the private key file from your computer.
+
+6. **Protect `main`** (recommended): Settings → Branches → Add rule for `main` →
+   "Require a pull request before merging" and "Require status checks to pass"
+   (pick `Backend` and `Frontend`). Developers then merge through pull requests,
+   and nothing reaches staging without green checks.
+
+The server's existing `docker login ghcr.io` (Part B) also covers the new
+`v2e-frontend-staging` image. To test without pushing, open Actions →
+"Build & push images" → Run workflow.
+
+---
+
 ## Ports & domains
 
 The containers publish:
