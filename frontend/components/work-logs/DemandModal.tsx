@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
+import { getErrorMessage } from '@/lib/errors'
 interface Props {
   orgId: string
   onClose: () => void
@@ -122,8 +123,8 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
       await workLogApi.createDemand(orgId, payload)
       onCreated()
       onClose()
-    } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'Could not send the log request. Try again.')
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, 'Could not send the log request. Try again.'))
     } finally {
       setSaving(false)
     }

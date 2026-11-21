@@ -29,6 +29,8 @@ import type { TransferTicketDto } from './dto/transfer-ticket.dto'
 import type { ReopenTicketDto } from './dto/reopen-ticket.dto'
 import type { CreateResolverGroupDto, UpdateResolverGroupDto } from './dto/resolver-group.dto'
 import { TicketTemplateAccessService } from './ticket-template-access.service'
+import { runExclusive } from '../common/run-exclusive';
+import { clampTake } from '../common/pagination';
 
 const TICKET_INCLUDE = {
   ticket_type: true,
@@ -810,7 +812,7 @@ export class TicketsService {
       return this.prisma.ticket.findMany({ where, include: TICKET_INCLUDE, orderBy })
     }
 
-    const take = Math.min(Math.max(pageSize ?? 25, 1), 100)
+    const take = clampTake(pageSize, 25, 100)
     const skip = (Math.max(page, 1) - 1) * take
     const [items, total] = await Promise.all([
       this.prisma.ticket.findMany({ where, include: TICKET_INCLUDE, orderBy, skip, take }),
@@ -1292,7 +1294,7 @@ export class TicketsService {
     if (page === undefined) {
       return this.prisma.ticketArchive.findMany({ where, orderBy })
     }
-    const take = Math.min(Math.max(pageSize ?? 25, 1), 100)
+    const take = clampTake(pageSize, 25, 100)
     const skip = (Math.max(page, 1) - 1) * take
     const [items, total] = await Promise.all([
       this.prisma.ticketArchive.findMany({ where, orderBy, skip, take }),
@@ -1577,9 +1579,11 @@ export class TicketsService {
 
   @Cron('0 * * * *')
   async processSlaBreaches() {
+    return runExclusive('TicketsService.processSlaBreaches', async () => {
     const now = new Date()
     const orgs = await this.prisma.organization.findMany({ where: { is_test: false }, select: { id: true } })
     for (const org of orgs) await this.processSlaForOrg(org.id, now)
+    });
   }
 
   // Org-scoped, now-injected — cron passes real now, ReplayService passes sim now.

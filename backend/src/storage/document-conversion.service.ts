@@ -5,6 +5,7 @@ import { existsSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { Injectable, Logger } from '@nestjs/common';
+import { swallow } from '../common/swallow';
 
 /**
  * Converts Office documents (ppt/pptx/doc/docx/xls/xlsx and friends) to PDF so
@@ -106,7 +107,7 @@ export class DocumentConversionService {
       this.logger.warn(`Doc→PDF conversion errored for "${originalName}": ${(err as Error).message}`);
       return null;
     } finally {
-      await rm(workDir, { recursive: true, force: true }).catch(() => undefined);
+      await rm(workDir, { recursive: true, force: true }).catch(swallow('document-conversion.convertToPdf'));
     }
   }
 
@@ -164,7 +165,7 @@ export class DocumentConversionService {
       ? expected
       : files.find((f) => f.toLowerCase().endsWith('.pdf'));
     if (!match) return null;
-    return readFile(join(dir, match)).catch(() => null);
+    return readFile(join(dir, match)).catch(swallow('document-conversion.readProducedPdf', null));
   }
 }
 

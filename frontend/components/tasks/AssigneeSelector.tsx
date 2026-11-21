@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useEligibleAssignees, type AssigneeSortMode } from './useEligibleAssignees'
 import type { EligibleAssigneeUser, SelectedAssignee } from '@/lib/types/tasks'
 
+import { getInitials } from '@/lib/initials'
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
 
 const avatarColors = [
@@ -18,9 +19,7 @@ export function avatarColor(name: string): string {
   let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return avatarColors[h % avatarColors.length]
 }
-export function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
+export { getInitials }
 
 // ─── Sort type ────────────────────────────────────────────────────────────────
 

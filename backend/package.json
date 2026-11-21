@@ -20,7 +20,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:seed:baseline": "ts-node prisma/seed.ts",
     "db:seed:default-roles": "ts-node prisma/seed-default-system-roles.ts",
-    "db:snapshot": "pg_dump \"%DATABASE_URL%\" --data-only --column-inserts --no-owner --no-privileges --exclude-table=_prisma_migrations -f prisma/seed-data.sql"
+    "db:snapshot": "pg_dump \"%DATABASE_URL%\" --data-only --column-inserts --no-owner --no-privileges --exclude-table=_prisma_migrations -f prisma/seed-data.sql",
+    "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "prepare": "node -e \"const fs=require('fs');if(fs.existsSync('../.githooks')&&fs.existsSync('../.git')){try{require('child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch(e){}}\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1077.0",

@@ -23,6 +23,7 @@ import { formatDate } from './shared'
 import { Label } from '@/components/ui/label'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
+import { getErrorMessage } from '@/lib/errors'
 const EMPTY: GoalFormState = {
   title: '',
   description: '',
@@ -214,8 +215,8 @@ export default function CreateGoalModal({
       }
       onCreated(goal)
       onClose()
-    } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not create the goal. Try again.', 'error')
+    } catch (err: unknown) {
+      addToast(getErrorMessage(err, 'Could not create the goal. Try again.'), 'error')
     } finally {
       setSaving(false)
     }

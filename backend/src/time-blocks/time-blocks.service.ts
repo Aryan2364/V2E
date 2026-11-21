@@ -4,6 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { GcalApiService } from '../gcal/gcal-api.service';
 import { GoogleAccountService } from '../gcal/google-account.service';
 import { CreateTimeBlockDto, UpdateTimeBlockDto } from './dto/time-block.dto';
+import { swallow } from '../common/swallow';
+import { runExclusive } from '../common/run-exclusive';
 
 // A Time-Block is the user's OWN availability (a named personal event, e.g.
 // "Dentist"). It is not a meeting and is never org-enumerated: every mutation is
@@ -22,7 +24,7 @@ export class TimeBlocksService {
   // The owner's blocks in a window (their calendar). Pulls fresh Google events
   // into blocks first (best-effort) so the view is the one true schedule.
   async listMine(orgId: string, userId: string, fromIso: string, toIso: string) {
-    if (fromIso && toIso) await this.importFromGoogle(userId, fromIso, toIso).catch(() => undefined);
+    if (fromIso && toIso) await this.importFromGoogle(userId, fromIso, toIso).catch(swallow('time-blocks.listMine'));
     const where: any = { user_id: userId };
     if (fromIso && toIso) {
       where.end_at = { gt: new Date(fromIso) };
@@ -217,7 +219,7 @@ export class TimeBlocksService {
     if (events.length < 250) {
       for (const b of existingGoogle) {
         if (b.google_event_id && !seen.has(b.google_event_id)) {
-          await this.prisma.timeBlock.delete({ where: { id: b.id } }).catch(() => undefined);
+          await this.prisma.timeBlock.delete({ where: { id: b.id } }).catch(swallow('time-blocks.importFromGoogle'));
         }
       }
     }
@@ -227,6 +229,7 @@ export class TimeBlocksService {
   // busy-view. Bounded forward window; no-op when Google isn't configured.
   @Cron('0 */15 * * * *')
   async syncAllConnectedUsers(): Promise<void> {
+    return runExclusive('TimeBlocksService.syncAllConnectedUsers', async () => {
     if (!this.api.isConfigured) return;
     const users = await this.prisma.user.findMany({
       where: { google_refresh_token: { not: null } },
@@ -239,7 +242,8 @@ export class TimeBlocksService {
     const fromIso = from.toISOString();
     const toIso = to.toISOString();
     for (const u of users) {
-      await this.importFromGoogle(u.id, fromIso, toIso).catch(() => undefined);
+      await this.importFromGoogle(u.id, fromIso, toIso).catch(swallow('time-blocks.syncAllConnectedUsers'));
     }
+    });
   }
 }

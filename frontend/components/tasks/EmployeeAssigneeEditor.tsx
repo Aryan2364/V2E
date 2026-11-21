@@ -18,6 +18,7 @@ import type {
   EmployeeAssigneeUser,
 } from '@/lib/types/tasks'
 
+import { getInitials } from '@/lib/initials'
 // ─── Shared visual helpers (mirror AssigneeSelector) ─────────────────────────────
 
 const avatarColors = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
@@ -26,10 +27,6 @@ function avatarColor(name: string): string {
   for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return avatarColors[h % avatarColors.length]
 }
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
-
 // Reason chip copy + style. Manual reasons are blue (an explicit human choice); rule
 // reasons are neutral slate. Text never lighter than --text-secondary (design rule).
 const REASON: Record<AssigneeReason, { label: string; manual?: boolean }> = {

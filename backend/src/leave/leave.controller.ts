@@ -11,6 +11,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { AuthRequest } from '../common/types/auth-request';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -46,25 +47,25 @@ export class LeaveController {
 
   @Get('mine')
   @ApiOperation({ summary: "The caller's own leaves" })
-  mine(@Param('orgId') orgId: string, @Request() req: any) {
+  mine(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.service.listMine(orgId, req.user.id);
   }
 
   @Post()
   @ApiOperation({ summary: 'Apply for (or declare) leave for yourself' })
-  apply(@Param('orgId') orgId: string, @Request() req: any, @Body() dto: CreateLeaveDto) {
+  apply(@Param('orgId') orgId: string, @Request() req: AuthRequest, @Body() dto: CreateLeaveDto) {
     return this.service.create(orgId, req.user.id, req.user.id, dto);
   }
 
   @Patch(':id/override')
   @ApiOperation({ summary: 'Override a rejection — take the leave anyway' })
-  override(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  override(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     return this.service.override(orgId, req.user.id, id);
   }
 
   @Patch(':id/cancel')
   @ApiOperation({ summary: 'Cancel a leave (owner or admin)' })
-  cancel(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: any) {
+  cancel(@Param('orgId') orgId: string, @Param('id') id: string, @Request() req: AuthRequest) {
     return this.service.cancel(orgId, req.user.id, id);
   }
 
@@ -74,13 +75,13 @@ export class LeaveController {
   // Work sidebar can show "Leave Approvals" to the people who actually approve leave.
   @Get('approvals/eligibility')
   @ApiOperation({ summary: 'Whether the caller approves leave for anyone under the org policy' })
-  approvalEligibility(@Param('orgId') orgId: string, @Request() req: any) {
+  approvalEligibility(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.service.approvalEligibility(orgId, req.user.id);
   }
 
   @Get('approvals')
   @ApiOperation({ summary: 'Pending requests the caller may approve' })
-  approvals(@Param('orgId') orgId: string, @Request() req: any) {
+  approvals(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.service.listApprovals(orgId, req.user.id);
   }
 
@@ -89,7 +90,7 @@ export class LeaveController {
   decide(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: DecideLeaveDto,
   ) {
     return this.service.decide(orgId, req.user.id, id, dto);
@@ -114,7 +115,7 @@ export class LeaveController {
   @Get()
   @RequireAdmin()
   @ApiOperation({ summary: 'All leaves in the org (admin)' })
-  adminList(@Param('orgId') orgId: string, @Request() req: any) {
+  adminList(@Param('orgId') orgId: string, @Request() req: AuthRequest) {
     return this.service.adminList(orgId, req.user.id);
   }
 
@@ -124,7 +125,7 @@ export class LeaveController {
   createFor(
     @Param('orgId') orgId: string,
     @Param('userId') userId: string,
-    @Request() req: any,
+    @Request() req: AuthRequest,
     @Body() dto: CreateLeaveDto,
   ) {
     return this.service.create(orgId, req.user.id, userId, dto);

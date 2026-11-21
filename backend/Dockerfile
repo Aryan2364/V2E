@@ -52,9 +52,18 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./
 RUN npm ci --omit=dev --legacy-peer-deps && npx prisma generate && npm cache clean --force
 
-COPY --from=builder /app/dist ./dist
+COPY --from=builder --chown=node:node /app/dist ./dist
+
+# Run as the unprivileged "node" user that ships with node:alpine. /app itself is
+# handed over so Prisma/npm can write temp files; installed deps stay root-owned
+# (read-only to the process), which is what we want.
+RUN chown node:node /app
+USER node
 
 EXPOSE 3001
+
+# /health is public and DB-light. start-period covers `prisma migrate deploy` at boot.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3   CMD node -e "const p=process.env.PORT||3001;require('http').get({host:'127.0.0.1',port:p,path:'/health'},r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
 
 # Unchanged: migrations are applied at boot, then the API starts. Kept as a
 # single `sh -c` so a failed migration stops the container instead of starting

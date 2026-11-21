@@ -1,0 +1,2911 @@
+{
+  "src/access-rights/access-rights.module.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/access-rights/access-visibility.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/access-rights/access-visibility.service.ts": {
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/access-rights/default-system-roles.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/access-rights/eligible-subjects.controller.ts": {
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/access-rights/permission-admin.controller.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 12
+    },
+    "prettier/prettier": {
+      "count": 15
+    }
+  },
+  "src/access-rights/permission-admin.service.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    }
+  },
+  "src/access-rights/permission-admin.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 91
+    }
+  },
+  "src/access-rights/permission-registry.ts": {
+    "prettier/prettier": {
+      "count": 52
+    }
+  },
+  "src/access-rights/permissions.service.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 20
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 25
+    },
+    "prettier/prettier": {
+      "count": 37
+    }
+  },
+  "src/access-rights/permissions.service.ts": {
+    "prettier/prettier": {
+      "count": 49
+    }
+  },
+  "src/access-rights/scope-registry.ts": {
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/access-rights/scope.service.ts": {
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/access-rights/subject-eligibility.service.ts": {
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/announcements/announcements.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 10
+    },
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/announcements/announcements.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/announcements/dto/create-announcement.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/assignee-visibility/assignee-visibility.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/assignee-visibility/assignee-visibility.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 80
+    }
+  },
+  "src/audit/audit-enrichment.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/audit/audit-retention.service.ts": {
+    "prettier/prettier": {
+      "count": 25
+    }
+  },
+  "src/audit/audit-writer.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/audit/audit.controller.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/audit/audit.module.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/audit/audit.service.ts": {
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/audit/auditable-models.ts": {
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/auth/auth.controller.security.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/auth/auth.controller.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/auth/auth.module.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    }
+  },
+  "src/auth/auth.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 77
+    }
+  },
+  "src/auth/dto/admin.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/auth/dto/change-password.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/auth/dto/forgot-password.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/auth/dto/login.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/auth/password-reset.service.ts": {
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/auth/phone-login.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/auth/sessions.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 27
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 69
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 7
+    },
+    "prettier/prettier": {
+      "count": 41
+    }
+  },
+  "src/auth/strategies/jwt.strategy.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/auth/ws-auth.service.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/auth/ws-auth.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/bulletin/bulletin.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 9
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/bulletin/bulletin.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 18
+    }
+  },
+  "src/bulletin/dto/create-board.dto.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "src/bulletin/dto/create-post.dto.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/clock/clock.controller.ts": {
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/clock/clock.service.ts": {
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/clock/replay.service.spec.ts": {
+    "@typescript-eslint/require-await": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 21
+    }
+  },
+  "src/clock/replay.service.ts": {
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/common/cls/audit-context.interceptor.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/common/cls/audit-context.service.ts": {
+    "@typescript-eslint/no-redundant-type-constituents": {
+      "count": 2
+    }
+  },
+  "src/common/decorators/current-user.decorator.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    }
+  },
+  "src/common/decorators/require-permission.decorator.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/common/encryption/encryption.service.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/common/filters/http-exception.filter.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/common/filters/http-exception.filter.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-enum-comparison": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/common/guards/org-scope.guard.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/common/guards/org-scope.guard.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 7
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/common/guards/permissions.guard.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/common/guards/roles.guard.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 8
+    }
+  },
+  "src/common/identifier.util.spec.ts": {
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/common/identifier.util.ts": {
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/common/interceptors/response.interceptor.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/common/org-members.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/common/org-status.util.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/common/recurrence/should-fire-today.spec.ts": {
+    "prettier/prettier": {
+      "count": 48
+    }
+  },
+  "src/common/recurrence/should-fire-today.ts": {
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/common/reminders/reminder-spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/common/run-exclusive.spec.ts": {
+    "@typescript-eslint/require-await": {
+      "count": 3
+    }
+  },
+  "src/common/tag-ids-query.spec.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/common/task-masters-usable.ts": {
+    "prettier/prettier": {
+      "count": 17
+    }
+  },
+  "src/common/testing/mem-table.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "@typescript-eslint/require-await": {
+      "count": 8
+    },
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/culture/culture.controller.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/culture/culture.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/delegation/delegation.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/delegation/delegation.controller.ts": {
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/delegation/delegation.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "prefer-const": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 26
+    }
+  },
+  "src/departments/departments.controller.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/departments/departments.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/departments/dto/create-department.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/ecs/company-policies.controller.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/ecs/company-policies.service.ts": {
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/ecs/dto/create-policy-item.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/ecs/dto/update-policy-item.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/employees/dto/bulk-import-employee.dto.ts": {
+    "prettier/prettier": {
+      "count": 8
+    }
+  },
+  "src/employees/dto/create-employee.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/employees/employee-import.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 144
+    }
+  },
+  "src/employees/employees.controller.ts": {
+    "prettier/prettier": {
+      "count": 16
+    }
+  },
+  "src/employees/employees.existing-phone.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/employees/employees.identity-rules.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/employees/employees.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 17
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 117
+    }
+  },
+  "src/gcal/gcal-api.service.ts": {
+    "prettier/prettier": {
+      "count": 18
+    }
+  },
+  "src/gcal/gcal.module.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/gcal/google-account.service.ts": {
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/gcal/meeting-google-sync.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 26
+    },
+    "prettier/prettier": {
+      "count": 30
+    }
+  },
+  "src/gcal/rhythm-google-sync.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 7
+    },
+    "prettier/prettier": {
+      "count": 17
+    }
+  },
+  "src/gcal/rrule.ts": {
+    "prettier/prettier": {
+      "count": 19
+    }
+  },
+  "src/goals/dto/create-check-in.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/goals/dto/goal-link.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/goals/goals.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/goals/goals.controller.ts": {
+    "prettier/prettier": {
+      "count": 19
+    }
+  },
+  "src/goals/goals.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 88
+    }
+  },
+  "src/groups/groups.controller.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/groups/groups.service.ts": {
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/holidays/dept-tree.util.spec.ts": {
+    "prettier/prettier": {
+      "count": 60
+    }
+  },
+  "src/holidays/dept-tree.util.ts": {
+    "prettier/prettier": {
+      "count": 41
+    }
+  },
+  "src/holidays/dto/bulk-import-org-holidays.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/holidays/dto/create-department-holiday.dto.ts": {
+    "prettier/prettier": {
+      "count": 16
+    }
+  },
+  "src/holidays/dto/create-individual-holiday.dto.ts": {
+    "prettier/prettier": {
+      "count": 18
+    }
+  },
+  "src/holidays/dto/create-org-holiday.dto.ts": {
+    "prettier/prettier": {
+      "count": 14
+    }
+  },
+  "src/holidays/dto/import-national-holidays.dto.ts": {
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/holidays/dto/opt-out.dto.ts": {
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/holidays/dto/update-holiday-master.dto.ts": {
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/holidays/dto/update-working-days.dto.ts": {
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/holidays/holidays.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 69
+    }
+  },
+  "src/holidays/holidays.module.ts": {
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/holidays/holidays.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 370
+    }
+  },
+  "src/holidays/nager.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 34
+    }
+  },
+  "src/knowledge/dto/update-knowledge-post.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/knowledge/knowledge.access.spec.ts": {
+    "@typescript-eslint/require-await": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/knowledge/knowledge.controller.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/knowledge/knowledge.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 5
+    },
+    "prettier/prettier": {
+      "count": 25
+    }
+  },
+  "src/learning/dto/assign-path.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/learning/dto/create-learning-item.dto.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/learning/learning-files.service.ts": {
+    "prettier/prettier": {
+      "count": 31
+    }
+  },
+  "src/learning/learning.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 12
+    }
+  },
+  "src/learning/learning.controller.ts": {
+    "prettier/prettier": {
+      "count": 29
+    }
+  },
+  "src/learning/learning.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 24
+    }
+  },
+  "src/leave/dto/leave.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/leave/leave.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "@typescript-eslint/require-await": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 18
+    }
+  },
+  "src/leave/leave.controller.ts": {
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/leave/leave.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 52
+    }
+  },
+  "src/mail/mail.service.ts": {
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/main.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/meetings/dto/meeting-actions.dto.ts": {
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/meetings/dto/outputs.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/meetings/meeting-rhythms.service.ts": {
+    "@typescript-eslint/no-redundant-type-constituents": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 13
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 28
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 12
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 71
+    }
+  },
+  "src/meetings/meetings-reports.service.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 43
+    }
+  },
+  "src/meetings/meetings.controller.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "prettier/prettier": {
+      "count": 40
+    }
+  },
+  "src/meetings/meetings.module.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/meetings/meetings.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 9
+    },
+    "prettier/prettier": {
+      "count": 164
+    }
+  },
+  "src/messaging/chat.gateway.security.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 11
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/messaging/chat.gateway.ts": {
+    "@typescript-eslint/no-misused-promises": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 13
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/messaging/messaging.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 10
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/messaging/messaging.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/notifications/notification-events.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/notifications/notifications.controller.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/notifications/notifications.gateway.security.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/notifications/notifications.gateway.ts": {
+    "@typescript-eslint/no-misused-promises": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/notifications/notifications.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 31
+    }
+  },
+  "src/notifications/push.service.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/org-identity/org-identity.controller.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/org-identity/org-identity.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    }
+  },
+  "src/organizations/dto/create-organization.dto.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/organizations/organizations.admin-email.spec.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/organizations/organizations.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/organizations/organizations.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 29
+    }
+  },
+  "src/prisma/audit.extension.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 22
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 31
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 12
+    },
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/prisma/prisma-base.service.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/prisma/prisma.module.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    }
+  },
+  "src/prisma/prisma.service.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/dto/artifact.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/dto/connection.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/dto/lane.dto.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/dto/map.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/dto/node.dto.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/dto/snapshot.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/process-access-rules.service.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 6
+    }
+  },
+  "src/process-hierarchy/process-access.service.ts": {
+    "prettier/prettier": {
+      "count": 20
+    }
+  },
+  "src/process-hierarchy/process-diff.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 22
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 40
+    },
+    "prettier/prettier": {
+      "count": 24
+    }
+  },
+  "src/process-hierarchy/process-helpers.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    }
+  },
+  "src/process-hierarchy/process-hierarchy.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 17
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 3
+    },
+    "@typescript-eslint/require-await": {
+      "count": 20
+    }
+  },
+  "src/process-hierarchy/process-hierarchy.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 49
+    },
+    "prettier/prettier": {
+      "count": 103
+    }
+  },
+  "src/process-hierarchy/process-node-copy.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 46
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 9
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 78
+    }
+  },
+  "src/process-hierarchy/process-snapshot.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 22
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 9
+    }
+  },
+  "src/process-hierarchy/process-template.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    }
+  },
+  "src/projects/dto/create-project-template.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/projects/dto/create-project.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/projects/dto/template-items.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/projects/dto/update-project-template.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/projects/dto/update-project.dto.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/projects/project-progress.service.ts": {
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/projects/project-templates.controller.ts": {
+    "prettier/prettier": {
+      "count": 8
+    }
+  },
+  "src/projects/project-templates.service.ts": {
+    "prettier/prettier": {
+      "count": 32
+    }
+  },
+  "src/projects/projects.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 17
+    }
+  },
+  "src/projects/projects.controller.ts": {
+    "prettier/prettier": {
+      "count": 29
+    }
+  },
+  "src/projects/projects.service.ts": {
+    "prettier/prettier": {
+      "count": 103
+    }
+  },
+  "src/recurring-tasks/recurring-attachments.service.ts": {
+    "prettier/prettier": {
+      "count": 14
+    }
+  },
+  "src/recurring-tasks/recurring-tasks.controller.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 26
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 4
+    },
+    "prettier/prettier": {
+      "count": 47
+    }
+  },
+  "src/recurring-tasks/recurring-tasks.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 30
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 11
+    },
+    "prettier/prettier": {
+      "count": 134
+    }
+  },
+  "src/recurring-tasks/recurring-tasks.tags.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 17
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 57
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 5
+    },
+    "@typescript-eslint/require-await": {
+      "count": 3
+    },
+    "@typescript-eslint/unbound-method": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 54
+    }
+  },
+  "src/roles/roles.controller.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/roles/roles.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 5
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/scheduler/scheduler.escalations.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/scheduler/scheduler.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 56
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 92
+    },
+    "prettier/prettier": {
+      "count": 171
+    }
+  },
+  "src/scheduler/scheduler.tags.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 14
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/scripts/audit-backfill.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/storage/document-conversion.service.ts": {
+    "no-useless-escape": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/storage/r2.service.ts": {
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/task-masters/checklist-access.service.ts": {
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/task-masters/checklist-import.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 25
+    }
+  },
+  "src/task-masters/dto/bulk-import-checklist.dto.ts": {
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/task-masters/dto/create-category.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/task-masters/dto/create-checklist-template.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/task-masters/dto/create-priority.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/task-masters/dto/create-status.dto.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/task-masters/dto/create-tag.dto.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/task-masters/dto/reorder-items.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/task-masters/dto/update-assignee-visibility.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/task-masters/dto/update-tag.dto.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/task-masters/seed-task-masters.ts": {
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/task-masters/task-masters.controller.ts": {
+    "prettier/prettier": {
+      "count": 33
+    }
+  },
+  "src/task-masters/task-masters.module.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/task-masters/task-masters.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-enum-comparison": {
+      "count": 12
+    },
+    "prettier/prettier": {
+      "count": 52
+    }
+  },
+  "src/task-masters/task-tag.constants.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/task-masters/task-tags.service.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 14
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 39
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 90
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 7
+    },
+    "@typescript-eslint/require-await": {
+      "count": 11
+    },
+    "prettier/prettier": {
+      "count": 91
+    }
+  },
+  "src/task-masters/task-tags.service.ts": {
+    "prettier/prettier": {
+      "count": 47
+    }
+  },
+  "src/tasks/active-assignee.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tasks/badge-count.util.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tasks/dto/bulk-import-task.dto.ts": {
+    "prettier/prettier": {
+      "count": 37
+    }
+  },
+  "src/tasks/dto/task-action.dto.ts": {
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/tasks/person-scorecard.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 8
+    }
+  },
+  "src/tasks/person-scorecard.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 15
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 169
+    }
+  },
+  "src/tasks/status-phase.ts": {
+    "prettier/prettier": {
+      "count": 5
+    }
+  },
+  "src/tasks/task-access.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-ageing.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/tasks/task-ageing.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 61
+    }
+  },
+  "src/tasks/task-assignee-preview.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-assignee.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-attachments.service.ts": {
+    "prettier/prettier": {
+      "count": 65
+    }
+  },
+  "src/tasks/task-calendar.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/tasks/task-calendar.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 61
+    }
+  },
+  "src/tasks/task-checklist.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 22
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-command.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 9
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 31
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 3
+    }
+  },
+  "src/tasks/task-comments.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-completion.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 17
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-create.service.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    }
+  },
+  "src/tasks/task-detail.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 11
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 43
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unused-expressions": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-export.service.ts": {
+    "@typescript-eslint/no-base-to-string": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 25
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-import.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 9
+    },
+    "prettier/prettier": {
+      "count": 96
+    }
+  },
+  "src/tasks/task-import.tags.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 11
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 23
+    }
+  },
+  "src/tasks/task-query.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 16
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 33
+    }
+  },
+  "src/tasks/task-reconcile.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 24
+    },
+    "prettier/prettier": {
+      "count": 1
+    }
+  },
+  "src/tasks/task-reports.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 14
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    }
+  },
+  "src/tasks/task-status.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 17
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    }
+  },
+  "src/tasks/tasks-analytics.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 19
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 10
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 96
+    }
+  },
+  "src/tasks/tasks-analytics.tags.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 13
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/tasks/tasks-collective.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tasks/tasks.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 38
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 16
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 42
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 23
+    },
+    "prettier/prettier": {
+      "count": 55
+    }
+  },
+  "src/tasks/tasks.controller.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 85
+    },
+    "prettier/prettier": {
+      "count": 106
+    }
+  },
+  "src/tasks/tasks.service.tags.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 77
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 64
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 123
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 7
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 36
+    },
+    "prettier/prettier": {
+      "count": 92
+    }
+  },
+  "src/tasks/testing/task-services.testing.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 3
+    }
+  },
+  "src/tickets/dto/add-comment.dto.ts": {
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/tickets/dto/assign-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tickets/dto/close-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tickets/dto/create-ticket-category.dto.ts": {
+    "prettier/prettier": {
+      "count": 24
+    }
+  },
+  "src/tickets/dto/create-ticket-priority.dto.ts": {
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/tickets/dto/create-ticket-status.dto.ts": {
+    "prettier/prettier": {
+      "count": 16
+    }
+  },
+  "src/tickets/dto/create-ticket-template.dto.ts": {
+    "prettier/prettier": {
+      "count": 46
+    }
+  },
+  "src/tickets/dto/create-ticket-type.dto.ts": {
+    "prettier/prettier": {
+      "count": 22
+    }
+  },
+  "src/tickets/dto/delete-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tickets/dto/hold-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tickets/dto/raise-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/tickets/dto/rate-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/tickets/dto/reject-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tickets/dto/reopen-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tickets/dto/resolve-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/tickets/dto/resolver-group.dto.ts": {
+    "prettier/prettier": {
+      "count": 13
+    }
+  },
+  "src/tickets/dto/transfer-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/tickets/dto/update-ticket-master.dto.ts": {
+    "prettier/prettier": {
+      "count": 11
+    }
+  },
+  "src/tickets/dto/update-ticket.dto.ts": {
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/tickets/ticket-template-access.service.ts": {
+    "prettier/prettier": {
+      "count": 34
+    }
+  },
+  "src/tickets/tickets-masters.controller.ts": {
+    "prettier/prettier": {
+      "count": 52
+    }
+  },
+  "src/tickets/tickets-reports.controller.ts": {
+    "prettier/prettier": {
+      "count": 24
+    }
+  },
+  "src/tickets/tickets.controller.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 80
+    }
+  },
+  "src/tickets/tickets.module.ts": {
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/tickets/tickets.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 671
+    }
+  },
+  "src/time-blocks/dto/time-block.dto.ts": {
+    "prettier/prettier": {
+      "count": 6
+    }
+  },
+  "src/time-blocks/time-blocks.controller.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 4
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/time-blocks/time-blocks.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 14
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 37
+    }
+  },
+  "src/users/dto/create-user.dto.ts": {
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/users/users.controller.security.spec.ts": {
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/users/users.service.identity-rules.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 10
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 39
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 22
+    }
+  },
+  "src/users/users.service.phone-edit.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 10
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 25
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 19
+    }
+  },
+  "src/users/users.service.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 12
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 10
+    },
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/work-logs/dto/work-log.dto.ts": {
+    "prettier/prettier": {
+      "count": 9
+    }
+  },
+  "src/work-logs/work-logs.access.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "@typescript-eslint/require-await": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 23
+    }
+  },
+  "src/work-logs/work-logs.controller.ts": {
+    "prettier/prettier": {
+      "count": 17
+    }
+  },
+  "src/work-logs/work-logs.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 4
+    },
+    "prettier/prettier": {
+      "count": 68
+    }
+  },
+  "src/workflows/dto/deadline-config.ts": {
+    "prettier/prettier": {
+      "count": 46
+    }
+  },
+  "src/workflows/dto/definition.dto.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 108
+    }
+  },
+  "src/workflows/dto/discussion.dto.ts": {
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 17
+    }
+  },
+  "src/workflows/dto/instance-notes.dto.ts": {
+    "prettier/prettier": {
+      "count": 2
+    }
+  },
+  "src/workflows/dto/run-actions.dto.ts": {
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 7
+    }
+  },
+  "src/workflows/dto/trigger-instance.dto.ts": {
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 3
+    }
+  },
+  "src/workflows/dto/update-master.dto.ts": {
+    "prettier/prettier": {
+      "count": 4
+    }
+  },
+  "src/workflows/dto/workflow-dto-rules.spec.ts": {
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 98
+    }
+  },
+  "src/workflows/engine/dag.spec.ts": {
+    "prettier/prettier": {
+      "count": 33
+    }
+  },
+  "src/workflows/engine/dag.ts": {
+    "prettier/prettier": {
+      "count": 52
+    }
+  },
+  "src/workflows/engine/deadline.spec.ts": {
+    "prettier/prettier": {
+      "count": 20
+    }
+  },
+  "src/workflows/engine/deadline.ts": {
+    "prettier/prettier": {
+      "count": 8
+    }
+  },
+  "src/workflows/engine/plan.spec.ts": {
+    "prettier/prettier": {
+      "count": 321
+    }
+  },
+  "src/workflows/engine/plan.ts": {
+    "prettier/prettier": {
+      "count": 146
+    }
+  },
+  "src/workflows/engine/schedule.spec.ts": {
+    "prettier/prettier": {
+      "count": 57
+    }
+  },
+  "src/workflows/engine/schedule.ts": {
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 78
+    }
+  },
+  "src/workflows/engine/snapshot.spec.ts": {
+    "prettier/prettier": {
+      "count": 79
+    }
+  },
+  "src/workflows/engine/snapshot.ts": {
+    "prettier/prettier": {
+      "count": 144
+    }
+  },
+  "src/workflows/engine/step-task.ts": {
+    "prettier/prettier": {
+      "count": 84
+    }
+  },
+  "src/workflows/engine/timing.spec.ts": {
+    "prettier/prettier": {
+      "count": 254
+    }
+  },
+  "src/workflows/engine/timing.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 279
+    }
+  },
+  "src/workflows/engine/tz.ts": {
+    "prettier/prettier": {
+      "count": 56
+    }
+  },
+  "src/workflows/instance-label.ts": {
+    "prettier/prettier": {
+      "count": 19
+    }
+  },
+  "src/workflows/run-access.ts": {
+    "prettier/prettier": {
+      "count": 38
+    }
+  },
+  "src/workflows/step-graph.spec.ts": {
+    "prettier/prettier": {
+      "count": 28
+    }
+  },
+  "src/workflows/step-graph.ts": {
+    "prettier/prettier": {
+      "count": 37
+    }
+  },
+  "src/workflows/task-workflow-info.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 22
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 8
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 22
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 3
+    },
+    "@typescript-eslint/require-await": {
+      "count": 17
+    },
+    "prettier/prettier": {
+      "count": 109
+    }
+  },
+  "src/workflows/task-workflow-info.ts": {
+    "prettier/prettier": {
+      "count": 72
+    }
+  },
+  "src/workflows/testing/compose-services.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/workflows/tracks.spec.ts": {
+    "prettier/prettier": {
+      "count": 158
+    }
+  },
+  "src/workflows/tracks.ts": {
+    "prettier/prettier": {
+      "count": 299
+    }
+  },
+  "src/workflows/workflow-access.service.ts": {
+    "prettier/prettier": {
+      "count": 75
+    }
+  },
+  "src/workflows/workflow-access.ts": {
+    "prettier/prettier": {
+      "count": 10
+    }
+  },
+  "src/workflows/workflow-definition.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 209
+    }
+  },
+  "src/workflows/workflow-definition.validation.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 3
+    },
+    "prettier/prettier": {
+      "count": 118
+    }
+  },
+  "src/workflows/workflow-discussion.service.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 25
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 9
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 41
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 6
+    },
+    "@typescript-eslint/require-await": {
+      "count": 18
+    },
+    "prettier/prettier": {
+      "count": 334
+    }
+  },
+  "src/workflows/workflow-discussion.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 7
+    },
+    "prettier/prettier": {
+      "count": 363
+    }
+  },
+  "src/workflows/workflow-engine-rows.service.ts": {
+    "prettier/prettier": {
+      "count": 121
+    }
+  },
+  "src/workflows/workflow-engine-support.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 2
+    },
+    "prettier/prettier": {
+      "count": 102
+    }
+  },
+  "src/workflows/workflow-engine.service.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 65
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 151
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 211
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 24
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "@typescript-eslint/require-await": {
+      "count": 25
+    },
+    "prettier/prettier": {
+      "count": 1012
+    }
+  },
+  "src/workflows/workflow-engine.service.ts": {
+    "prettier/prettier": {
+      "count": 102
+    }
+  },
+  "src/workflows/workflow-engine.shared.ts": {
+    "prettier/prettier": {
+      "count": 186
+    }
+  },
+  "src/workflows/workflow-files.service.spec.ts": {
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 12
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 5
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 18
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 70
+    }
+  },
+  "src/workflows/workflow-files.service.ts": {
+    "prettier/prettier": {
+      "count": 112
+    }
+  },
+  "src/workflows/workflow-instance-action.service.ts": {
+    "prettier/prettier": {
+      "count": 80
+    }
+  },
+  "src/workflows/workflow-instance-collab.service.ts": {
+    "prettier/prettier": {
+      "count": 54
+    }
+  },
+  "src/workflows/workflow-instance-query.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 4
+    },
+    "prettier/prettier": {
+      "count": 177
+    }
+  },
+  "src/workflows/workflow-lifecycle.service.ts": {
+    "prettier/prettier": {
+      "count": 46
+    }
+  },
+  "src/workflows/workflow-run-actions.service.ts": {
+    "prettier/prettier": {
+      "count": 204
+    }
+  },
+  "src/workflows/workflow-sweeps.service.ts": {
+    "prettier/prettier": {
+      "count": 144
+    }
+  },
+  "src/workflows/workflow-task-events.service.ts": {
+    "prettier/prettier": {
+      "count": 93
+    }
+  },
+  "src/workflows/workflow-template-view.service.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 159
+    }
+  },
+  "src/workflows/workflow-template.controller.ts": {
+    "prettier/prettier": {
+      "count": 82
+    }
+  },
+  "src/workflows/workflow-template.service.spec.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 64
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 107
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 346
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 667
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 43
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "@typescript-eslint/require-await": {
+      "count": 18
+    },
+    "prettier/prettier": {
+      "count": 1248
+    }
+  },
+  "src/workflows/workflow-template.types.ts": {
+    "prettier/prettier": {
+      "count": 155
+    }
+  },
+  "src/workflows/workflow-timeline.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prettier/prettier": {
+      "count": 76
+    }
+  },
+  "src/workflows/workflow-view.formatter.ts": {
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 6
+    },
+    "prettier/prettier": {
+      "count": 59
+    }
+  },
+  "src/workflows/workflows.module.ts": {
+    "prettier/prettier": {
+      "count": 22
+    }
+  }
+}

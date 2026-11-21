@@ -70,7 +70,20 @@ export class LearningService {
     return path;
   }
 
+  /** A path's target role / department must belong to this org (never a pasted foreign id). */
+  private async assertPathTargetsInOrg(orgId: string, roleId?: string | null, departmentId?: string | null) {
+    if (roleId) {
+      const role = await this.prisma.role.findFirst({ where: { id: roleId, organization_id: orgId }, select: { id: true } });
+      if (!role) throw new NotFoundException('Role not found');
+    }
+    if (departmentId) {
+      const dept = await this.prisma.department.findFirst({ where: { id: departmentId, organization_id: orgId }, select: { id: true } });
+      if (!dept) throw new NotFoundException('Department not found');
+    }
+  }
+
   async createPath(orgId: string, userId: string, dto: CreateLearningPathDto) {
+    await this.assertPathTargetsInOrg(orgId, dto.role_id, dto.department_id);
     return this.prisma.learningPath.create({
       data: {
         ...dto,
@@ -83,8 +96,9 @@ export class LearningService {
 
   async updatePath(pathId: string, orgId: string, dto: UpdateLearningPathDto) {
     await this.findOnePath(pathId, orgId);
+    await this.assertPathTargetsInOrg(orgId, dto.role_id, dto.department_id);
     return this.prisma.learningPath.update({
-      where: { id: pathId },
+      where: { id: pathId, organization_id: orgId },
       data: dto,
       include: PATH_INCLUDE,
     });
@@ -97,7 +111,7 @@ export class LearningService {
     }
 
     const updated = await this.prisma.learningPath.update({
-      where: { id: pathId },
+      where: { id: pathId, organization_id: orgId },
       data: { status: LearningPathStatus.published },
       include: PATH_INCLUDE,
     });
@@ -129,7 +143,7 @@ export class LearningService {
   async archivePath(pathId: string, orgId: string) {
     await this.findOnePath(pathId, orgId);
     return this.prisma.learningPath.update({
-      where: { id: pathId },
+      where: { id: pathId, organization_id: orgId },
       data: { status: LearningPathStatus.archived },
       include: PATH_INCLUDE,
     });
@@ -139,7 +153,7 @@ export class LearningService {
   async unarchivePath(pathId: string, orgId: string) {
     await this.findOnePath(pathId, orgId);
     return this.prisma.learningPath.update({
-      where: { id: pathId },
+      where: { id: pathId, organization_id: orgId },
       data: { status: LearningPathStatus.published },
       include: PATH_INCLUDE,
     });
@@ -158,7 +172,7 @@ export class LearningService {
     // ON DELETE RESTRICT constraint (their progress rows cascade off the assignment).
     const deleted = await this.prisma.$transaction(async (tx) => {
       await tx.learningPathAssignment.deleteMany({ where: { path_id: pathId } });
-      return tx.learningPath.delete({ where: { id: pathId } });
+      return tx.learningPath.delete({ where: { id: pathId, organization_id: orgId } });
     });
     await this.purgeItemObjects(items);
     return deleted;
@@ -193,7 +207,7 @@ export class LearningService {
     });
     if (!item) throw new NotFoundException(`Item ${itemId} not found`);
 
-    return this.prisma.learningItem.update({ where: { id: itemId }, data: dto });
+    return this.prisma.learningItem.update({ where: { id: itemId, path_id: pathId }, data: dto });
   }
 
   async deleteItem(pathId: string, itemId: string, orgId: string) {
@@ -202,7 +216,7 @@ export class LearningService {
       where: { id: itemId, path_id: pathId },
     });
     if (!item) throw new NotFoundException(`Item ${itemId} not found`);
-    const deleted = await this.prisma.learningItem.delete({ where: { id: itemId } });
+    const deleted = await this.prisma.learningItem.delete({ where: { id: itemId, path_id: pathId } });
     // Purge the file + preview objects so deleting a material also frees the R2 bytes.
     await this.purgeItemObjects([item]);
     return deleted;

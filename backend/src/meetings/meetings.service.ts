@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClockService } from '../clock/clock.service';
-import { TasksService } from '../tasks/tasks.service';
+import { TaskCreateService } from '../tasks/task-create.service';
 import { LeaveService } from '../leave/leave.service';
 import { HolidaysService } from '../holidays/holidays.service';
 import { PermissionsService, principalFromUser } from '../access-rights/permissions.service';
@@ -34,6 +34,7 @@ import {
   CreateDecisionDto,
   UpdateDecisionDto,
 } from './dto/outputs.dto';
+import { clampTake } from '../common/pagination';
 
 export interface Actor {
   id: string;
@@ -71,7 +72,7 @@ export class MeetingsService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly clock: ClockService,
-    private readonly tasks: TasksService,
+    private readonly tasks: TaskCreateService,
     private readonly leave: LeaveService,
     private readonly holidays: HolidaysService,
     private readonly permissions: PermissionsService,
@@ -236,7 +237,7 @@ export class MeetingsService {
     if (!page) {
       return this.prisma.meeting.findMany({ where, orderBy, include });
     }
-    const take = Math.min(Math.max(filters.pageSize ? parseInt(filters.pageSize, 10) : 25, 1), 100);
+    const take = clampTake(filters.pageSize, 25, 100);
     const skip = (Math.max(page, 1) - 1) * take;
     const [items, total] = await Promise.all([
       this.prisma.meeting.findMany({ where, orderBy, include, skip, take }),

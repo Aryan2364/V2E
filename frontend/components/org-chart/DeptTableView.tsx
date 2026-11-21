@@ -7,6 +7,7 @@ import { flattenDepartmentTree, type FlatDept } from '@/lib/org-chart-layout'
 import type { NodeColor } from '@/lib/org-chart-colors'
 import type { Department } from '@/lib/types'
 
+import { getInitials as initials } from '@/lib/initials'
 interface Props {
   departments: Department[]
   colorMap: Record<string, NodeColor>
@@ -14,15 +15,6 @@ interface Props {
   canEdit: boolean
   onSelect: (d: Department) => void
   onEdit: (d: Department) => void
-}
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
 }
 
 /**

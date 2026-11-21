@@ -11,6 +11,7 @@ import {
   humanizeResource,
   type AuditResourceFacet,
 } from './auditable-models';
+import { clampTake } from '../common/pagination';
 
 export type AuditAction = string; // create | update | delete | <semantic verb>
 
@@ -185,7 +186,7 @@ export class AuditService {
       ];
     }
 
-    const take = Math.min(filters.take ?? 100, 200);
+    const take = clampTake(filters.take, 100, 200);
     const skip = filters.skip ?? 0;
     const [items, total] = await Promise.all([
       this.prisma.auditLog.findMany({

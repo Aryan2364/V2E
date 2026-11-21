@@ -1,5 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
@@ -8,7 +8,13 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(',');
+  // CORS_ORIGIN is required in production (enforced by env validation); the
+  // localhost fallback is for local development only.
+  const isProd = process.env.NODE_ENV === 'production';
+  const allowedOrigins = (process.env.CORS_ORIGIN ?? (isProd ? '' : 'http://localhost:3000'))
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   app.enableCors({ origin: allowedOrigins, credentials: true });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -46,7 +52,8 @@ async function bootstrap() {
   server.keepAliveTimeout = 65_000;
   server.headersTimeout = 66_000;
 
-  console.log(`V2E API running on http://localhost:${port}`);
-  console.log(`Swagger docs: http://localhost:${port}/api/docs`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`V2E API running on http://localhost:${port}`);
+  if (!isProd) logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
 }
 bootstrap();

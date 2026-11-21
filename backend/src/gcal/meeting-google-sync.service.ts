@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GcalApiService, ExternalGEvent, PushableMeeting } from './gcal-api.service';
 import { GoogleAccountService } from './google-account.service';
+import { swallow } from '../common/swallow';
 
 // Bridges the Meetings module to Google Calendar. Every method is FAIL-SOFT:
 // a Google outage, an expired grant, or a revoked token must never block or
@@ -162,7 +163,7 @@ export class MeetingGoogleSyncService {
   private async clearMirror(meetingId: string): Promise<void> {
     await this.prisma.meeting
       .update({ where: { id: meetingId }, data: { google_event_id: null, google_ical_uid: null } })
-      .catch(() => undefined);
+      .catch(swallow('meeting-google-sync.clearMirror'));
   }
 
   // Reverse view: the user's OTHER Google commitments in a window, so they see

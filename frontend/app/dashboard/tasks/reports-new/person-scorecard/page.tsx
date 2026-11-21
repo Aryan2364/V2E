@@ -19,10 +19,7 @@ import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
-function initials(name: string) {
-  return name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '?'
-}
-
+import { getInitials as initials } from '@/lib/initials'
 function windowLabel(from: string, to: string) {
   if (!from && !to) return 'All time'
   return `${from || '…'} → ${to || '…'}`

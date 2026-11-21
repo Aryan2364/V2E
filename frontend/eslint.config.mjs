@@ -11,6 +11,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Vendored pdf.js, copied in by scripts/copy-pdfjs.mjs.
+      "public/pdf*.mjs",
     ],
   },
 ];

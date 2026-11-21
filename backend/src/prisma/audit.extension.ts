@@ -6,6 +6,7 @@ import {
   GLOBAL_IGNORE_FIELDS,
   ModelAuditConfig,
 } from '../audit/auditable-models';
+import { swallow } from '../common/swallow';
 
 /** Per-bulk-op row cap — beyond this we log one summary entry, not per-row. */
 const BULK_ROW_CAP = 200;
@@ -135,8 +136,8 @@ export function auditExtension(base: PrismaBaseService, ctx: AuditContextService
               entity_label: labelFor(result, cfg),
               changes: Object.keys(changes).length ? changes : null,
             });
-          } catch {
-            /* never let audit capture break the mutation */
+          } catch (err) {
+            swallow('audit.capture')(err);
           }
           return result;
         },
@@ -145,7 +146,7 @@ export function auditExtension(base: PrismaBaseService, ctx: AuditContextService
           const cfg = auditConfigFor(model);
           let before: any = null;
           if (cfg && ctx.isActive) {
-            before = await (base as any)[camel(model)].findUnique({ where: (args as any).where }).catch(() => null);
+            before = await (base as any)[camel(model)].findUnique({ where: (args as any).where }).catch(swallow('audit.captureBefore', null));
           }
           const result: any = await query(args);
           try {
@@ -163,8 +164,8 @@ export function auditExtension(base: PrismaBaseService, ctx: AuditContextService
               entity_label: labelFor(result, cfg) ?? labelFor(before, cfg),
               changes,
             });
-          } catch {
-            /* swallow */
+          } catch (err) {
+            swallow('audit.capture')(err);
           }
           return result;
         },
@@ -173,7 +174,7 @@ export function auditExtension(base: PrismaBaseService, ctx: AuditContextService
           const cfg = auditConfigFor(model);
           let before: any = null;
           if (cfg && ctx.isActive) {
-            before = await (base as any)[camel(model)].findUnique({ where: (args as any).where }).catch(() => null);
+            before = await (base as any)[camel(model)].findUnique({ where: (args as any).where }).catch(swallow('audit.captureBefore', null));
           }
           const result: any = await query(args);
           try {
@@ -191,8 +192,8 @@ export function auditExtension(base: PrismaBaseService, ctx: AuditContextService
               entity_label: labelFor(row, cfg),
               changes: snapshot(row, cfg, 'before'),
             });
-          } catch {
-            /* swallow */
+          } catch (err) {
+            swallow('audit.capture')(err);
           }
           return result;
         },
@@ -210,8 +211,8 @@ export function auditExtension(base: PrismaBaseService, ctx: AuditContextService
             if (!cfg || !ctx.isActive || !rows.length) return result;
             const data = ((args as any).data ?? {}) as Record<string, any>;
             captureBulk(model, cfg, rows, 'update', data, ctx, buffer);
-          } catch {
-            /* swallow */
+          } catch (err) {
+            swallow('audit.capture')(err);
           }
           return result;
         },
@@ -228,8 +229,8 @@ export function auditExtension(base: PrismaBaseService, ctx: AuditContextService
           try {
             if (!cfg || !ctx.isActive || !rows.length) return result;
             captureBulk(model, cfg, rows, 'delete', null, ctx, buffer);
-          } catch {
-            /* swallow */
+          } catch (err) {
+            swallow('audit.capture')(err);
           }
           return result;
         },

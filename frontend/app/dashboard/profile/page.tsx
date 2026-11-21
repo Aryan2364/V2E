@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 
+import { getInitials } from '@/lib/initials'
+import { getErrorMessage } from '@/lib/errors'
 const roleLevelLabel: Record<string, string> = { junior: 'Junior', mid: 'Mid', senior: 'Senior', head: 'Head' }
 
 type Kpi = NonNullable<Role['kpi']>[number]
@@ -45,9 +47,6 @@ function formatDate(dateStr?: string): string {
 }
 
 // ─── Shared look with the employee-detail page ─────────────────────────────────
-function getInitials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
 const avatarColors = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary', 'bg-text-secondary']
 function avatarColor(name: string): string {
   let hash = 0
@@ -240,8 +239,8 @@ function MyProfileContent() {
       })
       setProfile(updated)
       addToast('Personal details updated', 'success')
-    } catch (e: any) {
-      const m = e?.response?.data?.message ?? 'Could not update personal details'
+    } catch (e: unknown) {
+      const m = getErrorMessage(e, 'Could not update personal details')
       addToast(Array.isArray(m) ? m.join(', ') : m, 'error')
     } finally {
       setSavingPersonal(false)
@@ -263,8 +262,8 @@ function MyProfileContent() {
       setShowNew(false)
       setShowConfirm(false)
       addToast('Password changed', 'success')
-    } catch (e: any) {
-      const m = e?.response?.data?.message ?? 'Could not change your password'
+    } catch (e: unknown) {
+      const m = getErrorMessage(e, 'Could not change your password')
       addToast(Array.isArray(m) ? m.join(', ') : m, 'error')
     } finally {
       setSavingPassword(false)
