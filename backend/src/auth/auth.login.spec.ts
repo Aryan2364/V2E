@@ -9,7 +9,11 @@
  */
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { AUTH_MESSAGES, InvalidCredentialsException, TIMING_EQUALISER_HASH } from './auth.messages';
+import {
+  AUTH_MESSAGES,
+  InvalidCredentialsException,
+  TIMING_EQUALISER_HASH,
+} from './auth.messages';
 import { ORG_DEACTIVATED_MESSAGE } from '../common/org-status.util';
 import {
   PASSWORD,
@@ -20,13 +24,22 @@ import {
 } from '../../test/helpers/auth-test-data';
 
 const ASHA = () => makeUser();
-const login = (service: ReturnType<typeof makeAuthService>, identifier: string, password: string, country_code?: string) =>
-  service.login({ identifier, password, country_code } as any);
-const adminLogin = (service: ReturnType<typeof makeAuthService>, identifier: string, password: string) =>
-  service.adminLogin({ identifier, password } as any);
+const login = (
+  service: ReturnType<typeof makeAuthService>,
+  identifier: string,
+  password: string,
+  country_code?: string,
+) => service.login({ identifier, password, country_code });
+const adminLogin = (
+  service: ReturnType<typeof makeAuthService>,
+  identifier: string,
+  password: string,
+) => service.adminLogin({ identifier, password });
 
 /** Resolves to the exception a sign-in threw (fails the test if it succeeded). */
-async function refusal(promise: Promise<unknown>): Promise<UnauthorizedException> {
+async function refusal(
+  promise: Promise<unknown>,
+): Promise<UnauthorizedException> {
   try {
     await promise;
   } catch (err) {
@@ -51,14 +64,18 @@ describe('AuthService.login: refusals never reveal whether an account exists', (
 
   it('a real email with the wrong password gets the SAME generic message', async () => {
     const service = makeAuthService(makeAuthPrisma({ users: [ASHA()] }));
-    const err = await refusal(login(service, 'asha@acme.com', 'wrong-password'));
+    const err = await refusal(
+      login(service, 'asha@acme.com', 'wrong-password'),
+    );
     expect(err).toBeInstanceOf(InvalidCredentialsException);
     expect(err.message).toBe(AUTH_MESSAGES.invalidCredentials);
   });
 
   it('a real mobile number with the wrong password gets the same generic message', async () => {
     const service = makeAuthService(makeAuthPrisma({ users: [ASHA()] }));
-    const err = await refusal(login(service, '9876543210', 'wrong-password', '+91'));
+    const err = await refusal(
+      login(service, '9876543210', 'wrong-password', '+91'),
+    );
     expect(err).toBeInstanceOf(InvalidCredentialsException);
   });
 
@@ -71,7 +88,9 @@ describe('AuthService.login: refusals never reveal whether an account exists', (
   it('every credential refusal is a 401', async () => {
     const service = makeAuthService(makeAuthPrisma({ users: [ASHA()] }));
     const unknown = await refusal(login(service, 'nobody@acme.com', PASSWORD));
-    const wrong = await refusal(login(service, 'asha@acme.com', 'wrong-password'));
+    const wrong = await refusal(
+      login(service, 'asha@acme.com', 'wrong-password'),
+    );
     expect(unknown.getStatus()).toBe(401);
     expect(wrong.getStatus()).toBe(401);
   });
@@ -89,21 +108,28 @@ describe('AuthService.login: deactivated accounts', () => {
 
   it('with a WRONG password, gets the generic message (deactivation is not revealed)', async () => {
     const service = makeAuthService(makeAuthPrisma({ users: [deactivated()] }));
-    const err = await refusal(login(service, 'asha@acme.com', 'wrong-password'));
+    const err = await refusal(
+      login(service, 'asha@acme.com', 'wrong-password'),
+    );
     expect(err).toBeInstanceOf(InvalidCredentialsException);
   });
 });
 
 describe('AuthService.login: organizations', () => {
   it('right password but no active membership: says so (only the owner can see this)', async () => {
-    const service = makeAuthService(makeAuthPrisma({ users: [ASHA()], memberships: {} }));
+    const service = makeAuthService(
+      makeAuthPrisma({ users: [ASHA()], memberships: {} }),
+    );
     const err = await refusal(login(service, 'asha@acme.com', PASSWORD));
     expect(err.message).toBe(AUTH_MESSAGES.noOrganization);
   });
 
   it('right password but the only organization is deactivated: says the firm is deactivated', async () => {
     const service = makeAuthService(
-      makeAuthPrisma({ users: [ASHA()], memberships: { 'u-asha': [makeMembership('org-1', 'inactive')] } }),
+      makeAuthPrisma({
+        users: [ASHA()],
+        memberships: { 'u-asha': [makeMembership('org-1', 'inactive')] },
+      }),
     );
     const err = await refusal(login(service, 'asha@acme.com', PASSWORD));
     expect(err.message).toBe(ORG_DEACTIVATED_MESSAGE);
@@ -111,25 +137,37 @@ describe('AuthService.login: organizations', () => {
 
   it('one active organization: signs straight in to it', async () => {
     const service = makeAuthService(
-      makeAuthPrisma({ users: [ASHA()], memberships: { 'u-asha': [makeMembership('org-1')] } }),
+      makeAuthPrisma({
+        users: [ASHA()],
+        memberships: { 'u-asha': [makeMembership('org-1')] },
+      }),
     );
     const result: any = await login(service, 'asha@acme.com', PASSWORD);
     expect(result.access_token).toBeDefined();
     expect(result.refresh_token).toBeDefined();
-    expect(result.user).toMatchObject({ id: 'u-asha', organizationId: 'org-1', isSuperAdmin: false });
+    expect(result.user).toMatchObject({
+      id: 'u-asha',
+      organizationId: 'org-1',
+      isSuperAdmin: false,
+    });
   });
 
   it('several active organizations: asks the person to choose one', async () => {
     const service = makeAuthService(
       makeAuthPrisma({
         users: [ASHA()],
-        memberships: { 'u-asha': [makeMembership('org-1'), makeMembership('org-2')] },
+        memberships: {
+          'u-asha': [makeMembership('org-1'), makeMembership('org-2')],
+        },
       }),
     );
     const result: any = await login(service, 'asha@acme.com', PASSWORD);
     expect(result.requires_org_selection).toBe(true);
     expect(result.selection_token).toBeDefined();
-    expect(result.organizations.map((o: any) => o.id)).toEqual(['org-1', 'org-2']);
+    expect(result.organizations.map((o: any) => o.id)).toEqual([
+      'org-1',
+      'org-2',
+    ]);
     expect(result.access_token).toBeUndefined();
   });
 
@@ -137,7 +175,12 @@ describe('AuthService.login: organizations', () => {
     const service = makeAuthService(
       makeAuthPrisma({
         users: [ASHA()],
-        memberships: { 'u-asha': [makeMembership('org-1'), makeMembership('org-2', 'inactive')] },
+        memberships: {
+          'u-asha': [
+            makeMembership('org-1'),
+            makeMembership('org-2', 'inactive'),
+          ],
+        },
       }),
     );
     const result: any = await login(service, 'asha@acme.com', PASSWORD);
@@ -147,25 +190,37 @@ describe('AuthService.login: organizations', () => {
 });
 
 describe('AuthService.adminLogin', () => {
-  const superAdmin = (overrides = {}) => makeUser({ id: 'u-admin', email: 'admin@v2e.io', is_super_admin: true, ...overrides });
+  const superAdmin = (overrides = {}) =>
+    makeUser({
+      id: 'u-admin',
+      email: 'admin@v2e.io',
+      is_super_admin: true,
+      ...overrides,
+    });
 
   it('an active super admin with the right password signs in', async () => {
     const service = makeAuthService(makeAuthPrisma({ users: [superAdmin()] }));
     const result: any = await adminLogin(service, 'admin@v2e.io', PASSWORD);
     expect(result.access_token).toBeDefined();
-    expect(result.user).toMatchObject({ id: 'u-admin', isSuperAdmin: true, organizationId: null });
+    expect(result.user).toMatchObject({
+      id: 'u-admin',
+      isSuperAdmin: true,
+      organizationId: null,
+    });
   });
 
   it('an unknown email gets the generic message', async () => {
     const service = makeAuthService(makeAuthPrisma({ users: [superAdmin()] }));
-    expect(await refusal(adminLogin(service, 'nobody@v2e.io', PASSWORD))).toBeInstanceOf(InvalidCredentialsException);
+    expect(
+      await refusal(adminLogin(service, 'nobody@v2e.io', PASSWORD)),
+    ).toBeInstanceOf(InvalidCredentialsException);
   });
 
   it('a super admin with the wrong password gets the generic message', async () => {
     const service = makeAuthService(makeAuthPrisma({ users: [superAdmin()] }));
-    expect(await refusal(adminLogin(service, 'admin@v2e.io', 'wrong-password'))).toBeInstanceOf(
-      InvalidCredentialsException,
-    );
+    expect(
+      await refusal(adminLogin(service, 'admin@v2e.io', 'wrong-password')),
+    ).toBeInstanceOf(InvalidCredentialsException);
   });
 
   it('a normal user with the RIGHT password gets the generic message (does not confirm the password)', async () => {
@@ -176,17 +231,21 @@ describe('AuthService.adminLogin', () => {
   });
 
   it('a deactivated super admin with the RIGHT password is told their access was deactivated', async () => {
-    const service = makeAuthService(makeAuthPrisma({ users: [superAdmin({ is_active: false })] }));
+    const service = makeAuthService(
+      makeAuthPrisma({ users: [superAdmin({ is_active: false })] }),
+    );
     const err = await refusal(adminLogin(service, 'admin@v2e.io', PASSWORD));
     expect(err).not.toBeInstanceOf(InvalidCredentialsException);
     expect(err.message).toBe(AUTH_MESSAGES.superAdminDeactivated);
   });
 
   it('a deactivated super admin with a WRONG password gets the generic message', async () => {
-    const service = makeAuthService(makeAuthPrisma({ users: [superAdmin({ is_active: false })] }));
-    expect(await refusal(adminLogin(service, 'admin@v2e.io', 'wrong-password'))).toBeInstanceOf(
-      InvalidCredentialsException,
+    const service = makeAuthService(
+      makeAuthPrisma({ users: [superAdmin({ is_active: false })] }),
     );
+    expect(
+      await refusal(adminLogin(service, 'admin@v2e.io', 'wrong-password')),
+    ).toBeInstanceOf(InvalidCredentialsException);
   });
 });
 

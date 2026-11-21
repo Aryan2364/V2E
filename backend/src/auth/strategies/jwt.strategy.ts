@@ -5,6 +5,16 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MEMBERSHIP_ENDED_MESSAGE, ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../../common/org-status.util';
 
+/** What our signed access tokens carry (auth.service.ts signs them). */
+interface JwtPayload {
+  sub: string;
+  organizationId?: string | null;
+  /** The device session the token belongs to; absent on tokens from before sessions existed. */
+  sid?: string | null;
+  /** 'org_selection' for the short-lived token issued before an organisation is picked. */
+  type?: string;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -18,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });

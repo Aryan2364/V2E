@@ -61,9 +61,7 @@ export class TaskAssigneeService {
     const live: { user_id: string; is_cc: boolean }[] =
       (task as any).assignees ?? [];
     if (!live.some((a) => a.user_id === assigneeUserId)) {
-      throw new NotFoundException(
-        'Assignee not found on task',
-      );
+      throw new NotFoundException('Assignee not found on task');
     }
     // The "a task must keep at least one assignee" rule, the settle-the-completion-
     // maths step and the notification all live in the reconcile.

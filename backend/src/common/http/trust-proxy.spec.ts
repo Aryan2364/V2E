@@ -25,7 +25,9 @@ describe('trustProxySetting: reading TRUST_PROXY', () => {
   });
 
   it('anything else is passed through as an Express trust list', () => {
-    expect(trustProxySetting('loopback, 10.0.0.0/8')).toBe('loopback, 10.0.0.0/8');
+    expect(trustProxySetting('loopback, 10.0.0.0/8')).toBe(
+      'loopback, 10.0.0.0/8',
+    );
   });
 });
 
@@ -40,9 +42,14 @@ describe('client IP that Express resolves with the default setting', () => {
     });
     return app;
   }
-  const ipSeen = async (forwardedFor?: string, setting = trustProxySetting(undefined)) => {
+  const ipSeen = async (
+    forwardedFor?: string,
+    setting = trustProxySetting(undefined),
+  ) => {
     const call = request(appWith(setting)).get('/ip');
-    const res = await (forwardedFor ? call.set('X-Forwarded-For', forwardedFor) : call);
+    const res = await (forwardedFor
+      ? call.set('X-Forwarded-For', forwardedFor)
+      : call);
     return res.body.ip as string;
   };
 
@@ -65,6 +72,8 @@ describe('client IP that Express resolves with the default setting', () => {
   });
 
   it('with TRUST_PROXY=false the header is ignored entirely', async () => {
-    expect(await ipSeen('49.36.12.5', trustProxySetting('false'))).toMatch(/127\.0\.0\.1|::1/);
+    expect(await ipSeen('49.36.12.5', trustProxySetting('false'))).toMatch(
+      /127\.0\.0\.1|::1/,
+    );
   });
 });

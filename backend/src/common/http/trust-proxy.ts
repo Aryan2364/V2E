@@ -13,7 +13,9 @@
  */
 export const DEFAULT_TRUST_PROXY = 'loopback, linklocal, uniquelocal';
 
-export function trustProxySetting(raw: string | undefined): boolean | number | string {
+export function trustProxySetting(
+  raw: string | undefined,
+): boolean | number | string {
   const value = (raw ?? '').trim();
   if (!value) return DEFAULT_TRUST_PROXY;
   if (/^\d+$/.test(value)) return Number(value);

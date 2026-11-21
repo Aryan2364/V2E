@@ -65,7 +65,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           break;
         case 'P2003': // foreign key constraint
           status = HttpStatus.BAD_REQUEST;
-          message = 'This refers to something that no longer exists. Refresh the page and try again.';
+          message =
+            'This refers to something that no longer exists. Refresh the page and try again.';
           detail = `P2003 foreign key ${(exception.meta?.field_name as string) ?? 'unknown'}`;
           break;
         case 'P2025': // record not found
@@ -102,7 +103,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         };
       }
     } else if (status >= 400) {
-      this.logger.warn(`${request.method} ${request.url} -> ${status}: ${Array.isArray(logged) ? logged.join(', ') : logged}`);
+      this.logger.warn(
+        `${request.method} ${request.url} -> ${status}: ${Array.isArray(logged) ? logged.join(', ') : logged}`,
+      );
     }
 
     response.status(status).json({

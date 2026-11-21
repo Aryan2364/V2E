@@ -36,7 +36,10 @@ export class FailedLoginLimiter {
   assertNotBlocked(ip: string): void {
     const record = this.current(ip);
     if (!record || record.failures < FAILED_LOGIN_LIMIT) return;
-    const minutes = Math.max(1, Math.ceil((record.resetAt - Date.now()) / MINUTE));
+    const minutes = Math.max(
+      1,
+      Math.ceil((record.resetAt - Date.now()) / MINUTE),
+    );
     throw new HttpException(
       `Too many failed sign-in attempts from your network. Please wait ${minutes} minute${minutes === 1 ? '' : 's'} and try again.`,
       HttpStatus.TOO_MANY_REQUESTS,
@@ -48,7 +51,11 @@ export class FailedLoginLimiter {
     const now = Date.now();
     const record = this.current(ip);
     if (record) record.failures += 1;
-    else this.records.set(ip, { failures: 1, resetAt: now + FAILED_LOGIN_WINDOW_MS });
+    else
+      this.records.set(ip, {
+        failures: 1,
+        resetAt: now + FAILED_LOGIN_WINDOW_MS,
+      });
     this.sweep(now);
   }
 

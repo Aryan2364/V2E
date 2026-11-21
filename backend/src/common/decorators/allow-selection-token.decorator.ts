@@ -10,4 +10,5 @@ export const ALLOW_SELECTION_TOKEN_KEY = 'allowSelectionToken';
  * firm: list the person's organisations and switch into one. Every other endpoint
  * rejects it (JwtAuthGuard), so it can never be mistaken for a signed-in session.
  */
-export const AllowSelectionToken = () => SetMetadata(ALLOW_SELECTION_TOKEN_KEY, true);
+export const AllowSelectionToken = () =>
+  SetMetadata(ALLOW_SELECTION_TOKEN_KEY, true);

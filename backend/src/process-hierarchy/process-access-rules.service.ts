@@ -88,23 +88,17 @@ export class ProcessAccessRulesService {
 
   private validateAccessDto(dto: AddAccessRuleDto) {
     if (dto.kind === ProcessAccessKind.department && !dto.department_id) {
-      throw new BadRequestException(
-        'Choose a department to attach.',
-      );
+      throw new BadRequestException('Choose a department to attach.');
     }
     if (dto.kind === ProcessAccessKind.role && !dto.role_id) {
-      throw new BadRequestException(
-        'Choose a role to attach.',
-      );
+      throw new BadRequestException('Choose a role to attach.');
     }
     if (
       (dto.kind === ProcessAccessKind.user ||
         dto.kind === ProcessAccessKind.exclude_user) &&
       !dto.user_id
     ) {
-      throw new BadRequestException(
-        'Choose a person to attach.',
-      );
+      throw new BadRequestException('Choose a person to attach.');
     }
   }
 

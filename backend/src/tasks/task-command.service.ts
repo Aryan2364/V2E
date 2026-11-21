@@ -227,10 +227,7 @@ export class TaskCommandService {
       const st = await this.prisma.taskStatus.findFirst({
         where: { id: dto.status_id, organization_id: orgId, is_active: true },
       });
-      if (!st)
-        throw new BadRequestException(
-          'Status not found or inactive',
-        );
+      if (!st) throw new BadRequestException('Status not found or inactive');
       const oldType = (old as any).status?.type;
       // Terminal transitions carry business rules (proof, per-assignee completion,
       // the reopen window) — they must go through the dedicated actions, never a raw

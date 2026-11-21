@@ -13,13 +13,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { DEFAULT_ERROR_MESSAGES, defaultErrorMessage, isStockMessage } from './error-messages';
+import {
+  DEFAULT_ERROR_MESSAGES,
+  defaultErrorMessage,
+  isStockMessage,
+} from './error-messages';
 import { GlobalExceptionFilter } from '../filters/http-exception.filter';
 
 describe('defaultErrorMessage', () => {
-  it.each([400, 401, 403, 404, 409, 429, 500, 503])('has a sentence for %i', (status) => {
-    expect(defaultErrorMessage(status)).toBe(DEFAULT_ERROR_MESSAGES[status]);
-  });
+  it.each([400, 401, 403, 404, 409, 429, 500, 503])(
+    'has a sentence for %i',
+    (status) => {
+      expect(defaultErrorMessage(status)).toBe(DEFAULT_ERROR_MESSAGES[status]);
+    },
+  );
 
   it('an unlisted 4xx falls back to the 400 sentence', () => {
     expect(defaultErrorMessage(418)).toBe(DEFAULT_ERROR_MESSAGES[400]);
@@ -121,19 +128,32 @@ describe('GlobalExceptionFilter: what the user is sent', () => {
   });
 
   it('several validation messages become one paragraph of full sentences', () => {
-    filter.catch(new BadRequestException(['Enter your email address or mobile number.', 'Enter your password']), host);
-    expect(sent().message).toBe('Enter your email address or mobile number. Enter your password.');
+    filter.catch(
+      new BadRequestException([
+        'Enter your email address or mobile number.',
+        'Enter your password',
+      ]),
+      host,
+    );
+    expect(sent().message).toBe(
+      'Enter your email address or mobile number. Enter your password.',
+    );
   });
 
   it('a duplicate value (P2002) is a friendly 409 that does not name the column', () => {
-    const err = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
-      code: 'P2002',
-      clientVersion: 'test',
-      meta: { target: ['email'] },
-    });
+    const err = new Prisma.PrismaClientKnownRequestError(
+      'Unique constraint failed',
+      {
+        code: 'P2002',
+        clientVersion: 'test',
+        meta: { target: ['email'] },
+      },
+    );
     filter.catch(err, host);
     expect(sentStatus()).toBe(409);
-    expect(sent().message).toBe('This already exists. Use a different value and try again.');
+    expect(sent().message).toBe(
+      'This already exists. Use a different value and try again.',
+    );
     expect(sent().message).not.toContain('email');
   });
 
@@ -149,17 +169,28 @@ describe('GlobalExceptionFilter: what the user is sent', () => {
   });
 
   it('a missing record (P2025) is the plain 404 sentence', () => {
-    const err = new Prisma.PrismaClientKnownRequestError('Record to update not found', {
-      code: 'P2025',
-      clientVersion: 'test',
-    });
+    const err = new Prisma.PrismaClientKnownRequestError(
+      'Record to update not found',
+      {
+        code: 'P2025',
+        clientVersion: 'test',
+      },
+    );
     filter.catch(err, host);
     expect(sentStatus()).toBe(404);
     expect(sent().message).toBe(DEFAULT_ERROR_MESSAGES[404]);
   });
 
   it('a 429 from the rate limiter keeps its own wait-time message', () => {
-    filter.catch(new HttpException('Too many attempts. Please wait 15 minutes and try again.', 429), host);
-    expect(sent().message).toBe('Too many attempts. Please wait 15 minutes and try again.');
+    filter.catch(
+      new HttpException(
+        'Too many attempts. Please wait 15 minutes and try again.',
+        429,
+      ),
+      host,
+    );
+    expect(sent().message).toBe(
+      'Too many attempts. Please wait 15 minutes and try again.',
+    );
   });
 });

@@ -25,7 +25,12 @@ import { FailedLoginLimiter } from '../common/rate-limit/failed-login.limiter';
     GcalModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PasswordResetService, JwtStrategy, FailedLoginLimiter],
+  providers: [
+    AuthService,
+    PasswordResetService,
+    JwtStrategy,
+    FailedLoginLimiter,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

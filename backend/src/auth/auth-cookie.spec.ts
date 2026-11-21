@@ -18,9 +18,9 @@ const res = () => ({ cookie: jest.fn(), clearCookie: jest.fn() });
 
 /** A JWT-shaped token whose payload expires `secondsFromNow` from now. */
 function tokenExpiringIn(secondsFromNow: number) {
-  const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + secondsFromNow })).toString(
-    'base64url',
-  );
+  const payload = Buffer.from(
+    JSON.stringify({ exp: Math.floor(Date.now() / 1000) + secondsFromNow }),
+  ).toString('base64url');
   return `header.${payload}.signature`;
 }
 
@@ -35,11 +35,17 @@ describe('isCookieMode', () => {
 
 describe('readRefreshCookie', () => {
   it('reads the refresh cookie among other cookies', () => {
-    expect(readRefreshCookie(req({ cookie: `theme=dark; ${REFRESH_COOKIE}=abc.def; lang=en` }))).toBe('abc.def');
+    expect(
+      readRefreshCookie(
+        req({ cookie: `theme=dark; ${REFRESH_COOKIE}=abc.def; lang=en` }),
+      ),
+    ).toBe('abc.def');
   });
 
   it('decodes an URL-encoded value', () => {
-    expect(readRefreshCookie(req({ cookie: `${REFRESH_COOKIE}=a%2Bb` }))).toBe('a+b');
+    expect(readRefreshCookie(req({ cookie: `${REFRESH_COOKIE}=a%2Bb` }))).toBe(
+      'a+b',
+    );
   });
 
   it('returns null when there is no cookie header, no refresh cookie, or an empty one', () => {
@@ -49,11 +55,15 @@ describe('readRefreshCookie', () => {
   });
 
   it('does not match a cookie whose name only starts the same', () => {
-    expect(readRefreshCookie(req({ cookie: `${REFRESH_COOKIE}_old=stale` }))).toBeNull();
+    expect(
+      readRefreshCookie(req({ cookie: `${REFRESH_COOKIE}_old=stale` })),
+    ).toBeNull();
   });
 
   it('returns null for a malformed encoded value instead of throwing', () => {
-    expect(readRefreshCookie(req({ cookie: `${REFRESH_COOKIE}=%E0%A4%A` }))).toBeNull();
+    expect(
+      readRefreshCookie(req({ cookie: `${REFRESH_COOKIE}=%E0%A4%A` })),
+    ).toBeNull();
   });
 });
 
@@ -69,28 +79,44 @@ describe('setRefreshCookie', () => {
     const [name, value, options] = r.cookie.mock.calls[0];
     expect(name).toBe(REFRESH_COOKIE);
     expect(value).toContain('header.');
-    expect(options).toMatchObject({ httpOnly: true, sameSite: 'strict', path: '/api/v1/auth' });
+    expect(options).toMatchObject({
+      httpOnly: true,
+      sameSite: 'strict',
+      path: '/api/v1/auth',
+    });
     expect(options.maxAge).toBeGreaterThan(3590 * 1000);
     expect(options.maxAge).toBeLessThanOrEqual(3600 * 1000);
     expect(options.domain).toBeUndefined(); // host-only: no sibling subdomain can read it
   });
 
   it('is Secure in production', () => {
-    process.env = { ...OLD_ENV, NODE_ENV: 'production', AUTH_COOKIE_SECURE: '' };
+    process.env = {
+      ...OLD_ENV,
+      NODE_ENV: 'production',
+      AUTH_COOKIE_SECURE: '',
+    };
     const r = res();
     setRefreshCookie(r as any, tokenExpiringIn(60));
     expect(r.cookie.mock.calls[0][2].secure).toBe(true);
   });
 
   it('is not Secure in local development (plain HTTP)', () => {
-    process.env = { ...OLD_ENV, NODE_ENV: 'development', AUTH_COOKIE_SECURE: '' };
+    process.env = {
+      ...OLD_ENV,
+      NODE_ENV: 'development',
+      AUTH_COOKIE_SECURE: '',
+    };
     const r = res();
     setRefreshCookie(r as any, tokenExpiringIn(60));
     expect(r.cookie.mock.calls[0][2].secure).toBe(false);
   });
 
   it('AUTH_COOKIE_SECURE overrides the environment default', () => {
-    process.env = { ...OLD_ENV, NODE_ENV: 'production', AUTH_COOKIE_SECURE: 'false' };
+    process.env = {
+      ...OLD_ENV,
+      NODE_ENV: 'production',
+      AUTH_COOKIE_SECURE: 'false',
+    };
     const r = res();
     setRefreshCookie(r as any, tokenExpiringIn(60));
     expect(r.cookie.mock.calls[0][2].secure).toBe(false);
@@ -104,11 +130,19 @@ describe('setRefreshCookie', () => {
 });
 
 describe('withRefreshCookie', () => {
-  const tokens = () => ({ access_token: 'access', refresh_token: tokenExpiringIn(3600), user: { id: 'u1' } });
+  const tokens = () => ({
+    access_token: 'access',
+    refresh_token: tokenExpiringIn(3600),
+    user: { id: 'u1' },
+  });
 
   it('cookie mode: sets the cookie and leaves the refresh token OUT of the body', () => {
     const r = res();
-    const body = withRefreshCookie(req({ [AUTH_MODE_HEADER]: 'cookie' }), r as any, tokens());
+    const body = withRefreshCookie(
+      req({ [AUTH_MODE_HEADER]: 'cookie' }),
+      r as any,
+      tokens(),
+    );
     expect(r.cookie).toHaveBeenCalledTimes(1);
     expect(body).not.toHaveProperty('refresh_token');
     expect(body).toMatchObject({ access_token: 'access', user: { id: 'u1' } });
@@ -125,8 +159,15 @@ describe('withRefreshCookie', () => {
   it('cookie mode with no refresh token (organisation picker): clears any old cookie', () => {
     const r = res();
     const result = { requires_org_selection: true, selection_token: 'sel' };
-    const body = withRefreshCookie(req({ [AUTH_MODE_HEADER]: 'cookie' }), r as any, result);
-    expect(r.clearCookie).toHaveBeenCalledWith(REFRESH_COOKIE, expect.objectContaining({ path: '/api/v1/auth' }));
+    const body = withRefreshCookie(
+      req({ [AUTH_MODE_HEADER]: 'cookie' }),
+      r as any,
+      result,
+    );
+    expect(r.clearCookie).toHaveBeenCalledWith(
+      REFRESH_COOKIE,
+      expect.objectContaining({ path: '/api/v1/auth' }),
+    );
     expect(body).toEqual(result);
   });
 });
@@ -137,7 +178,11 @@ describe('clearRefreshCookie', () => {
     clearRefreshCookie(r as any);
     expect(r.clearCookie).toHaveBeenCalledWith(
       REFRESH_COOKIE,
-      expect.objectContaining({ httpOnly: true, sameSite: 'strict', path: '/api/v1/auth' }),
+      expect.objectContaining({
+        httpOnly: true,
+        sameSite: 'strict',
+        path: '/api/v1/auth',
+      }),
     );
   });
 });

@@ -16,12 +16,16 @@ import * as bcrypt from 'bcryptjs';
  * them, so they reveal nothing to anyone guessing.
  */
 export const AUTH_MESSAGES = {
-  invalidCredentials: 'The email, mobile number or password is not right. Check them and try again.',
-  accountDeactivated: 'Your account has been deactivated. Please contact your administrator.',
+  invalidCredentials:
+    'The email, mobile number or password is not right. Check them and try again.',
+  accountDeactivated:
+    'Your account has been deactivated. Please contact your administrator.',
   superAdminDeactivated:
     'Your super admin access has been deactivated by another super admin. Please contact them to restore it.',
-  noOrganization: 'You are not a member of any active organization yet. Ask your administrator to add you.',
-  resetCodeSent: 'If an account uses this email, we have sent a 6-digit code to it.',
+  noOrganization:
+    'You are not a member of any active organization yet. Ask your administrator to add you.',
+  resetCodeSent:
+    'If an account uses this email, we have sent a 6-digit code to it.',
 } as const;
 
 /**
@@ -41,4 +45,7 @@ export class InvalidCredentialsException extends UnauthorizedException {
  * account matched. Without it, "unknown email" answers in ~1 ms and "wrong password"
  * in ~250 ms, and that difference alone reveals which accounts exist.
  */
-export const TIMING_EQUALISER_HASH = bcrypt.hashSync('timing-equaliser-not-a-password', 12);
+export const TIMING_EQUALISER_HASH = bcrypt.hashSync(
+  'timing-equaliser-not-a-password',
+  12,
+);

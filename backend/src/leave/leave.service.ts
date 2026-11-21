@@ -278,7 +278,9 @@ export class LeaveService {
       throw new BadRequestException('Enter a valid start date and end date.');
     }
     if (end.getTime() < start.getTime()) {
-      throw new BadRequestException('The end date cannot be before the start date.');
+      throw new BadRequestException(
+        'The end date cannot be before the start date.',
+      );
     }
 
     const cfg = await this.getConfig(orgId);

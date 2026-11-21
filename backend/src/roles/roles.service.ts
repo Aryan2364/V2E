@@ -59,9 +59,7 @@ export class RolesService {
     });
 
     if (!department) {
-      throw new NotFoundException(
-        'Department not found in this organization',
-      );
+      throw new NotFoundException('Department not found in this organization');
     }
 
     const titleTrimmed = dto.title.trim();

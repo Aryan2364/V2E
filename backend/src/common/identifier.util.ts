@@ -26,7 +26,9 @@ export function normalizePhone(raw: string | null | undefined): string {
  * letters inside a number; they can only be a typo or someone probing.
  */
 const PHONE_INPUT = /^[\d\s().+-]+$/;
-export function isWellFormedPhoneInput(raw: string | null | undefined): boolean {
+export function isWellFormedPhoneInput(
+  raw: string | null | undefined,
+): boolean {
   const v = (raw ?? '').trim();
   return PHONE_INPUT.test(v) && /\d/.test(v);
 }
@@ -84,7 +86,8 @@ export function classifyIdentifier(
   const cc = (countryCode ?? '').trim() || DEFAULT_COUNTRY_CODE;
   // Not a well-formed number (letters, symbols, no digits): give it NO value, which
   // every caller reads as "no such account" and skips the lookup.
-  if (!isWellFormedPhoneInput(trimmed)) return { kind: 'phone', countryCode: cc, value: '' };
+  if (!isWellFormedPhoneInput(trimmed))
+    return { kind: 'phone', countryCode: cc, value: '' };
   return { kind: 'phone', countryCode: cc, value: normalizeNationalNumber(trimmed, cc) };
 }
 

@@ -31,9 +31,17 @@ export const AUTH_RATE_LIMIT = 'v2e:auth-rate-limit';
  */
 export function AuthRateLimit(opts: AuthRateLimitOptions) {
   const throttle: Record<string, { limit: number; ttl: number }> = {};
-  if (opts.perIp) throttle.auth = { limit: opts.perIp.limit, ttl: opts.perIp.ttl };
-  if (opts.perAccount) throttle.account = { limit: opts.perAccount.limit, ttl: opts.perAccount.ttl };
-  return applyDecorators(SetMetadata(AUTH_RATE_LIMIT, opts), Throttle(throttle));
+  if (opts.perIp)
+    throttle.auth = { limit: opts.perIp.limit, ttl: opts.perIp.ttl };
+  if (opts.perAccount)
+    throttle.account = {
+      limit: opts.perAccount.limit,
+      ttl: opts.perAccount.ttl,
+    };
+  return applyDecorators(
+    SetMetadata(AUTH_RATE_LIMIT, opts),
+    Throttle(throttle),
+  );
 }
 
 export const MINUTE = 60_000;

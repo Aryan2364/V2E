@@ -1,4 +1,8 @@
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { ALLOW_SELECTION_TOKEN_KEY } from '../decorators/allow-selection-token.decorator';
@@ -19,13 +23,27 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * Endpoints that really are part of choosing a firm opt in with
    * @AllowSelectionToken().
    */
-  handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
-    const authenticated = super.handleRequest(err, user, info, context, status);
-    if (authenticated?.isSelectionToken) {
-      const allowed = this.reflector.getAllAndOverride<boolean>(ALLOW_SELECTION_TOKEN_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
+  handleRequest<TUser = any>(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+    status?: any,
+  ): TUser {
+    const authenticated = super.handleRequest<TUser>(
+      err,
+      user,
+      info,
+      context,
+      status,
+    );
+    if (
+      (authenticated as { isSelectionToken?: boolean } | null)?.isSelectionToken
+    ) {
+      const allowed = this.reflector.getAllAndOverride<boolean>(
+        ALLOW_SELECTION_TOKEN_KEY,
+        [context.getHandler(), context.getClass()],
+      );
       if (!allowed) {
         throw new UnauthorizedException('Choose an organisation to continue.');
       }

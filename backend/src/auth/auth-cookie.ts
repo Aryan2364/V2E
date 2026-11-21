@@ -61,8 +61,13 @@ export function readRefreshCookie(req: Request): string | null {
 /** The token's own expiry in ms from now, so the cookie lives exactly as long as the token. */
 function lifetimeMs(refreshToken: string): number {
   try {
-    const payload = JSON.parse(Buffer.from(refreshToken.split('.')[1], 'base64url').toString('utf8'));
-    if (typeof payload.exp === 'number') return Math.max(0, payload.exp * 1000 - Date.now());
+    const payload = JSON.parse(
+      Buffer.from(refreshToken.split('.')[1], 'base64url').toString('utf8'),
+    ) as {
+      exp?: unknown;
+    } | null;
+    if (typeof payload?.exp === 'number')
+      return Math.max(0, payload.exp * 1000 - Date.now());
   } catch {
     /* fall through */
   }
@@ -103,7 +108,8 @@ export function withRefreshCookie<T extends Record<string, any>>(
   if (!isCookieMode(req)) return result;
   if (typeof result?.refresh_token === 'string') {
     setRefreshCookie(res, result.refresh_token);
-    const { refresh_token: _omitted, ...rest } = result;
+    const rest = { ...result };
+    delete rest.refresh_token;
     return rest;
   }
   clearRefreshCookie(res);

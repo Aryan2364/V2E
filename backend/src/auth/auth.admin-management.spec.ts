@@ -6,12 +6,27 @@
  * The UI already hides "deactivate yourself" and disables "revoke" for yourself and
  * for the last admin; these checks are the backend safety net for direct API calls.
  */
-import { ConflictException, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { makeAuthPrisma, makeAuthService, makeUser } from '../../test/helpers/auth-test-data';
+import {
+  makeAuthPrisma,
+  makeAuthService,
+  makeUser,
+} from '../../test/helpers/auth-test-data';
 
 const admin = (id: string, overrides = {}) =>
-  makeUser({ id, email: `${id}@v2e.io`, phone: null, is_super_admin: true, ...overrides });
+  makeUser({
+    id,
+    email: `${id}@v2e.io`,
+    phone: null,
+    is_super_admin: true,
+    ...overrides,
+  });
 
 function setup(users = [admin('a1'), admin('a2'), makeUser()]) {
   const prisma = makeAuthPrisma({ users });
@@ -38,24 +53,42 @@ describe('listAdmins', () => {
 describe('createAdmin', () => {
   it('creates a new super admin with a hashed password', async () => {
     const { service, users } = setup();
-    await service.createAdmin({ name: 'New', email: 'new@v2e.io', password: 'strong-pass-1' });
+    await service.createAdmin({
+      name: 'New',
+      email: 'new@v2e.io',
+      password: 'strong-pass-1',
+    });
     const created = users.find((u: any) => u.email === 'new@v2e.io')!;
     expect(created.is_super_admin).toBe(true);
     expect(created.password_hash).not.toBe('strong-pass-1');
-    expect(await bcrypt.compare('strong-pass-1', created.password_hash)).toBe(true);
+    expect(await bcrypt.compare('strong-pass-1', created.password_hash)).toBe(
+      true,
+    );
   });
 
   it('promotes an existing normal user instead of creating a duplicate account', async () => {
     const { service, users } = setup();
     const before = users.length;
-    await service.createAdmin({ name: 'Asha', email: 'asha@acme.com', password: 'ignored-pass' });
+    await service.createAdmin({
+      name: 'Asha',
+      email: 'asha@acme.com',
+      password: 'ignored-pass',
+    });
     expect(users).toHaveLength(before);
-    expect(users.find((u: any) => u.email === 'asha@acme.com')!.is_super_admin).toBe(true);
+    expect(
+      users.find((u: any) => u.email === 'asha@acme.com')!.is_super_admin,
+    ).toBe(true);
   });
 
   it('refuses an email that is already a super admin', async () => {
     const { service } = setup();
-    const err = await refusal(service.createAdmin({ name: 'Dup', email: 'a1@v2e.io', password: 'x-pass-123' }));
+    const err = await refusal(
+      service.createAdmin({
+        name: 'Dup',
+        email: 'a1@v2e.io',
+        password: 'x-pass-123',
+      }),
+    );
     expect(err).toBeInstanceOf(ConflictException);
     expect(err.message).toBe('This email is already a super administrator.');
   });
@@ -69,7 +102,10 @@ describe('toggleAdmin (activate / deactivate)', () => {
   });
 
   it('reactivates a deactivated super admin', async () => {
-    const { service, users } = setup([admin('a1'), admin('a2', { is_active: false })]);
+    const { service, users } = setup([
+      admin('a1'),
+      admin('a2', { is_active: false }),
+    ]);
     await service.toggleAdmin('a2', 'a1', true);
     expect(users.find((u: any) => u.id === 'a2')!.is_active).toBe(true);
   });
@@ -110,7 +146,9 @@ describe('revokeAdmin', () => {
     const { service, users } = setup([admin('a1'), makeUser()]);
     const err = await refusal(service.revokeAdmin('a1', 'someone-else'));
     expect(err).toBeInstanceOf(ForbiddenException);
-    expect(err.message).toBe('At least one super administrator account is required at all times.');
+    expect(err.message).toBe(
+      'At least one super administrator account is required at all times.',
+    );
     expect(users.find((u: any) => u.id === 'a1')!.is_super_admin).toBe(true);
   });
 
@@ -123,35 +161,60 @@ describe('revokeAdmin', () => {
 describe('updateAdmin', () => {
   it('updates name, email and password', async () => {
     const { service, users } = setup();
-    await service.updateAdmin('a2', { name: '  Renamed ', email: ' renamed@v2e.io ', password: 'new-pass-123' });
+    await service.updateAdmin('a2', {
+      name: '  Renamed ',
+      email: ' renamed@v2e.io ',
+      password: 'new-pass-123',
+    });
     const updated = users.find((u: any) => u.id === 'a2')!;
     expect(updated.name).toBe('Renamed');
     expect(updated.email).toBe('renamed@v2e.io');
-    expect(await bcrypt.compare('new-pass-123', updated.password_hash)).toBe(true);
+    expect(await bcrypt.compare('new-pass-123', updated.password_hash)).toBe(
+      true,
+    );
   });
 
   it('requires both an email and a password', async () => {
     const { service } = setup();
-    const err = await refusal(service.updateAdmin('a2', { email: '', password: '' }));
+    const err = await refusal(
+      service.updateAdmin('a2', { email: '', password: '' }),
+    );
     expect(err).toBeInstanceOf(BadRequestException);
-    expect(err.message).toBe('Email address and password are required to save changes.');
+    expect(err.message).toBe(
+      'Email address and password are required to save changes.',
+    );
   });
 
   it('refuses an email already used by another account', async () => {
     const { service } = setup();
-    const err = await refusal(service.updateAdmin('a2', { email: 'asha@acme.com', password: 'new-pass-123' }));
+    const err = await refusal(
+      service.updateAdmin('a2', {
+        email: 'asha@acme.com',
+        password: 'new-pass-123',
+      }),
+    );
     expect(err).toBeInstanceOf(ConflictException);
     expect(err.message).toBe('This email is already taken.');
   });
 
   it('keeping the same email is allowed', async () => {
     const { service } = setup();
-    await expect(service.updateAdmin('a2', { email: 'a2@v2e.io', password: 'new-pass-123' })).resolves.toBeDefined();
+    await expect(
+      service.updateAdmin('a2', {
+        email: 'a2@v2e.io',
+        password: 'new-pass-123',
+      }),
+    ).resolves.toBeDefined();
   });
 
   it('refuses an id that is not a super admin', async () => {
     const { service } = setup();
-    const err = await refusal(service.updateAdmin('u-asha', { email: 'x@v2e.io', password: 'new-pass-123' }));
+    const err = await refusal(
+      service.updateAdmin('u-asha', {
+        email: 'x@v2e.io',
+        password: 'new-pass-123',
+      }),
+    );
     expect(err).toBeInstanceOf(NotFoundException);
     expect(err.message).toBe('Admin user not found.');
   });

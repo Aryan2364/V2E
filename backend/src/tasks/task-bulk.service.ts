@@ -456,7 +456,9 @@ export class TaskBulkService {
 
   async assertTagIdsInOrg(orgId: string, tagIds: string[]): Promise<string[]> {
     if (!Array.isArray(tagIds) || tagIds.some((id) => typeof id !== 'string')) {
-      throw new BadRequestException('The tags are not in a valid format. Refresh the page and try again.');
+      throw new BadRequestException(
+        'The tags are not in a valid format. Refresh the page and try again.',
+      );
     }
     const ids = [...new Set(tagIds.map((id) => id.trim()).filter(Boolean))];
     if (ids.length > MAX_TAG_FILTER_IDS) {

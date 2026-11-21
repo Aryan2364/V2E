@@ -281,8 +281,7 @@ export class TaskStatusService {
     const st = await this.prisma.taskStatus.findFirst({
       where: { id: statusId, organization_id: orgId, is_active: true },
     });
-    if (!st)
-      throw new BadRequestException('Status not found or inactive');
+    if (!st) throw new BadRequestException('Status not found or inactive');
     if (isTerminal(st.type)) {
       throw new BadRequestException(
         'To finish a part, use Complete — the status control only moves between open states.',
@@ -488,8 +487,7 @@ export class TaskStatusService {
     const st = await this.prisma.taskStatus.findFirst({
       where: { id: statusId, organization_id: orgId, is_active: true },
     });
-    if (!st)
-      throw new BadRequestException('Status not found or inactive');
+    if (!st) throw new BadRequestException('Status not found or inactive');
     if (isTerminal(st.type)) {
       throw new BadRequestException(
         'To close a task, use the Complete action — the status control only moves between open states.',

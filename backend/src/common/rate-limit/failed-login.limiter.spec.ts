@@ -4,7 +4,11 @@
  * ends. Uses fake timers to move the clock instead of waiting.
  */
 import { HttpException } from '@nestjs/common';
-import { FAILED_LOGIN_LIMIT, FAILED_LOGIN_WINDOW_MS, FailedLoginLimiter } from './failed-login.limiter';
+import {
+  FAILED_LOGIN_LIMIT,
+  FAILED_LOGIN_WINDOW_MS,
+  FailedLoginLimiter,
+} from './failed-login.limiter';
 
 const MINUTE = 60_000;
 
@@ -12,7 +16,10 @@ function fail(limiter: FailedLoginLimiter, ip: string, times: number) {
   for (let i = 0; i < times; i++) limiter.recordFailure(ip);
 }
 
-function blockError(limiter: FailedLoginLimiter, ip: string): HttpException | null {
+function blockError(
+  limiter: FailedLoginLimiter,
+  ip: string,
+): HttpException | null {
   try {
     limiter.assertNotBlocked(ip);
     return null;
@@ -65,9 +72,13 @@ describe('FailedLoginLimiter', () => {
     const limiter = new FailedLoginLimiter();
     fail(limiter, '203.0.113.1', FAILED_LOGIN_LIMIT);
     jest.advanceTimersByTime(10 * MINUTE);
-    expect(blockError(limiter, '203.0.113.1')!.message).toContain('Please wait 5 minutes');
+    expect(blockError(limiter, '203.0.113.1')!.message).toContain(
+      'Please wait 5 minutes',
+    );
     jest.advanceTimersByTime(4 * MINUTE + 30_000);
-    expect(blockError(limiter, '203.0.113.1')!.message).toContain('Please wait 1 minute and');
+    expect(blockError(limiter, '203.0.113.1')!.message).toContain(
+      'Please wait 1 minute and',
+    );
   });
 
   it('the block ends when the window ends, and counting starts again from zero', () => {
