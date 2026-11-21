@@ -81,11 +81,9 @@ export class RateLimitGuard extends ThrottlerGuard {
   }
 
   /**
-   * The address of whoever connected to the backend. Behind Caddy and the Next.js
-   * /api proxy this is the proxy's address, not the user's, so in production the
-   * "per IP" bucket is effectively "per account" too. That is still safe: each
-   * account keeps its own count. Trusting X-Forwarded-For (Express `trust proxy`)
-   * would make it the real client IP; deliberately left for later.
+   * The client's IP as Express resolved it under `trust proxy` (common/http/trust-proxy.ts): the real
+   * address from X-Forwarded-For when a trusted proxy (Caddy, Next.js) added it,
+   * otherwise the address that connected.
    */
   private ip(req: Record<string, any>): string {
     return String(req.ip ?? req.socket?.remoteAddress ?? 'unknown');

@@ -30,7 +30,7 @@ export class GroupsService {
         },
       },
     });
-    if (!group) throw new NotFoundException(`Group ${id} not found`);
+    if (!group) throw new NotFoundException('Group not found');
     return group;
   }
 
@@ -81,7 +81,7 @@ export class GroupsService {
   async addOrg(groupId: string, orgId: string) {
     await this.findOne(groupId);
     const org = await this.prisma.organization.findUnique({ where: { id: orgId } });
-    if (!org) throw new NotFoundException(`Organization ${orgId} not found`);
+    if (!org) throw new NotFoundException('Organization not found');
     return this.prisma.organization.update({
       where: { id: orgId },
       data: { group_id: groupId },

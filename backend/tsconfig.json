@@ -20,6 +20,11 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    // Global type packages, listed explicitly. TypeScript 6 (bundled with current
+    // VS Code) no longer loads every @types package automatically, so without this
+    // the editor flags describe/it/expect in every *.spec.ts. Other @types packages
+    // come in through imports and need no entry here.
+    "types": ["node", "jest"]
   }
 }

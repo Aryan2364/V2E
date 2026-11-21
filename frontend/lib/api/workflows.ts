@@ -1,5 +1,6 @@
 import axios from 'axios'
 import apiClient from './client'
+import { ERROR_MESSAGES, getErrorMessage, getErrorStatus } from './errors'
 import type {
   WorkflowTemplate,
   SavedWorkflow,
@@ -41,17 +42,13 @@ function unwrap<T>(res: { data: unknown }): T {
  * The server's human-readable message for a failed workflows call, or a plain fallback.
  * Nest sends `message` as a string, or an array of validation messages.
  */
-export function workflowErrorMessage(e: unknown, fallback = 'Something went wrong. Try again.'): string {
-  if (axios.isAxiosError(e)) {
-    if (!e.response) return 'We could not reach the server. Check your connection and try again.'
-    const data = e.response.data as { message?: unknown } | undefined
-    const msg = data?.message
-    if (typeof msg === 'string' && msg.trim()) return msg
-    if (Array.isArray(msg) && msg.length && typeof msg[0] === 'string') return msg.join(' ')
-    if (e.response.status === 403) return 'You are not allowed to do this.'
-    if (e.response.status === 404) return 'This item no longer exists, or you cannot see it.'
+export function workflowErrorMessage(e: unknown, fallback: string = ERROR_MESSAGES.unknown): string {
+  const byStatus: Record<number, string> = {
+    403: ERROR_MESSAGES.byStatus[403],
+    404: 'This item no longer exists, or you cannot see it.',
   }
-  return fallback
+  const status = getErrorStatus(e)
+  return getErrorMessage(e, { fallback: (status !== undefined && byStatus[status]) || fallback })
 }
 
 /**

@@ -47,7 +47,7 @@ export class AssigneeVisibilityController {
   @Get('explain')
   @ApiOperation({ summary: "Explain a user's resolved assignee pool and which rule produced it" })
   explain(@Param('orgId') orgId: string, @Query('userId') userId?: string) {
-    if (!userId) throw new BadRequestException('userId query parameter is required');
+    if (!userId) throw new BadRequestException('Choose a person.');
     return this.service.explain(orgId, userId);
   }
 

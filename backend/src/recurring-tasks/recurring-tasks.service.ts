@@ -184,7 +184,7 @@ export class RecurringTasksService {
       where: { id: templateId, organization_id: orgId },
       select: { created_by_user_id: true, assignee_user_ids: true },
     });
-    if (!t) throw new NotFoundException(`Recurring template ${templateId} not found`);
+    if (!t) throw new NotFoundException('Recurring template not found');
     const assigneeIds = (Array.isArray(t.assignee_user_ids) ? t.assignee_user_ids : []) as string[];
     const isCreator = t.created_by_user_id === principal.userId;
     const isAssignee = assigneeIds.includes(principal.userId);
@@ -209,7 +209,7 @@ export class RecurringTasksService {
     // A revoke hides the template from a would-be scope viewer (admins bypass; fails
     // closed as NotFound so we don't leak the row's existence).
     if (override?.kind === RecurringAccessKind.revoke && !principal.isAdmin) {
-      throw new NotFoundException(`Recurring template ${templateId} not found`);
+      throw new NotFoundException('Recurring template not found');
     }
 
     // Scope elevation acts on the template's OWNER. For READ we also consider the
@@ -229,7 +229,7 @@ export class RecurringTasksService {
       where: { id: templateId, organization_id: orgId },
       select: { id: true, title: true, created_by_user_id: true, assignee_user_ids: true, cc_user_ids: true },
     });
-    if (!t) throw new NotFoundException(`Recurring template ${templateId} not found`);
+    if (!t) throw new NotFoundException('Recurring template not found');
     if (t.created_by_user_id !== principal.userId && !principal.isAdmin) {
       throw new ForbiddenException('Only the creator or an admin can manage who can see this recurring task');
     }
@@ -346,7 +346,7 @@ export class RecurringTasksService {
       where: { id: templateId, organization_id: orgId },
       include: { schedule_entries: ENTRY_INCLUDE },
     });
-    if (!t) throw new NotFoundException(`Recurring template ${templateId} not found`);
+    if (!t) throw new NotFoundException('Recurring template not found');
     return t;
   }
 
@@ -879,7 +879,7 @@ export class RecurringTasksService {
     const entry = await this.prisma.recurringScheduleEntry.findFirst({
       where: { id: entryId, recurring_template_id: templateId },
     });
-    if (!entry) throw new NotFoundException(`Schedule entry ${entryId} not found`);
+    if (!entry) throw new NotFoundException('Schedule entry not found');
 
     return this.prisma.recurringScheduleEntry.update({
       where: { id: entryId },
@@ -907,7 +907,7 @@ export class RecurringTasksService {
       where: { id: entryId, recurring_template_id: templateId },
       select: { id: true },
     });
-    if (!entry) throw new NotFoundException(`Schedule entry ${entryId} not found`);
+    if (!entry) throw new NotFoundException('Schedule entry not found');
     const count = await this.prisma.recurringScheduleEntry.count({
       where: { recurring_template_id: templateId },
     });

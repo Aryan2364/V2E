@@ -53,7 +53,7 @@ export class UsersService {
       where: { user_id: id, organization_id: orgId },
       include: { user: { select: USER_SELECT } },
     });
-    if (!member) throw new NotFoundException(`User with id ${id} not found in this organization`);
+    if (!member) throw new NotFoundException('User not found in this organization');
     return this.toUserDto(member, orgId);
   }
 

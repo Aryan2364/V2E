@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeftIcon, CheckCircle2Icon, OctagonXIcon } from 'lucide-react'
 import { forgotPassword, verifyResetOtp, resetPassword } from '@/lib/api/auth'
+import { getErrorMessage } from '@/lib/api/errors'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,11 +18,7 @@ const RESEND_COOLDOWN_S = 60
 
 type Step = 'email' | 'otp' | 'password' | 'done'
 
-function errMsg(err: unknown, fallback: string): string {
-  return (
-    (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? fallback
-  )
-}
+const errMsg = (err: unknown, fallback: string) => getErrorMessage(err, { fallback })
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
@@ -126,7 +123,7 @@ export default function ForgotPasswordPage() {
 
   const heading: Record<Step, { title: string; sub: string }> = {
     email: { title: 'Reset your password', sub: 'Enter your email and we’ll send you a 6-digit code.' },
-    otp: { title: 'Enter your code', sub: `We sent a 6-digit code to ${email}. It expires in 10 minutes.` },
+    otp: { title: 'Enter your code', sub: `If an account uses ${email}, we have sent a 6-digit code to it. It expires in 10 minutes.` },
     password: { title: 'Choose a new password', sub: 'Pick a strong password you don’t use elsewhere.' },
     done: { title: 'Password updated', sub: 'You can now sign in with your new password.' },
   }

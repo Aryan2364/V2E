@@ -29,6 +29,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import request from 'supertest';
 import { AuthController } from './auth.controller';
+import { FailedLoginLimiter } from '../common/rate-limit/failed-login.limiter';
 import { AuthService } from './auth.service';
 import { PasswordResetService } from './password-reset.service';
 import { GoogleAccountService } from '../gcal/google-account.service';
@@ -71,6 +72,7 @@ describe('POST /auth/register cross-org self-join (SECURITY_AUDIT C1)', () => {
         // calls them, so empty stubs are enough to satisfy DI.
         { provide: PasswordResetService, useValue: {} },
         { provide: GoogleAccountService, useValue: {} },
+        { provide: FailedLoginLimiter, useValue: {} },
       ],
     }).compile();
 

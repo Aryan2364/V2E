@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Building2Icon, ArrowRightIcon, LogOutIcon } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
+import { getErrorMessage } from '@/lib/api/errors'
 import type { OrgChoice } from '@/lib/types'
 import { useLayout } from '@/lib/layout'
 import { signedInHome } from '@/lib/phone-routes'
@@ -61,8 +62,8 @@ export default function SelectOrgPage() {
     setError(null)
     try {
       await selectOrg(orgId)
-    } catch {
-      setError('Failed to switch organization. Please try again.')
+    } catch (err) {
+      setError(getErrorMessage(err))
       setSelecting(null)
     }
   }

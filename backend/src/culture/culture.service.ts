@@ -20,7 +20,7 @@ export class CultureService {
     });
 
     if (!standard) {
-      throw new NotFoundException(`Culture standard ${id} not found`);
+      throw new NotFoundException('Culture standard not found');
     }
 
     return standard;

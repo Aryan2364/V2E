@@ -77,12 +77,12 @@ describe('edit phone on an existing account', () => {
     // Change the phone → the OLD number stops working, the NEW one works.
     await users.update('u1', 'org-1', { phone: '8887776666', country_code: '+91' } as any);
     expect(await loginId(auth, '8887776666', '+91')).toBe('u1');
-    await expect(loginId(auth, '9876543210', '+91')).rejects.toThrow(/not found/i);
+    await expect(loginId(auth, '9876543210', '+91')).rejects.toThrow(/not right/i);
 
     // Clear the phone → email still logs in; the number no longer does.
     await users.update('u1', 'org-1', { phone: '', country_code: '' } as any);
     expect(await loginId(auth, 'solo@acme.com')).toBe('u1');
-    await expect(loginId(auth, '8887776666', '+91')).rejects.toThrow(/not found/i);
+    await expect(loginId(auth, '8887776666', '+91')).rejects.toThrow(/not right/i);
   });
 
   it('rejects a number already used by another account, changing neither account', async () => {

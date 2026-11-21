@@ -1,5 +1,6 @@
 import axios from 'axios'
 import apiClient from './client'
+import { ERROR_MESSAGES, getErrorMessage, getErrorStatus } from './errors'
 import type {
   Task,
   TaskAttachment,
@@ -95,14 +96,11 @@ export function isTagConflictError(e: unknown): e is TagConflictError {
  * The server's human-readable message for a failed tag call (400 / 403 / 409 / 429),
  * or a plain fallback. Use it for the inline message under a tag field.
  */
-export function tagErrorMessage(e: unknown, fallback = 'Something went wrong. Try again.'): string {
+export function tagErrorMessage(e: unknown, fallback: string = ERROR_MESSAGES.unknown): string {
   if (e instanceof TagConflictError) return e.message
-  if (axios.isAxiosError(e)) {
-    const data = e.response?.data as { message?: unknown } | undefined
-    if (typeof data?.message === 'string' && data.message) return data.message
-    if (e.response?.status === 429) return 'Too many new tags in a short time. Try again later.'
-  }
-  return fallback
+  return getErrorMessage(e, {
+    fallback: getErrorStatus(e) === 429 ? 'Too many new tags in a short time. Try again later.' : fallback,
+  })
 }
 
 /** Lift a 409 from POST masters/tags into a TagConflictError; anything else passes through untouched. */

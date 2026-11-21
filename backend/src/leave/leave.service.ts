@@ -271,10 +271,10 @@ export class LeaveService {
     const start = dayStart(dto.start_date);
     const end = dayEnd(dto.end_date);
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new BadRequestException('Invalid start_date or end_date');
+      throw new BadRequestException('Enter a valid start date and end date.');
     }
     if (end.getTime() < start.getTime()) {
-      throw new BadRequestException('end_date cannot be before start_date');
+      throw new BadRequestException('The end date cannot be before the start date.');
     }
 
     const cfg = await this.getConfig(orgId);
@@ -499,7 +499,7 @@ export class LeaveService {
 
   private async getOwned(orgId: string, leaveId: string): Promise<Leave> {
     const leave = await this.prisma.leave.findFirst({ where: { id: leaveId, organization_id: orgId } });
-    if (!leave) throw new NotFoundException(`Leave ${leaveId} not found`);
+    if (!leave) throw new NotFoundException('Leave not found');
     return leave;
   }
 

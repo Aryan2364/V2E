@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/auth/context'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { GOVERNANCE_NAV } from '@/lib/governance-nav'
 import { getMyOrgs } from '@/lib/api/auth'
+import { getErrorMessage } from '@/lib/api/errors'
+import { toast } from '@/components/ui/sonner'
 import type { OrgMembership } from '@/lib/types'
 import NotificationBell from './NotificationBell'
 import { useSetupProgress } from '@/lib/hooks/useSetupProgress'
@@ -167,8 +169,10 @@ export default function TopNav() {
       await switchOrg(orgId)
       setOpen(false)
       router.push('/dashboard')
-    } catch {
-      // ignore
+    } catch (err) {
+      // Say why the switch failed (e.g. the organisation was deactivated), in the
+      // backend's words; never fail silently.
+      toast.error(getErrorMessage(err))
     } finally {
       setSwitching(null)
     }

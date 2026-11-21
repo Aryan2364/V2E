@@ -69,7 +69,7 @@ export class KnowledgeService {
         },
       },
     });
-    if (!post) throw new NotFoundException(`Post ${id} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     return post;
   }
 
@@ -126,7 +126,7 @@ export class KnowledgeService {
 
   async deleteComment(commentId: string, orgId: string, userId: string, isAdmin: boolean) {
     const comment = await this.prisma.knowledgeComment.findFirst({ where: { id: commentId, organization_id: orgId } });
-    if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+    if (!comment) throw new NotFoundException('Comment not found');
     if (comment.created_by_user_id !== userId && !isAdmin) {
       throw new ForbiddenException('Not allowed');
     }
@@ -163,7 +163,7 @@ export class KnowledgeService {
 
   private async findOneRaw(id: string, orgId: string) {
     const post = await this.prisma.knowledgePost.findFirst({ where: { id, organization_id: orgId } });
-    if (!post) throw new NotFoundException(`Post ${id} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     return post;
   }
 }

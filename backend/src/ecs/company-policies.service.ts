@@ -26,7 +26,7 @@ export class CompanyPoliciesService {
         _count: { select: { assignments: true } },
       },
     });
-    if (!policy) throw new NotFoundException(`Policy ${policyId} not found`);
+    if (!policy) throw new NotFoundException('Policy not found');
     return policy;
   }
 

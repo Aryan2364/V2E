@@ -155,8 +155,17 @@ admin sign-in, register, password reset and change password. There is no API-wid
 
 - **Nothing to configure in the proxy.** Every limit is counted per account (email / phone),
   so colleagues behind one office IP never block each other.
-- The backend does not read `X-Forwarded-For` yet, so the "per IP" part of each limit sees the
-  proxy's address. In practice every limit acts per account, which is still safe.
+- **Failed sign-ins per IP:** an IP with 500 wrong sign-ins (any accounts) in 15 minutes is
+  blocked from signing in for the rest of that window. Successful sign-ins never count, so an
+  office signing in together is not affected. Code: `backend/src/common/rate-limit/failed-login.limiter.ts`.
+- **Real client IP.** The backend reads the client IP from `X-Forwarded-For`, which Caddy's
+  `reverse_proxy` sends by default and Next.js passes on. It trusts that header only from
+  proxies on loopback / private networks (`backend/src/common/http/trust-proxy.ts`); override with `TRUST_PROXY`
+  in the backend env (a hop count such as `2`, or an Express trust list). If the header ever
+  stops arriving, every user looks like one IP; the per-account limits still protect
+  sign-in either way.
+- **Keep ports 3300 and 4300 closed to the internet** (EC2 security group). Reaching the app
+  directly, past Caddy, lets a client write its own `X-Forwarded-For` and pick its IP.
 - Counts are kept in memory. That is right for one backend container; if the backend is ever
   scaled to several, move the storage to Redis.
 

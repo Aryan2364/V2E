@@ -272,7 +272,7 @@ export class TasksService {
         assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
       },
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
     await this.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees, {
       taskId,
       workflowInstanceStepId: task.workflow_instance_step_id,
@@ -292,7 +292,7 @@ export class TasksService {
       where: { id: taskId, organization_id: orgId, is_deleted: false },
       include: TASK_INCLUDE,
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
     if (isWrite) {
       const now = await this.clock.now(orgId);
       if (task.created_at > now) {
@@ -645,7 +645,7 @@ export class TasksService {
     if (!target) throw new BadRequestException('That person is not a working assignee on this task.');
 
     const st = await this.prisma.taskStatus.findFirst({ where: { id: statusId, organization_id: orgId, is_active: true } });
-    if (!st) throw new BadRequestException(`Status ${statusId} not found or inactive`);
+    if (!st) throw new BadRequestException('Status not found or inactive');
     if (isTerminal(st.type)) {
       throw new BadRequestException('To finish a part, use Complete — the status control only moves between open states.');
     }
@@ -797,7 +797,7 @@ export class TasksService {
       throw new BadRequestException('Reopen the task to change its status.');
     }
     const st = await this.prisma.taskStatus.findFirst({ where: { id: statusId, organization_id: orgId, is_active: true } });
-    if (!st) throw new BadRequestException(`Status ${statusId} not found or inactive`);
+    if (!st) throw new BadRequestException('Status not found or inactive');
     if (isTerminal(st.type)) {
       throw new BadRequestException('To close a task, use the Complete action — the status control only moves between open states.');
     }
@@ -893,7 +893,7 @@ export class TasksService {
       const st = await this.prisma.taskStatus.findFirst({
         where: { id: statusId, organization_id: orgId, is_active: true },
       });
-      if (!st) throw new BadRequestException(`Status ${statusId} not found or inactive in this organization`);
+      if (!st) throw new BadRequestException('Status not found or inactive in this organization');
       if (isTerminal(st.type)) {
         throw new BadRequestException('A task cannot start in a closed status. Create it open, then use Complete.');
       }
@@ -1934,7 +1934,7 @@ export class TasksService {
    */
   private async assertTagIdsInOrg(orgId: string, tagIds: string[]): Promise<string[]> {
     if (!Array.isArray(tagIds) || tagIds.some((id) => typeof id !== 'string')) {
-      throw new BadRequestException('tag_ids must be a list of tag ids.');
+      throw new BadRequestException('The tags are not in a valid format. Refresh the page and try again.');
     }
     const ids = [...new Set(tagIds.map((id) => id.trim()).filter(Boolean))];
     if (ids.length > MAX_TAG_FILTER_IDS) {
@@ -2345,7 +2345,7 @@ export class TasksService {
         },
       },
     });
-    if (!task) throw new NotFoundException(`Task ${taskId} not found`);
+    if (!task) throw new NotFoundException('Task not found');
 
     // Authorization (external callers only — internal post-mutation reads pass no
     // principal). Reuses the already-fetched participants to avoid a second query.
@@ -2667,7 +2667,7 @@ export class TasksService {
       const st = await this.prisma.taskStatus.findFirst({
         where: { id: dto.status_id, organization_id: orgId, is_active: true },
       });
-      if (!st) throw new BadRequestException(`Status ${dto.status_id} not found or inactive`);
+      if (!st) throw new BadRequestException('Status not found or inactive');
       const oldType = (old as any).status?.type;
       // Terminal transitions carry business rules (proof, per-assignee completion,
       // the reopen window) — they must go through the dedicated actions, never a raw
@@ -4117,7 +4117,7 @@ export class TasksService {
     });
     // Messages written on a workflow instance page (no task) are removed through the
     // instance discussion, never here.
-    if (!comment || !comment.task_id) throw new NotFoundException(`Comment ${commentId} not found`);
+    if (!comment || !comment.task_id) throw new NotFoundException('Comment not found');
     await this.findTaskOrFail(orgId, comment.task_id, true);
     if (comment.user_id !== userId) throw new ForbiddenException('Cannot delete another user\'s comment');
 
@@ -4154,7 +4154,7 @@ export class TasksService {
     const item = await this.prisma.taskChecklist.findFirst({
       where: { id: itemId, task_id: taskId, organization_id: orgId },
     });
-    if (!item) throw new NotFoundException(`Checklist item ${itemId} not found`);
+    if (!item) throw new NotFoundException('Checklist item not found');
     return { task, item };
   }
 
@@ -4535,7 +4535,7 @@ export class TasksService {
 
     const live: { user_id: string; is_cc: boolean }[] = (task as any).assignees ?? [];
     if (!live.some((a) => a.user_id === assigneeUserId)) {
-      throw new NotFoundException(`Assignee ${assigneeUserId} not found on task`);
+      throw new NotFoundException('Assignee not found on task');
     }
     // The "a task must keep at least one assignee" rule, the settle-the-completion-
     // maths step and the notification all live in the reconcile.

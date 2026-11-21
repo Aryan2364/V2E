@@ -16,6 +16,7 @@ import { DEFAULT_COUNTRY, cleanNationalNumber } from '@/lib/phone'
 import { useLayout } from '@/lib/layout'
 import { signedInHome } from '@/lib/phone-routes'
 import { identifierSchema, loginSchema, passwordSchema } from '@/lib/auth/login-schema'
+import { getErrorMessage } from '@/lib/api/errors'
 
 export default function LoginPage() {
   const { login, user } = useAuth()
@@ -35,10 +36,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{ identifier?: string; password?: string }>({})
 
-  // One box for both. As soon as what's typed looks like a phone (has a digit and
-  // no '@'), a country-code picker appears beside it; an email keeps the box alone.
+  // One box for both, mobile number by default: the country-code picker shows while
+  // the box is empty or holds a number, and goes away as soon as a letter or '@' is
+  // typed, which can only be an email. Submitting still follows the backend's rule
+  // (lib/auth/login-schema.ts): '@' means email, anything else is a phone.
   const isEmailish = identifier.includes('@')
-  const isPhoneish = !isEmailish && /\d/.test(identifier)
+  const isPhoneish = !/[@a-z]/i.test(identifier)
 
   // Checked when the person leaves a field, not on every keystroke (11.3 rule 6).
   const checkIdentifier = () => {
@@ -78,18 +81,9 @@ export default function LoginPage() {
         await login(cleanNationalNumber(identifier, countryCode), password, countryCode)
       }
     } catch (err: unknown) {
-      // Never says which field was wrong (kit 11.7).
-      const status = (err as { response?: { status?: number } })?.response?.status
-      // 429: rate limited. The server's message says how long to wait; without it the
-      // person would read "password is not right" and keep trying, extending the block.
-      const serverMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-      setError(
-        status === 429
-          ? serverMessage ?? 'Too many attempts. Please wait a few minutes and try again.'
-          : status && status >= 500
-            ? 'We could not sign you in just now. Try again in a moment.'
-            : 'The email or password is not right. Check both and try again.',
-      )
+      // The backend sends one message for every credential failure (never which field was
+      // wrong, kit 11.7), a wait time when rate limited, and plain text otherwise.
+      setError(getErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -172,7 +166,7 @@ export default function LoginPage() {
                 id="identifier"
                 name="identifier"
                 type="text"
-                placeholder="For example, you@company.com"
+                placeholder={isPhoneish ? 'For example, 98765 43210' : 'For example, you@company.com'}
                 value={identifier}
                 onChange={(e) => { setIdentifier(e.target.value); setFieldErrors((p) => ({ ...p, identifier: undefined })) }}
                 onBlur={checkIdentifier}

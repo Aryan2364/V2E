@@ -47,7 +47,7 @@ export class RolesService {
     });
 
     if (!role) {
-      throw new NotFoundException(`Role ${id} not found in this organization`);
+      throw new NotFoundException('Role not found in this organization');
     }
 
     return role;
@@ -60,7 +60,7 @@ export class RolesService {
 
     if (!department) {
       throw new NotFoundException(
-        `Department ${dto.department_id} not found in this organization`,
+        'Department not found in this organization',
       );
     }
 
@@ -124,7 +124,7 @@ export class RolesService {
 
       if (!department) {
         throw new NotFoundException(
-          `Department ${dto.department_id} not found in this organization`,
+          'Department not found in this organization',
         );
       }
     }
@@ -198,7 +198,7 @@ export class RolesService {
     });
 
     if (!role) {
-      throw new NotFoundException(`Role ${id} not found in this organization`);
+      throw new NotFoundException('Role not found in this organization');
     }
 
     if (role._count.employee_profiles > 0) {
@@ -297,7 +297,7 @@ export class RolesService {
     });
 
     if (!batch) {
-      throw new NotFoundException(`Import batch ${batchId} not found`);
+      throw new NotFoundException('Import batch not found');
     }
 
     if (batch.status !== 'committed') {

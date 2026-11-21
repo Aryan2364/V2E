@@ -67,7 +67,7 @@ export class EmployeesService {
     });
 
     if (!profile) {
-      throw new NotFoundException(`Employee ${id} not found in this organization`);
+      throw new NotFoundException('Employee not found in this organization');
     }
 
     // Build reporting chain up to 5 levels using a recursive query to avoid N+1 sequential DB calls
@@ -160,7 +160,7 @@ export class EmployeesService {
 
     if (!roleExists) {
       throw new NotFoundException(
-        `Role ${profileData.role_id} not found in this organization`,
+        'Role not found in this organization',
       );
     }
 
@@ -170,7 +170,7 @@ export class EmployeesService {
 
     if (!deptExists) {
       throw new NotFoundException(
-        `Department ${profileData.department_id} not found in this organization`,
+        'Department not found in this organization',
       );
     }
 
@@ -181,7 +181,7 @@ export class EmployeesService {
       });
       if (!systemRoleExists) {
         throw new NotFoundException(
-          `System role ${profileData.system_role_id} not found in this organization`,
+          'System role not found in this organization',
         );
       }
       // An admin must be reachable by email — a phone-only person can't be given an
@@ -342,7 +342,7 @@ export class EmployeesService {
       });
       if (!roleExists) {
         throw new NotFoundException(
-          `Role ${dto.role_id} not found in this organization`,
+          'Role not found in this organization',
         );
       }
     }
@@ -353,7 +353,7 @@ export class EmployeesService {
       });
       if (!deptExists) {
         throw new NotFoundException(
-          `Department ${dto.department_id} not found in this organization`,
+          'Department not found in this organization',
         );
       }
     }
@@ -365,7 +365,7 @@ export class EmployeesService {
       });
       if (!systemRoleExists) {
         throw new NotFoundException(
-          `System role ${dto.system_role_id} not found in this organization`,
+          'System role not found in this organization',
         );
       }
       // Promoting to an admin System Role requires an email (team can recover access).
@@ -397,7 +397,7 @@ export class EmployeesService {
     });
 
     if (!profile) {
-      throw new NotFoundException(`Employee ${id} not found in this organization`);
+      throw new NotFoundException('Employee not found in this organization');
     }
 
     if (status === 'inactive') {
@@ -458,7 +458,7 @@ export class EmployeesService {
       include: { user: { select: { id: true, name: true } } },
     });
     if (!profile) {
-      throw new NotFoundException(`Employee ${id} not found in this organization`);
+      throw new NotFoundException('Employee not found in this organization');
     }
 
     if (profile.user_id === actingUserId) {

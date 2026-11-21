@@ -129,7 +129,7 @@ export class TaskMastersService {
 
   private async findCategoryOrFail(orgId: string, categoryId: string) {
     const cat = await this.prisma.taskCategory.findFirst({ where: { id: categoryId, organization_id: orgId } });
-    if (!cat) throw new NotFoundException(`Category ${categoryId} not found`);
+    if (!cat) throw new NotFoundException('Category not found');
     return cat;
   }
 
@@ -189,7 +189,7 @@ export class TaskMastersService {
 
   private async findPriorityOrFail(orgId: string, priorityId: string) {
     const p = await this.prisma.taskPriority.findFirst({ where: { id: priorityId, organization_id: orgId } });
-    if (!p) throw new NotFoundException(`Priority ${priorityId} not found`);
+    if (!p) throw new NotFoundException('Priority not found');
     return p;
   }
 
@@ -327,7 +327,7 @@ export class TaskMastersService {
 
   private async findStatusOrFail(orgId: string, statusId: string) {
     const s = await this.prisma.taskStatus.findFirst({ where: { id: statusId, organization_id: orgId } });
-    if (!s) throw new NotFoundException(`Status ${statusId} not found`);
+    if (!s) throw new NotFoundException('Status not found');
     return s;
   }
 
@@ -419,7 +419,7 @@ export class TaskMastersService {
 
   private async findTemplateOrFail(orgId: string, templateId: string) {
     const t = await this.prisma.taskChecklistTemplate.findFirst({ where: { id: templateId, organization_id: orgId } });
-    if (!t) throw new NotFoundException(`Checklist template ${templateId} not found`);
+    if (!t) throw new NotFoundException('Checklist template not found');
     return t;
   }
 }

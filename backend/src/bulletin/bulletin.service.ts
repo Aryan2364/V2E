@@ -36,7 +36,7 @@ export class BulletinService {
       where: { id: boardId, organization_id: orgId },
       include: BOARD_INCLUDE,
     });
-    if (!board) throw new NotFoundException(`Board ${boardId} not found`);
+    if (!board) throw new NotFoundException('Board not found');
     return board;
   }
 
@@ -93,7 +93,7 @@ export class BulletinService {
         reactions: { select: { emoji: true, user_id: true } },
       },
     });
-    if (!post) throw new NotFoundException(`Post ${postId} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     return post;
   }
 
@@ -113,7 +113,7 @@ export class BulletinService {
 
   async updatePost(postId: string, boardId: string, orgId: string, userId: string, dto: Partial<CreateBulletinPostDto>) {
     const post = await this.prisma.bulletinPost.findFirst({ where: { id: postId, bulletin_board_id: boardId } });
-    if (!post) throw new NotFoundException(`Post ${postId} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     if (post.created_by_user_id !== userId) throw new ForbiddenException('Not allowed');
     return this.prisma.bulletinPost.update({
       where: { id: postId },
@@ -124,7 +124,7 @@ export class BulletinService {
 
   async deletePost(postId: string, boardId: string, orgId: string, userId: string, isAdmin: boolean) {
     const post = await this.prisma.bulletinPost.findFirst({ where: { id: postId, bulletin_board_id: boardId } });
-    if (!post) throw new NotFoundException(`Post ${postId} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     if (post.created_by_user_id !== userId && !isAdmin) {
       throw new ForbiddenException('Not allowed');
     }
@@ -135,7 +135,7 @@ export class BulletinService {
     const post = await this.prisma.bulletinPost.findFirst({
       where: { id: postId, bulletin_board_id: boardId, organization_id: orgId },
     });
-    if (!post) throw new NotFoundException(`Post ${postId} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     return this.prisma.bulletinPost.update({ where: { id: postId }, data: { is_pinned: !post.is_pinned } });
   }
 
@@ -146,7 +146,7 @@ export class BulletinService {
       where: { id: postId, organization_id: orgId },
       include: { bulletin_board: true },
     });
-    if (!post) throw new NotFoundException(`Post ${postId} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     if (post.bulletin_board.interaction_mode === BoardInteractionMode.read_only) {
       throw new ForbiddenException('This board is read-only');
     }
@@ -158,7 +158,7 @@ export class BulletinService {
 
   async deleteComment(commentId: string, orgId: string, userId: string, isAdmin: boolean) {
     const comment = await this.prisma.bulletinComment.findFirst({ where: { id: commentId, organization_id: orgId } });
-    if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+    if (!comment) throw new NotFoundException('Comment not found');
     if (comment.created_by_user_id !== userId && !isAdmin) {
       throw new ForbiddenException('Not allowed');
     }
@@ -172,7 +172,7 @@ export class BulletinService {
       where: { id: postId, organization_id: orgId },
       include: { bulletin_board: true },
     });
-    if (!post) throw new NotFoundException(`Post ${postId} not found`);
+    if (!post) throw new NotFoundException('Post not found');
     if (post.bulletin_board.interaction_mode === BoardInteractionMode.read_only ||
         post.bulletin_board.interaction_mode === BoardInteractionMode.comments_only) {
       throw new ForbiddenException('Reactions not allowed on this board');

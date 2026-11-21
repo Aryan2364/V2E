@@ -18,6 +18,8 @@ import { SuperAdmin } from '../common/decorators/super-admin.decorator';
 import { AllowSelectionToken } from '../common/decorators/allow-selection-token.decorator';
 import { clearRefreshCookie, isCookieMode, readRefreshCookie, withRefreshCookie } from './auth-cookie';
 import { AuthRateLimit, HOUR, MINUTE } from '../common/rate-limit/rate-limit.decorator';
+import { FailedLoginLimiter } from '../common/rate-limit/failed-login.limiter';
+import { InvalidCredentialsException } from './auth.messages';
 
 // Brute-force limits for the auth routes (the only rate-limited routes for now).
 // perIp  = one machine against one account (IP + account): a typo-prone person is
@@ -34,6 +36,7 @@ export class AuthController {
     private passwordResetService: PasswordResetService,
     private googleAccounts: GoogleAccountService,
     private config: ConfigService,
+    private failedLogins: FailedLoginLimiter,
   ) {}
 
   @AuthRateLimit({ perIp: { limit: 10, ttl: HOUR }, perAccount: { limit: 20, ttl: HOUR } })
@@ -81,7 +84,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Headers('user-agent') ua?: string,
   ) {
-    return withRefreshCookie(req, res, await this.authService.login(dto, ua));
+    const result = await this.limitFailedSignIns(req, () => this.authService.login(dto, ua));
+    return withRefreshCookie(req, res, result);
   }
 
   // The most valuable account type: strictest limits.
@@ -93,7 +97,25 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Headers('user-agent') ua?: string,
   ) {
-    return withRefreshCookie(req, res, await this.authService.adminLogin(dto, ua));
+    const result = await this.limitFailedSignIns(req, () => this.authService.adminLogin(dto, ua));
+    return withRefreshCookie(req, res, result);
+  }
+
+  /**
+   * Runs a sign-in under the per-IP failed sign-in limit (failed-login.limiter.ts):
+   * a blocked IP is refused before any password is checked, and only a wrong email /
+   * mobile number / password counts against it. Successes never count, so a whole
+   * office signing in from one IP is never blocked.
+   */
+  private async limitFailedSignIns<T>(req: Request, signIn: () => Promise<T>): Promise<T> {
+    const ip = req.ip ?? req.socket?.remoteAddress ?? 'unknown';
+    this.failedLogins.assertNotBlocked(ip);
+    try {
+      return await signIn();
+    } catch (err) {
+      if (err instanceof InvalidCredentialsException) this.failedLogins.recordFailure(ip);
+      throw err;
+    }
   }
 
   @Post('refresh')

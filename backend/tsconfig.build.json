@@ -1,4 +1,8 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // The production build has no tests, so no Jest globals.
+    "types": ["node"]
+  },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts", "prisma.config.ts"]
 }

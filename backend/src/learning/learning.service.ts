@@ -66,7 +66,7 @@ export class LearningService {
       where: { id: pathId, organization_id: orgId },
       include: PATH_INCLUDE,
     });
-    if (!path) throw new NotFoundException(`Learning path ${pathId} not found`);
+    if (!path) throw new NotFoundException('Learning path not found');
     return path;
   }
 
@@ -191,7 +191,7 @@ export class LearningService {
     const item = await this.prisma.learningItem.findFirst({
       where: { id: itemId, path_id: pathId },
     });
-    if (!item) throw new NotFoundException(`Item ${itemId} not found`);
+    if (!item) throw new NotFoundException('Item not found');
 
     return this.prisma.learningItem.update({ where: { id: itemId }, data: dto });
   }
@@ -201,7 +201,7 @@ export class LearningService {
     const item = await this.prisma.learningItem.findFirst({
       where: { id: itemId, path_id: pathId },
     });
-    if (!item) throw new NotFoundException(`Item ${itemId} not found`);
+    if (!item) throw new NotFoundException('Item not found');
     const deleted = await this.prisma.learningItem.delete({ where: { id: itemId } });
     // Purge the file + preview objects so deleting a material also frees the R2 bytes.
     await this.purgeItemObjects([item]);
